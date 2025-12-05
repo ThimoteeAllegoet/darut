@@ -6,6 +6,7 @@ import { useAnomalies } from '../hooks/useAnomalies';
 import { ApplicationName, Anomaly } from '../types/anomaly';
 import AnomalyCard from '../components/AnomalyCard';
 import AnomalyModal from '../components/AnomalyModal';
+import { getPriorityColor } from '../utils/anomalyHelpers';
 import {
   DndContext,
   closestCenter,
@@ -14,6 +15,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -31,6 +34,7 @@ const applications: ApplicationName[] = [
   'Visio',
   'Scanner',
   'eBorne',
+  'Trace de contact',
 ];
 
 export default function AnomaliesPage() {
@@ -41,6 +45,7 @@ export default function AnomaliesPage() {
   const [selectedApp, setSelectedApp] = useState<ApplicationName>('Bandeau');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnomaly, setEditingAnomaly] = useState<Anomaly | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -50,6 +55,10 @@ export default function AnomaliesPage() {
   );
 
   const currentAnomalies = getAnomaliesByApp(selectedApp);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -61,6 +70,7 @@ export default function AnomaliesPage() {
       const reordered = arrayMove(currentAnomalies, oldIndex, newIndex);
       reorderAnomalies(selectedApp, reordered);
     }
+    setActiveId(null);
   };
 
   const handleAddAnomaly = () => {
@@ -87,7 +97,7 @@ export default function AnomaliesPage() {
     <div style={{ padding: '2rem' }}>
       <div
         style={{
-          marginBottom: '2rem',
+          marginBottom: '1.25rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -95,25 +105,25 @@ export default function AnomaliesPage() {
       >
         <h1
           style={{
-            fontSize: '2rem',
+            fontSize: '1.75rem',
             fontWeight: '700',
             color: 'var(--color-primary-dark)',
             margin: 0,
           }}
         >
-          Gestion des Anomalies
+          Priorisation et suivi des anomalies
         </h1>
         {isAuthenticated && (
           <button
             onClick={handleAddAnomaly}
             style={{
-              padding: '0.75rem 1.5rem',
+              padding: '0.5rem 1rem',
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.95rem',
+              fontSize: '0.9rem',
               fontWeight: '500',
               transition: 'background-color 0.2s',
             }}
@@ -223,7 +233,12 @@ export default function AnomaliesPage() {
               )}
             </div>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
               <SortableContext
                 items={currentAnomalies.map((a) => a.id)}
                 strategy={verticalListSortingStrategy}
@@ -239,6 +254,59 @@ export default function AnomaliesPage() {
                   />
                 ))}
               </SortableContext>
+              <DragOverlay>
+                {activeId ? (
+                  <div
+                    style={{
+                      backgroundColor: 'var(--color-white)',
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      boxShadow: '0 4px 12px rgba(29, 30, 60, 0.3)',
+                      border: '2px solid var(--color-secondary-blue)',
+                      opacity: 0.9,
+                    }}
+                  >
+                    {(() => {
+                      const anomaly = currentAnomalies.find((a) => a.id === activeId);
+                      if (!anomaly) return null;
+                      const priorityColor = anomaly
+                        ? getPriorityColor(anomaly.priority, currentAnomalies.length)
+                        : '#D92424';
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '30%',
+                              backgroundColor: priorityColor,
+                              color: 'var(--color-white)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '1.4rem',
+                              fontWeight: '700',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {anomaly.priority}
+                          </div>
+                          <h3
+                            style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '600',
+                              color: 'var(--color-primary-dark)',
+                              margin: 0,
+                            }}
+                          >
+                            {anomaly.title}
+                          </h3>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           )}
         </div>

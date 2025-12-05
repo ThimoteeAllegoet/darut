@@ -103,25 +103,6 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           borderTop: '1px solid var(--color-primary-blue)',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '0.75rem',
-          }}
-        >
-          <span style={{ fontSize: '0.85rem', color: 'var(--color-light-blue)' }}>Mode:</span>
-          <span
-            style={{
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              color: isAuthenticated ? 'var(--color-secondary-yellow)' : 'var(--color-white)',
-            }}
-          >
-            {isAuthenticated ? 'Écriture' : 'Lecture'}
-          </span>
-        </div>
         {isAuthenticated ? (
           <button
             onClick={logout}
@@ -168,7 +149,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
               e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
-            Mode Écriture
+            Mode Administration
           </button>
         )}
       </div>

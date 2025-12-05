@@ -30,7 +30,7 @@ export default function AnomalyModal({
 }: AnomalyModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<AnomalyStatus>('Nouveau');
+  const [status, setStatus] = useState<AnomalyStatus[]>([]);
 
   // Dates
   const [appearanceDate, setAppearanceDate] = useState('');
@@ -47,12 +47,13 @@ export default function AnomalyModal({
 
   // History
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (anomaly) {
       setTitle(anomaly.title);
       setDescription(anomaly.description);
-      setStatus(anomaly.status);
+      setStatus(anomaly.status || []);
       setAppearanceDate(anomaly.appearanceDate || '');
       setCorrectionDate(anomaly.correctionDate || '');
       setDeliveryDate(anomaly.deliveryDate || '');
@@ -71,7 +72,7 @@ export default function AnomalyModal({
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setStatus('Nouveau');
+    setStatus([]);
     setAppearanceDate('');
     setCorrectionDate('');
     setDeliveryDate('');
@@ -82,6 +83,7 @@ export default function AnomalyModal({
     setTicketMainteneur('');
     setTicketMainteneurUrl('');
     setHistory([]);
+    setShowHistory(false);
   };
 
   if (!isOpen) return null;
@@ -111,20 +113,25 @@ export default function AnomalyModal({
     onClose();
   };
 
+  const toggleStatus = (s: AnomalyStatus) => {
+    setStatus((prev) =>
+      prev.includes(s) ? prev.filter((st) => st !== s) : [...prev, s]
+    );
+  };
+
   const inputStyle = {
     width: '100%',
-    padding: '0.75rem',
+    padding: '0.5rem',
     border: '2px solid var(--color-neutral-beige)',
     borderRadius: '4px',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
     outline: 'none',
-    transition: 'border-color 0.2s',
   };
 
   const labelStyle = {
     display: 'block',
-    marginBottom: '0.5rem',
-    fontSize: '0.9rem',
+    marginBottom: '0.25rem',
+    fontSize: '0.8rem',
     color: 'var(--color-primary-dark)',
     fontWeight: '500' as const,
   };
@@ -149,9 +156,9 @@ export default function AnomalyModal({
         style={{
           backgroundColor: 'var(--color-white)',
           borderRadius: '8px',
-          padding: '2rem',
+          padding: '1.5rem',
           width: '100%',
-          maxWidth: '800px',
+          maxWidth: '700px',
           maxHeight: '90vh',
           overflow: 'auto',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
@@ -160,17 +167,16 @@ export default function AnomalyModal({
       >
         <h2
           style={{
-            margin: '0 0 1.5rem 0',
-            fontSize: '1.5rem',
+            margin: '0 0 1rem 0',
+            fontSize: '1.25rem',
             color: 'var(--color-primary-dark)',
           }}
         >
-          {anomaly ? 'Modifier l\'anomalie' : 'Nouvelle anomalie'} - {applicationName}
+          {anomaly ? 'Modifier' : 'Nouvelle anomalie'} - {applicationName}
         </h2>
 
         <form onSubmit={handleSubmit}>
-          {/* Informations de base */}
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={{ marginBottom: '0.75rem' }}>
             <label htmlFor="title" style={labelStyle}>
               Titre *
             </label>
@@ -185,129 +191,120 @@ export default function AnomalyModal({
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={{ marginBottom: '0.75rem' }}>
             <label htmlFor="description" style={labelStyle}>
-              Description détaillée *
+              Description *
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              rows={3}
+              rows={2}
               style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="status" style={labelStyle}>
-              Statut *
-            </label>
-            <select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as AnomalyStatus)}
-              required
-              style={inputStyle}
-            >
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={labelStyle}>Statuts</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {statusOptions.map((s) => (
-                <option key={s} value={s}>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggleStatus(s)}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    backgroundColor: status.includes(s)
+                      ? 'var(--color-secondary-blue)'
+                      : 'var(--color-light-blue)',
+                    color: status.includes(s) ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s',
+                  }}
+                >
                   {s}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
-          {/* Dates */}
-          <fieldset
-            style={{
-              border: '1px solid var(--color-neutral-beige)',
-              borderRadius: '4px',
-              padding: '1rem',
-              marginBottom: '1rem',
-            }}
-          >
-            <legend style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--color-primary-dark)' }}>
-              📅 Dates
-            </legend>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              <div>
-                <label htmlFor="appearanceDate" style={labelStyle}>
-                  Date d'apparition
-                </label>
-                <input
-                  id="appearanceDate"
-                  type="date"
-                  value={appearanceDate}
-                  onChange={(e) => setAppearanceDate(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label htmlFor="correctionDate" style={labelStyle}>
-                  Date de correction
-                </label>
-                <input
-                  id="correctionDate"
-                  type="date"
-                  value={correctionDate}
-                  onChange={(e) => setCorrectionDate(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label htmlFor="deliveryDate" style={labelStyle}>
-                  Date de livraison
-                </label>
-                <input
-                  id="deliveryDate"
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
+          {/* Dates en ligne */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div>
+              <label htmlFor="appearanceDate" style={labelStyle}>
+                📅 Apparition
+              </label>
+              <input
+                id="appearanceDate"
+                type="date"
+                value={appearanceDate}
+                onChange={(e) => setAppearanceDate(e.target.value)}
+                style={inputStyle}
+              />
             </div>
-          </fieldset>
+            <div>
+              <label htmlFor="correctionDate" style={labelStyle}>
+                📅 Correction
+              </label>
+              <input
+                id="correctionDate"
+                type="date"
+                value={correctionDate}
+                onChange={(e) => setCorrectionDate(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label htmlFor="deliveryDate" style={labelStyle}>
+                📅 Livraison
+              </label>
+              <input
+                id="deliveryDate"
+                type="date"
+                value={deliveryDate}
+                onChange={(e) => setDeliveryDate(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
 
-          {/* Tickets */}
-          <fieldset
-            style={{
-              border: '1px solid var(--color-neutral-beige)',
-              borderRadius: '4px',
-              padding: '1rem',
-              marginBottom: '1rem',
-            }}
-          >
-            <legend style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--color-primary-dark)' }}>
-              🎫 Tickets
-            </legend>
-
-            <div style={{ marginBottom: '1rem' }}>
+          {/* Tickets compacts */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div>
               <label htmlFor="ticketSNOW" style={labelStyle}>
-                Ticket SNOW
+                🎫 SNOW
               </label>
               <input
                 id="ticketSNOW"
                 type="text"
                 value={ticketSNOW}
                 onChange={(e) => setTicketSNOW(e.target.value)}
-                placeholder="INC123456"
-                style={{ ...inputStyle, marginBottom: '0.5rem' }}
+                placeholder="INC123"
+                style={inputStyle}
               />
+            </div>
+            <div>
+              <label htmlFor="ticketSNOWUrl" style={labelStyle}>
+                URL
+              </label>
               <input
                 id="ticketSNOWUrl"
                 type="url"
                 value={ticketSNOWUrl}
                 onChange={(e) => setTicketSNOWUrl(e.target.value)}
-                placeholder="URL du ticket SNOW"
+                placeholder="https://..."
                 style={inputStyle}
               />
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
+            <div>
               <label htmlFor="ticketJIRA" style={labelStyle}>
-                Ticket JIRA
+                🎫 JIRA
               </label>
               <input
                 id="ticketJIRA"
@@ -315,76 +312,95 @@ export default function AnomalyModal({
                 value={ticketJIRA}
                 onChange={(e) => setTicketJIRA(e.target.value)}
                 placeholder="PROJ-123"
-                style={{ ...inputStyle, marginBottom: '0.5rem' }}
+                style={inputStyle}
               />
+            </div>
+            <div>
+              <label htmlFor="ticketJIRAUrl" style={labelStyle}>
+                URL
+              </label>
               <input
                 id="ticketJIRAUrl"
                 type="url"
                 value={ticketJIRAUrl}
                 onChange={(e) => setTicketJIRAUrl(e.target.value)}
-                placeholder="URL du ticket JIRA"
+                placeholder="https://..."
                 style={inputStyle}
               />
             </div>
 
             <div>
               <label htmlFor="ticketMainteneur" style={labelStyle}>
-                Ticket Mainteneur
+                🎫 Mainteneur
               </label>
               <input
                 id="ticketMainteneur"
                 type="text"
                 value={ticketMainteneur}
                 onChange={(e) => setTicketMainteneur(e.target.value)}
-                placeholder="Numéro du ticket"
-                style={{ ...inputStyle, marginBottom: '0.5rem' }}
+                placeholder="MT-456"
+                style={inputStyle}
               />
+            </div>
+            <div>
+              <label htmlFor="ticketMainteneurUrl" style={labelStyle}>
+                URL
+              </label>
               <input
                 id="ticketMainteneurUrl"
                 type="url"
                 value={ticketMainteneurUrl}
                 onChange={(e) => setTicketMainteneurUrl(e.target.value)}
-                placeholder="URL du ticket mainteneur"
+                placeholder="https://..."
                 style={inputStyle}
               />
             </div>
-          </fieldset>
+          </div>
 
-          {/* Historique */}
-          <fieldset
-            style={{
-              border: '1px solid var(--color-neutral-beige)',
-              borderRadius: '4px',
-              padding: '1rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <legend style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--color-primary-dark)' }}>
-              📝 Historique
-            </legend>
-            <HistoryManager history={history} onChange={setHistory} />
-          </fieldset>
+          {/* Historique collapsable */}
+          <div style={{ marginBottom: '1rem' }}>
+            <button
+              type="button"
+              onClick={() => setShowHistory(!showHistory)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                backgroundColor: 'var(--color-light-beige)',
+                color: 'var(--color-primary-dark)',
+                border: '1px solid var(--color-neutral-beige)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: '500',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span>📝 Historique ({history.length})</span>
+              <span>{showHistory ? '▼' : '▶'}</span>
+            </button>
+            {showHistory && (
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', border: '1px solid var(--color-neutral-beige)', borderRadius: '4px' }}>
+                <HistoryManager history={history} onChange={setHistory} />
+              </div>
+            )}
+          </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={handleClose}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.5rem 1rem',
                 backgroundColor: 'var(--color-neutral-beige)',
                 color: 'var(--color-primary-dark)',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '0.95rem',
+                fontSize: '0.85rem',
                 fontWeight: '500',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#d0cbc5';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-neutral-beige)';
               }}
             >
               Annuler
@@ -392,21 +408,14 @@ export default function AnomalyModal({
             <button
               type="submit"
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.5rem 1rem',
                 backgroundColor: 'var(--color-secondary-blue)',
                 color: 'var(--color-white)',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '0.95rem',
+                fontSize: '0.85rem',
                 fontWeight: '500',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2f4fb5';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
               }}
             >
               {anomaly ? 'Modifier' : 'Ajouter'}

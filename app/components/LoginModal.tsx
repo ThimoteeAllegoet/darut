@@ -71,7 +71,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             textAlign: 'center',
           }}
         >
-          Mode Écriture
+          Mode Administration
         </h2>
 
         <form onSubmit={handleSubmit}>

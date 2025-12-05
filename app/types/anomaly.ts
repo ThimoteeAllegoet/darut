@@ -6,7 +6,8 @@ export type ApplicationName =
   | 'GEM'
   | 'Visio'
   | 'Scanner'
-  | 'eBorne';
+  | 'eBorne'
+  | 'Trace de contact';
 
 export type AnomalyStatus =
   | 'Nouveau'
@@ -28,7 +29,7 @@ export interface Anomaly {
   priority: number;
   title: string;
   description: string;
-  status: AnomalyStatus;
+  status: AnomalyStatus[];
 
   // Dates
   appearanceDate: string;

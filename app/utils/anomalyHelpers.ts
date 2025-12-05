@@ -44,3 +44,22 @@ export function getStatusTextColor(status: AnomalyStatus): string {
       return 'var(--color-white)';
   }
 }
+
+export function getStatusAbbreviation(status: AnomalyStatus): string {
+  switch (status) {
+    case 'Nouveau':
+      return 'NV';
+    case 'En cours d\'analyse':
+      return 'AN';
+    case 'Corrigé':
+      return 'OK';
+    case 'En attente de livraison':
+      return 'LIV';
+    case 'En attente de logs':
+      return 'LOG';
+    case 'En attente retour utilisateur':
+      return 'USR';
+    default:
+      return '';
+  }
+}
