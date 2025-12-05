@@ -73,16 +73,13 @@ export default function AnomaliesPage() {
     setIsModalOpen(true);
   };
 
-  const handleSaveAnomaly = (data: {
-    title: string;
-    description: string;
-    incidentReferences: string;
-    correctionDate: string;
-  }) => {
+  const handleSaveAnomaly = (
+    data: Omit<Anomaly, 'id' | 'applicationName' | 'priority' | 'createdAt' | 'updatedAt'>
+  ) => {
     if (editingAnomaly) {
       updateAnomaly(editingAnomaly.id, data);
     } else {
-      addAnomaly(selectedApp, data.title, data.description, data.incidentReferences, data.correctionDate);
+      addAnomaly(selectedApp, data);
     }
   };
 
@@ -238,6 +235,7 @@ export default function AnomaliesPage() {
                     onEdit={handleEditAnomaly}
                     onDelete={deleteAnomaly}
                     isEditMode={isAuthenticated}
+                    totalAnomalies={currentAnomalies.length}
                   />
                 ))}
               </SortableContext>

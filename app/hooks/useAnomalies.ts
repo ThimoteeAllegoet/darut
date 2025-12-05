@@ -26,10 +26,7 @@ export function useAnomalies() {
 
   const addAnomaly = (
     applicationName: ApplicationName,
-    title: string,
-    description: string,
-    incidentReferences: string,
-    correctionDate: string
+    anomalyData: Omit<Anomaly, 'id' | 'applicationName' | 'priority' | 'createdAt' | 'updatedAt'>
   ) => {
     const appAnomalies = anomalies.filter((a) => a.applicationName === applicationName);
     const maxPriority = appAnomalies.length > 0
@@ -40,10 +37,7 @@ export function useAnomalies() {
       id: Date.now().toString(),
       applicationName,
       priority: maxPriority + 1,
-      title,
-      description,
-      incidentReferences,
-      correctionDate,
+      ...anomalyData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
