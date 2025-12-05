@@ -12,7 +12,26 @@ export function useAnomalies() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setAnomalies(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Migration: convertir status string en array si nécessaire
+        const migrated = parsed.map((anomaly: any) => {
+          if (anomaly.status && !Array.isArray(anomaly.status)) {
+            return {
+              ...anomaly,
+              status: [anomaly.status],
+            };
+          }
+          // S'assurer que status existe et est un array
+          return {
+            ...anomaly,
+            status: anomaly.status || [],
+          };
+        });
+        setAnomalies(migrated);
+        // Sauvegarder la version migrée
+        if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        }
       } catch (error) {
         console.error('Error loading anomalies:', error);
       }
