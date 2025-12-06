@@ -153,7 +153,6 @@ export default function AnomaliesPage() {
             display: 'flex',
             gap: '0.25rem',
             overflowX: 'auto',
-            paddingBottom: '0.25rem',
           }}
         >
           {applications.map((app) => {
@@ -164,10 +163,11 @@ export default function AnomaliesPage() {
                 key={app}
                 onClick={() => setSelectedApp(app)}
                 style={{
-                  padding: '0.5rem 0.85rem',
+                  padding: '0.5rem 0.85rem 0.75rem 0.85rem',
                   backgroundColor: 'transparent',
                   color: isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)',
                   border: 'none',
+                  borderBottom: isSelected ? '2px solid var(--color-primary-dark)' : '2px solid transparent',
                   cursor: 'pointer',
                   fontSize: '0.8rem',
                   fontWeight: isSelected ? '700' : '600',
@@ -176,18 +176,17 @@ export default function AnomaliesPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem',
-                  textDecoration: isSelected ? 'underline' : 'none',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.textDecoration = 'underline';
+                  e.currentTarget.style.borderBottom = '2px solid var(--color-primary-dark)';
                   e.currentTarget.style.color = 'var(--color-primary-dark)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.textDecoration = isSelected ? 'underline' : 'none';
+                  e.currentTarget.style.borderBottom = isSelected ? '2px solid var(--color-primary-dark)' : '2px solid transparent';
                   e.currentTarget.style.color = isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)';
                 }}
               >
-                {app}
+                <span>{app}</span>
                 {appAnomaliesCount > 0 && (
                   <span
                     style={{
@@ -212,12 +211,7 @@ export default function AnomaliesPage() {
 
       <div
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(15px)',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
-          border: '1px solid rgba(230, 225, 219, 0.3)',
+          padding: '1.5rem 0',
         }}
       >
 
@@ -230,7 +224,7 @@ export default function AnomaliesPage() {
                 color: 'var(--color-primary-blue)',
               }}
             >
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📄</div>
               <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
                 Aucune anomalie pour {selectedApp}
               </p>
@@ -263,16 +257,17 @@ export default function AnomaliesPage() {
                   />
                 ))}
               </SortableContext>
-              <DragOverlay>
+              <DragOverlay adjustScale={false} dropAnimation={null}>
                 {activeId ? (
                   <div
                     style={{
                       backgroundColor: 'var(--color-white)',
                       borderRadius: '8px',
                       padding: '1rem',
-                      boxShadow: '0 4px 12px rgba(29, 30, 60, 0.3)',
+                      boxShadow: '0 8px 20px rgba(29, 30, 60, 0.3)',
                       border: '2px solid var(--color-secondary-blue)',
-                      opacity: 0.9,
+                      opacity: 0.95,
+                      cursor: 'grabbing',
                     }}
                   >
                     {(() => {
@@ -285,20 +280,36 @@ export default function AnomaliesPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div
                             style={{
-                              width: '48px',
-                              height: '48px',
-                              borderRadius: '30%',
-                              backgroundColor: priorityColor,
-                              color: 'var(--color-white)',
+                              width: '52px',
+                              height: '52px',
+                              position: 'relative',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '1.4rem',
+                              fontSize: '1.5rem',
                               fontWeight: '700',
                               flexShrink: 0,
                             }}
                           >
-                            {anomaly.priority}
+                            <svg
+                              viewBox="0 0 460.51 460.49"
+                              style={{
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                                top: 0,
+                                left: 0,
+                                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+                              }}
+                            >
+                              <path
+                                fill={priorityColor}
+                                d="M387.41,443.39c-13.41,4.93-27.77,7.66-42,9.64-76.79,9.97-154.28,9.96-231.07-.12-28.18-3.85-58.29-11.58-78-33.13-18.28-19.64-25.1-47.5-28.7-73.65C-2.17,267.94-6.5,140.82,19.61,67.08,35.63,26.57,76.17,11.94,116.5,7.34c81.9-10.14,165.1-10.4,246.61,3.14,22.52,4.41,45.32,13.1,60.95,30.1,48.52,47.02,38.47,250.73,26.91,317.84-6.2,38.66-24.69,71.77-63.48,84.94l-.08.03Z"
+                              />
+                            </svg>
+                            <span style={{ position: 'relative', zIndex: 1, color: 'var(--color-white)' }}>
+                              {anomaly.priority}
+                            </span>
                           </div>
                           <h3
                             style={{

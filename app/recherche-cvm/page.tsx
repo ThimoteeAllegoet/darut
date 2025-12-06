@@ -82,11 +82,9 @@ export default function RechercheCVMPage() {
 
       <div
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(15px)',
+          backgroundColor: 'var(--color-white)',
           borderRadius: '8px',
           padding: '2rem',
-          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
           border: '1px solid rgba(230, 225, 219, 0.3)',
           maxWidth: '600px',
         }}

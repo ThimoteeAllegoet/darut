@@ -180,12 +180,7 @@ export default function MessagesPage() {
 
       <div
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(15px)',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
-          border: '1px solid rgba(230, 225, 219, 0.3)',
+          padding: '1.5rem 0',
         }}
       >
         {isAddingNew && (
@@ -299,12 +294,10 @@ export default function MessagesPage() {
             <div
               key={message.id}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(10px)',
+                backgroundColor: 'var(--color-white)',
                 borderRadius: '8px',
                 padding: '0.75rem',
                 border: '1px solid rgba(230, 225, 219, 0.5)',
-                boxShadow: '0 1px 3px rgba(29, 30, 60, 0.08)',
                 display: 'flex',
                 flexDirection: 'column',
               }}

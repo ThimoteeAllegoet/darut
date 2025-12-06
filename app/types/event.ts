@@ -33,6 +33,8 @@ export interface Event {
   endTime?: string;
   changeTicket?: string;
   changeTicketUrl?: string;
+  parentIncident?: string;
+  parentIncidentUrl?: string;
   contentUrl?: string;
   applications: ApplicationName[];
   createdAt: string;

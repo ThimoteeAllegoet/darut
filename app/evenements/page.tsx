@@ -51,6 +51,22 @@ const formatDateRange = (period: EventPeriod): string => {
   return dateStr;
 };
 
+const getOrdinalLabel = (index: number): string => {
+  const ordinals = [
+    'Première occurrence',
+    'Deuxième occurrence',
+    'Troisième occurrence',
+    'Quatrième occurrence',
+    'Cinquième occurrence',
+    'Sixième occurrence',
+    'Septième occurrence',
+    'Huitième occurrence',
+    'Neuvième occurrence',
+    'Dixième occurrence',
+  ];
+  return ordinals[index] || `${index + 1}ème occurrence`;
+};
+
 export default function EvenementsPage() {
   const { isAuthenticated } = useAuth();
   const { events, addEvent, updateEvent, deleteEvent } = useEvents();
@@ -71,6 +87,8 @@ export default function EvenementsPage() {
   }]);
   const [changeTicket, setChangeTicket] = useState('');
   const [changeTicketUrl, setChangeTicketUrl] = useState('');
+  const [parentIncident, setParentIncident] = useState('');
+  const [parentIncidentUrl, setParentIncidentUrl] = useState('');
   const [contentUrl, setContentUrl] = useState('');
   const [applications, setApplications] = useState<ApplicationName[]>([]);
 
@@ -102,6 +120,8 @@ export default function EvenementsPage() {
     }]);
     setChangeTicket(event.changeTicket || '');
     setChangeTicketUrl(event.changeTicketUrl || '');
+    setParentIncident(event.parentIncident || '');
+    setParentIncidentUrl(event.parentIncidentUrl || '');
     setContentUrl(event.contentUrl || '');
     setApplications(event.applications || []);
     setIsModalOpen(true);
@@ -126,6 +146,8 @@ export default function EvenementsPage() {
       endTime: validPeriods[0].endTime,
       changeTicket,
       changeTicketUrl,
+      parentIncident,
+      parentIncidentUrl,
       contentUrl,
       applications,
     };
@@ -153,6 +175,8 @@ export default function EvenementsPage() {
     }]);
     setChangeTicket('');
     setChangeTicketUrl('');
+    setParentIncident('');
+    setParentIncidentUrl('');
     setContentUrl('');
     setApplications([]);
   };
@@ -243,6 +267,10 @@ export default function EvenementsPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
+  const goToToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   // Filter and sort events
   const filteredEvents = events
     .filter((event) => {
@@ -264,20 +292,19 @@ export default function EvenementsPage() {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
-  // Statistics calculations
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonthNum = now.getMonth();
+  // Statistics calculations based on displayed calendar month/year
+  const displayedYear = currentMonth.getFullYear();
+  const displayedMonth = currentMonth.getMonth();
 
   const majorIncidents = events.filter(e => e.type === 'Incident majeur');
 
-  // Incidents in current month
+  // Incidents in displayed month
   const incidentsThisMonth = majorIncidents.filter(event => {
     return event.periods.some(period => {
       const startDate = new Date(period.startDate);
       const endDate = new Date(period.endDate);
-      const monthStart = new Date(currentYear, currentMonthNum, 1);
-      const monthEnd = new Date(currentYear, currentMonthNum + 1, 0);
+      const monthStart = new Date(displayedYear, displayedMonth, 1);
+      const monthEnd = new Date(displayedYear, displayedMonth + 1, 0);
 
       return (
         (startDate >= monthStart && startDate <= monthEnd) ||
@@ -287,13 +314,13 @@ export default function EvenementsPage() {
     });
   }).length;
 
-  // Incidents in current year
+  // Incidents in displayed year
   const incidentsThisYear = majorIncidents.filter(event => {
     return event.periods.some(period => {
       const startDate = new Date(period.startDate);
       const endDate = new Date(period.endDate);
-      const yearStart = new Date(currentYear, 0, 1);
-      const yearEnd = new Date(currentYear, 11, 31);
+      const yearStart = new Date(displayedYear, 0, 1);
+      const yearEnd = new Date(displayedYear, 11, 31);
 
       return (
         (startDate >= yearStart && startDate <= yearEnd) ||
@@ -303,12 +330,27 @@ export default function EvenementsPage() {
     });
   }).length;
 
-  // Incidents by application
+  // Incidents by application (for the entire year)
   const incidentsByApp: { [key: string]: number } = {};
   majorIncidents.forEach(event => {
-    event.applications.forEach(app => {
-      incidentsByApp[app] = (incidentsByApp[app] || 0) + 1;
+    const eventInYear = event.periods.some(period => {
+      const startDate = new Date(period.startDate);
+      const endDate = new Date(period.endDate);
+      const yearStart = new Date(displayedYear, 0, 1);
+      const yearEnd = new Date(displayedYear, 11, 31);
+
+      return (
+        (startDate >= yearStart && startDate <= yearEnd) ||
+        (endDate >= yearStart && endDate <= yearEnd) ||
+        (startDate <= yearStart && endDate >= yearEnd)
+      );
     });
+
+    if (eventInYear) {
+      event.applications.forEach(app => {
+        incidentsByApp[app] = (incidentsByApp[app] || 0) + 1;
+      });
+    }
   });
 
   return (
@@ -361,11 +403,9 @@ export default function EvenementsPage() {
         {/* Event List */}
         <div
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.4)',
-            backdropFilter: 'blur(15px)',
+            backgroundColor: 'var(--color-white)',
             borderRadius: '8px',
             padding: '1.5rem',
-            boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
             border: '1px solid rgba(230, 225, 219, 0.3)',
           }}
         >
@@ -522,7 +562,7 @@ export default function EvenementsPage() {
                     <div style={{
                       position: 'absolute',
                       top: '1rem',
-                      right: isAuthenticated ? '4rem' : '1rem',
+                      right: isAuthenticated ? '10rem' : '1rem',
                       display: 'flex',
                       gap: '0.35rem',
                       flexWrap: 'wrap',
@@ -611,7 +651,7 @@ export default function EvenementsPage() {
                             >
                               {event.periods.length > 1 && (
                                 <span style={{ fontWeight: '600', marginRight: '0.25rem' }}>
-                                  Période {index + 1}:
+                                  {getOrdinalLabel(index)}:
                                 </span>
                               )}
                               <span style={{ fontWeight: '500' }}>Du:</span>{' '}
@@ -633,7 +673,7 @@ export default function EvenementsPage() {
                       {event.changeTicket && (
                         <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
                           <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            N° Changement:{' '}
+                            Changement en cause (Incident):{' '}
                           </span>
                           {event.changeTicketUrl ? (
                             <a
@@ -651,6 +691,33 @@ export default function EvenementsPage() {
                           ) : (
                             <span style={{ color: 'var(--color-primary-blue)' }}>
                               {event.changeTicket}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Parent incident link */}
+                      {event.parentIncident && (
+                        <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                            Incident parent:{' '}
+                          </span>
+                          {event.parentIncidentUrl ? (
+                            <a
+                              href={event.parentIncidentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: 'var(--color-secondary-blue)',
+                                textDecoration: 'underline',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {event.parentIncident}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--color-primary-blue)' }}>
+                              {event.parentIncident}
                             </span>
                           )}
                         </div>
@@ -688,66 +755,66 @@ export default function EvenementsPage() {
                       )}
                     </div>
                     {isAuthenticated && (
-                      <div style={{ display: 'flex', gap: '0.25rem', marginLeft: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
                         <button
                           onClick={() => handleEditEvent(event)}
                           style={{
-                            width: '28px',
-                            height: '28px',
-                            backgroundColor: 'transparent',
-                            color: 'rgba(40, 50, 118, 0.5)',
-                            border: '1px solid rgba(40, 50, 118, 0.2)',
+                            padding: '0.4rem 0.8rem',
+                            backgroundColor: '#6B7280',
+                            color: 'var(--color-white)',
+                            border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontSize: '0.85rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
+                            gap: '0.35rem',
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.1)';
-                            e.currentTarget.style.color = 'var(--color-secondary-blue)';
-                            e.currentTarget.style.borderColor = 'var(--color-secondary-blue)';
+                            e.currentTarget.style.backgroundColor = '#4B5563';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = 'rgba(40, 50, 118, 0.5)';
-                            e.currentTarget.style.borderColor = 'rgba(40, 50, 118, 0.2)';
+                            e.currentTarget.style.backgroundColor = '#6B7280';
                           }}
                           title="Modifier"
                         >
-                          ✏️
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          Modifier
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id)}
                           style={{
-                            width: '28px',
-                            height: '28px',
-                            backgroundColor: 'transparent',
-                            color: 'rgba(217, 36, 36, 0.5)',
-                            border: '1px solid rgba(217, 36, 36, 0.2)',
+                            padding: '0.4rem 0.8rem',
+                            backgroundColor: '#6B7280',
+                            color: 'var(--color-white)',
+                            border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontSize: '0.85rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
+                            gap: '0.35rem',
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(217, 36, 36, 0.1)';
-                            e.currentTarget.style.color = 'var(--color-accent-red)';
-                            e.currentTarget.style.borderColor = 'var(--color-accent-red)';
+                            e.currentTarget.style.backgroundColor = '#4B5563';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = 'rgba(217, 36, 36, 0.5)';
-                            e.currentTarget.style.borderColor = 'rgba(217, 36, 36, 0.2)';
+                            e.currentTarget.style.backgroundColor = '#6B7280';
                           }}
                           title="Supprimer"
                         >
-                          🗑️
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                          Supprimer
                         </button>
                       </div>
                     )}
@@ -763,11 +830,9 @@ export default function EvenementsPage() {
           {/* Calendar */}
           <div
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              backdropFilter: 'blur(15px)',
+              backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
               border: '1px solid rgba(230, 225, 219, 0.3)',
             }}
           >
@@ -790,16 +855,42 @@ export default function EvenementsPage() {
               >
                 ‹
               </button>
-              <h2
-                style={{
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  color: 'var(--color-primary-dark)',
-                  margin: 0,
-                }}
-              >
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                <h2
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    margin: 0,
+                  }}
+                >
+                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                </h2>
+                <button
+                  onClick={goToToday}
+                  style={{
+                    padding: '0.2rem 0.6rem',
+                    backgroundColor: 'transparent',
+                    color: 'var(--color-secondary-blue)',
+                    border: '1px solid var(--color-secondary-blue)',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '0.65rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+                    e.currentTarget.style.color = 'var(--color-white)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = 'var(--color-secondary-blue)';
+                  }}
+                >
+                  Aujourd'hui
+                </button>
+              </div>
               <button
                 onClick={nextMonth}
                 style={{
@@ -820,7 +911,7 @@ export default function EvenementsPage() {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
                 <div
                   key={i}
@@ -844,6 +935,7 @@ export default function EvenementsPage() {
                     style={{
                       minHeight: '48px',
                       backgroundColor: day ? 'rgba(255, 255, 255, 0.6)' : 'transparent',
+                      border: day ? '1.5px solid rgba(230, 225, 219, 0.8)' : 'none',
                       borderRadius: '4px',
                       padding: '0.25rem',
                       display: 'flex',
@@ -941,11 +1033,9 @@ export default function EvenementsPage() {
           {/* Statistics Report */}
           <div
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              backdropFilter: 'blur(15px)',
+              backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
               border: '1px solid rgba(230, 225, 219, 0.3)',
             }}
           >
@@ -971,7 +1061,7 @@ export default function EvenementsPage() {
                 }}
               >
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
-                  Incidents majeurs ce mois
+                  Incidents majeurs - {monthNames[displayedMonth]} {displayedYear}
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
                   {incidentsThisMonth}
@@ -988,7 +1078,7 @@ export default function EvenementsPage() {
                 }}
               >
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
-                  Incidents majeurs cette année
+                  Incidents majeurs - {displayedYear}
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
                   {incidentsThisYear}
@@ -1005,7 +1095,7 @@ export default function EvenementsPage() {
                 }}
               >
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Par application
+                  Par application ({displayedYear})
                 </div>
                 {Object.keys(incidentsByApp).length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -1273,7 +1363,7 @@ export default function EvenementsPage() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)' }}>
-                      Période {index + 1}
+                      {getOrdinalLabel(index)}
                     </span>
                     {periods.length > 1 && (
                       <button
@@ -1434,7 +1524,7 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                N° Changement
+                Changement en cause (Incident)
               </label>
               <input
                 type="text"
@@ -1462,12 +1552,69 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                N° Changement URL
+                Changement en cause (Incident) - URL
               </label>
               <input
                 type="url"
                 value={changeTicketUrl}
                 onChange={(e) => setChangeTicketUrl(e.target.value)}
+                placeholder="https://..."
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            {/* Parent Incident */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Incident parent
+              </label>
+              <input
+                type="text"
+                value={parentIncident}
+                onChange={(e) => setParentIncident(e.target.value)}
+                placeholder="Ex: INC0012345"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Incident parent - URL
+              </label>
+              <input
+                type="url"
+                value={parentIncidentUrl}
+                onChange={(e) => setParentIncidentUrl(e.target.value)}
                 placeholder="https://..."
                 style={{
                   width: '100%',
