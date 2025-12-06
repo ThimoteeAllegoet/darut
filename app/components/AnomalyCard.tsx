@@ -11,6 +11,7 @@ interface AnomalyCardProps {
   onDelete: (id: string) => void;
   isEditMode: boolean;
   totalAnomalies: number;
+  isDraggingAny: boolean;
 }
 
 export default function AnomalyCard({
@@ -19,6 +20,7 @@ export default function AnomalyCard({
   onDelete,
   isEditMode,
   totalAnomalies,
+  isDraggingAny,
 }: AnomalyCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: anomaly.id,
@@ -33,17 +35,21 @@ export default function AnomalyCard({
 
   const priorityColor = getPriorityColor(anomaly.priority, totalAnomalies);
 
+  // Mode compact : pendant le drag OU quand une autre carte est en train d'être déplacée
+  const isCompact = isDragging || isDraggingAny;
+
   return (
     <div
       ref={setNodeRef}
       style={{
         ...style,
-        backgroundColor: 'var(--color-white)',
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        backdropFilter: 'blur(10px)',
         borderRadius: '8px',
-        padding: isDragging ? '1rem' : '1rem',
+        padding: '1rem',
         marginBottom: '0.75rem',
-        boxShadow: isDragging ? '0 4px 12px rgba(29, 30, 60, 0.2)' : '0 1px 3px rgba(29, 30, 60, 0.1)',
-        border: '1px solid var(--color-neutral-beige)',
+        boxShadow: isDragging ? '0 4px 12px rgba(29, 30, 60, 0.2)' : '0 1px 3px rgba(29, 30, 60, 0.08)',
+        border: '1px solid rgba(230, 225, 219, 0.5)',
         position: 'relative',
       }}
     >
@@ -61,7 +67,7 @@ export default function AnomalyCard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--color-primary-blue)',
+              color: 'rgba(40, 50, 118, 0.4)',
               fontSize: '1.2rem',
               padding: 0,
               flexShrink: 0,
@@ -91,8 +97,7 @@ export default function AnomalyCard({
           {anomaly.priority}
         </div>
 
-        {isDragging ? (
-          // Vue simplifiée pendant le drag
+        {isCompact ? (
           <div style={{ flex: 1 }}>
             <h3
               style={{
@@ -106,7 +111,6 @@ export default function AnomalyCard({
             </h3>
           </div>
         ) : (
-          // Vue complète normale
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
@@ -161,100 +165,108 @@ export default function AnomalyCard({
               {anomaly.description}
             </p>
 
-            {/* Dates et Tickets organisés */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
-              {/* Dates */}
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {(anomaly.appearanceDate || anomaly.correctionDate || anomaly.deliveryDate) && (
                 <div
                   style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    color: 'var(--color-primary-blue)',
-                    flexWrap: 'wrap',
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: 'rgba(176, 191, 240, 0.15)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(176, 191, 240, 0.3)',
                   }}
                 >
-                  {anomaly.appearanceDate && (
-                    <div>
-                      <span style={{ fontWeight: '600' }}>📅 Apparition:</span>{' '}
-                      {new Date(anomaly.appearanceDate).toLocaleDateString('fr-FR')}
-                    </div>
-                  )}
-                  {anomaly.correctionDate && (
-                    <div>
-                      <span style={{ fontWeight: '600' }}>📅 Correction:</span>{' '}
-                      {new Date(anomaly.correctionDate).toLocaleDateString('fr-FR')}
-                    </div>
-                  )}
-                  {anomaly.deliveryDate && (
-                    <div>
-                      <span style={{ fontWeight: '600' }}>📅 Livraison:</span>{' '}
-                      {new Date(anomaly.deliveryDate).toLocaleDateString('fr-FR')}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                    DATES
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
+                    {anomaly.appearanceDate && (
+                      <div>
+                        <span style={{ fontWeight: '500' }}>Apparition:</span>{' '}
+                        {new Date(anomaly.appearanceDate).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
+                    {anomaly.correctionDate && (
+                      <div>
+                        <span style={{ fontWeight: '500' }}>Correction:</span>{' '}
+                        {new Date(anomaly.correctionDate).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
+                    {anomaly.deliveryDate && (
+                      <div>
+                        <span style={{ fontWeight: '500' }}>Livraison:</span>{' '}
+                        {new Date(anomaly.deliveryDate).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Tickets */}
               {(anomaly.ticketSNOW || anomaly.ticketJIRA || anomaly.ticketMainteneur) && (
                 <div
                   style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    flexWrap: 'wrap',
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: 'rgba(217, 201, 229, 0.15)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(217, 201, 229, 0.3)',
                   }}
                 >
-                  {anomaly.ticketSNOW && (
-                    <a
-                      href={anomaly.ticketSNOWUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-secondary-blue)',
-                        textDecoration: 'none',
-                        fontWeight: '500',
-                      }}
-                      onClick={(e) => !anomaly.ticketSNOWUrl && e.preventDefault()}
-                    >
-                      🎫 SNOW: {anomaly.ticketSNOW}
-                    </a>
-                  )}
-                  {anomaly.ticketJIRA && (
-                    <a
-                      href={anomaly.ticketJIRAUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-secondary-blue)',
-                        textDecoration: 'none',
-                        fontWeight: '500',
-                      }}
-                      onClick={(e) => !anomaly.ticketJIRAUrl && e.preventDefault()}
-                    >
-                      🎫 JIRA: {anomaly.ticketJIRA}
-                    </a>
-                  )}
-                  {anomaly.ticketMainteneur && (
-                    <a
-                      href={anomaly.ticketMainteneurUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-secondary-blue)',
-                        textDecoration: 'none',
-                        fontWeight: '500',
-                      }}
-                      onClick={(e) => !anomaly.ticketMainteneurUrl && e.preventDefault()}
-                    >
-                      🎫 Mainteneur: {anomaly.ticketMainteneur}
-                    </a>
-                  )}
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                    TICKETS
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
+                    {anomaly.ticketSNOW && (
+                      <a
+                        href={anomaly.ticketSNOWUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--color-primary-dark)',
+                          textDecoration: 'underline',
+                          fontWeight: '500',
+                        }}
+                        onClick={(e) => !anomaly.ticketSNOWUrl && e.preventDefault()}
+                      >
+                        SNOW: {anomaly.ticketSNOW}
+                      </a>
+                    )}
+                    {anomaly.ticketJIRA && (
+                      <a
+                        href={anomaly.ticketJIRAUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--color-primary-dark)',
+                          textDecoration: 'underline',
+                          fontWeight: '500',
+                        }}
+                        onClick={(e) => !anomaly.ticketJIRAUrl && e.preventDefault()}
+                      >
+                        JIRA: {anomaly.ticketJIRA}
+                      </a>
+                    )}
+                    {anomaly.ticketMainteneur && (
+                      <a
+                        href={anomaly.ticketMainteneurUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--color-primary-dark)',
+                          textDecoration: 'underline',
+                          fontWeight: '500',
+                        }}
+                        onClick={(e) => !anomaly.ticketMainteneurUrl && e.preventDefault()}
+                      >
+                        Mainteneur: {anomaly.ticketMainteneur}
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {isEditMode && !isDragging && (
+        {isEditMode && !isCompact && (
           <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
             <button
               onClick={(e) => {
@@ -262,25 +274,28 @@ export default function AnomalyCard({
                 onEdit(anomaly);
               }}
               style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--color-secondary-blue)',
-                color: 'var(--color-white)',
-                border: 'none',
+                width: '28px',
+                height: '28px',
+                backgroundColor: 'transparent',
+                color: 'rgba(40, 50, 118, 0.5)',
+                border: '1px solid rgba(40, 50, 118, 0.2)',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s',
+                fontSize: '0.85rem',
+                transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#2f4fb5';
+                e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.1)';
+                e.currentTarget.style.color = 'var(--color-secondary-blue)';
+                e.currentTarget.style.borderColor = 'var(--color-secondary-blue)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgba(40, 50, 118, 0.5)';
+                e.currentTarget.style.borderColor = 'rgba(40, 50, 118, 0.2)';
               }}
               title="Modifier"
             >
@@ -294,25 +309,28 @@ export default function AnomalyCard({
                 }
               }}
               style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--color-accent-red)',
-                color: 'var(--color-white)',
-                border: 'none',
+                width: '28px',
+                height: '28px',
+                backgroundColor: 'transparent',
+                color: 'rgba(217, 36, 36, 0.5)',
+                border: '1px solid rgba(217, 36, 36, 0.2)',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s',
+                fontSize: '0.85rem',
+                transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#a01a1a';
+                e.currentTarget.style.backgroundColor = 'rgba(217, 36, 36, 0.1)';
+                e.currentTarget.style.color = 'var(--color-accent-red)';
+                e.currentTarget.style.borderColor = 'var(--color-accent-red)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-accent-red)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgba(217, 36, 36, 0.5)';
+                e.currentTarget.style.borderColor = 'rgba(217, 36, 36, 0.2)';
               }}
               title="Supprimer"
             >

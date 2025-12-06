@@ -141,19 +141,21 @@ export default function AnomaliesPage() {
 
       <div
         style={{
-          backgroundColor: 'var(--color-white)',
+          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+          backdropFilter: 'blur(15px)',
           borderRadius: '8px',
           padding: '1.5rem',
-          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.1)',
+          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
+          border: '1px solid rgba(230, 225, 219, 0.3)',
         }}
       >
         <div
           style={{
             display: 'flex',
-            gap: '0.5rem',
-            marginBottom: '1.5rem',
+            gap: '0.4rem',
+            marginBottom: '1rem',
             overflowX: 'auto',
-            paddingBottom: '0.5rem',
+            paddingBottom: '0.25rem',
           }}
         >
           {applications.map((app) => {
@@ -164,30 +166,30 @@ export default function AnomaliesPage() {
                 key={app}
                 onClick={() => setSelectedApp(app)}
                 style={{
-                  padding: '0.75rem 1.25rem',
-                  backgroundColor: isSelected ? 'var(--color-primary-blue)' : 'var(--color-light-blue)',
+                  padding: '0.5rem 0.85rem',
+                  backgroundColor: isSelected ? 'var(--color-primary-blue)' : 'rgba(176, 191, 240, 0.2)',
                   color: isSelected ? 'var(--color-white)' : 'var(--color-primary-dark)',
-                  border: 'none',
+                  border: isSelected ? 'none' : '1px solid rgba(176, 191, 240, 0.4)',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '0.9rem',
+                  fontSize: '0.8rem',
                   fontWeight: '600',
                   transition: 'all 0.2s',
                   whiteSpace: 'nowrap',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.35rem',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
-                    e.currentTarget.style.color = 'var(--color-white)';
+                    e.currentTarget.style.backgroundColor = 'rgba(176, 191, 240, 0.35)';
+                    e.currentTarget.style.borderColor = 'rgba(176, 191, 240, 0.6)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = 'var(--color-light-blue)';
-                    e.currentTarget.style.color = 'var(--color-primary-dark)';
+                    e.currentTarget.style.backgroundColor = 'rgba(176, 191, 240, 0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(176, 191, 240, 0.4)';
                   }
                 }}
               >
@@ -199,9 +201,9 @@ export default function AnomaliesPage() {
                         ? 'var(--color-secondary-yellow)'
                         : 'var(--color-secondary-blue)',
                       color: isSelected ? 'var(--color-primary-dark)' : 'var(--color-white)',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '12px',
-                      fontSize: '0.75rem',
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: '10px',
+                      fontSize: '0.7rem',
                       fontWeight: '700',
                     }}
                   >
@@ -251,6 +253,7 @@ export default function AnomaliesPage() {
                     onDelete={deleteAnomaly}
                     isEditMode={isAuthenticated}
                     totalAnomalies={currentAnomalies.length}
+                    isDraggingAny={activeId !== null}
                   />
                 ))}
               </SortableContext>
