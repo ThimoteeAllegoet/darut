@@ -15,8 +15,10 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
 
   const allMenuItems = [
     { name: 'Anomalies', path: '/anomalies', icon: '⚠️', adminOnly: false },
-    { name: 'Messages', path: '/messages', icon: '💬', adminOnly: true },
+    { name: 'Clipboard', path: '/messages', icon: '📋', adminOnly: true },
     { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
+    { name: 'Médiathèque', path: '/mediatheque', icon: '📚', adminOnly: false },
+    { name: 'MESI', path: '/mesi', icon: '🔗', adminOnly: false },
     { name: 'Recherche CVM', path: '/recherche-cvm', icon: '🔍', adminOnly: true },
   ];
 
@@ -41,47 +43,44 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
         style={{
           padding: '1.5rem',
           borderBottom: '1px solid var(--color-primary-blue)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
         }}
       >
-        <div
+        <Image
+          src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.svg"
+          alt="France Travail"
+          width={160}
+          height={36}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            marginBottom: '0.5rem',
+            objectFit: 'contain',
+            filter: 'brightness(0) invert(1)',
           }}
-        >
-          <Image
-            src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.PNG"
-            alt="France Travail"
-            width={80}
-            height={18}
-            style={{
-              objectFit: 'contain',
-              filter: 'brightness(0) invert(1)',
-            }}
-            priority
-          />
+          priority
+        />
+        <div style={{ textAlign: 'center', width: '100%' }}>
           <h1
             style={{
               fontSize: '1.5rem',
               fontWeight: '600',
-              margin: 0,
+              margin: '0 0 0.25rem 0',
               color: 'var(--color-white)',
             }}
           >
             DARUT
           </h1>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              margin: 0,
+              color: 'var(--color-light-blue)',
+            }}
+          >
+            Outils de suivi
+          </p>
         </div>
-        <p
-          style={{
-            fontSize: '0.75rem',
-            margin: '0.25rem 0 0 0',
-            color: 'var(--color-light-blue)',
-          }}
-        >
-          Outils de suivi
-        </p>
       </div>
 
       <nav style={{ flex: 1, padding: '1rem 0' }}>

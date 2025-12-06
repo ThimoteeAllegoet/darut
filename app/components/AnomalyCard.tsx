@@ -80,21 +80,36 @@ export default function AnomalyCard({
 
         <div
           style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '30%',
-            backgroundColor: priorityColor,
-            color: 'var(--color-white)',
+            width: '52px',
+            height: '55px',
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.4rem',
+            fontSize: '1.5rem',
             fontWeight: '700',
             flexShrink: 0,
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           }}
         >
-          {anomaly.priority}
+          <svg
+            viewBox="0 0 433.47 460.49"
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              top: 0,
+              left: 0,
+              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+            }}
+          >
+            <path
+              fill={priorityColor}
+              d="M391.65,86.98c-42.08-32.57-88.7-59.59-138.73-79.92-23.19-9.42-49.18-9.42-72.37,0-50.03,20.33-96.65,47.35-138.73,79.92-19.83,15.35-32.86,37.92-36.3,62.75C1.82,176.54,0,203.44,0,230.24c0,26.8,1.82,53.7,5.52,80.51,3.44,24.84,16.47,47.41,36.3,62.75,42.08,32.57,88.7,59.59,138.73,79.92,23.19,9.42,49.18,9.42,72.37,0,50.03-20.33,96.65-47.35,138.73-79.92,19.83-15.35,32.86-37.92,36.3-62.75,3.71-26.81,5.53-53.71,5.52-80.51,0-26.8-1.82-53.7-5.52-80.51-3.44-24.84-16.47-47.41-36.3-62.75"
+            />
+          </svg>
+          <span style={{ position: 'relative', zIndex: 1, color: 'var(--color-white)' }}>
+            {anomaly.priority}
+          </span>
         </div>
 
         {isCompact ? (

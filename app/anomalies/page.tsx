@@ -121,7 +121,7 @@ export default function AnomaliesPage() {
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '50px',
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: '500',
@@ -141,19 +141,17 @@ export default function AnomaliesPage() {
 
       <div
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(15px)',
+          backgroundColor: 'white',
           borderRadius: '8px',
-          padding: '1.5rem',
-          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
-          border: '1px solid rgba(230, 225, 219, 0.3)',
+          padding: '0.75rem 1.5rem',
+          marginBottom: '1.5rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
         }}
       >
         <div
           style={{
             display: 'flex',
-            gap: '0.4rem',
-            marginBottom: '1rem',
+            gap: '0.25rem',
             overflowX: 'auto',
             paddingBottom: '0.25rem',
           }}
@@ -167,30 +165,26 @@ export default function AnomaliesPage() {
                 onClick={() => setSelectedApp(app)}
                 style={{
                   padding: '0.5rem 0.85rem',
-                  backgroundColor: isSelected ? 'var(--color-primary-blue)' : 'rgba(176, 191, 240, 0.2)',
-                  color: isSelected ? 'var(--color-white)' : 'var(--color-primary-dark)',
-                  border: isSelected ? 'none' : '1px solid rgba(176, 191, 240, 0.4)',
-                  borderRadius: '4px',
+                  backgroundColor: 'transparent',
+                  color: isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)',
+                  border: 'none',
                   cursor: 'pointer',
                   fontSize: '0.8rem',
-                  fontWeight: '600',
+                  fontWeight: isSelected ? '700' : '600',
                   transition: 'all 0.2s',
                   whiteSpace: 'nowrap',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem',
+                  textDecoration: isSelected ? 'underline' : 'none',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = 'rgba(176, 191, 240, 0.35)';
-                    e.currentTarget.style.borderColor = 'rgba(176, 191, 240, 0.6)';
-                  }
+                  e.currentTarget.style.textDecoration = 'underline';
+                  e.currentTarget.style.color = 'var(--color-primary-dark)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isSelected) {
-                    e.currentTarget.style.backgroundColor = 'rgba(176, 191, 240, 0.2)';
-                    e.currentTarget.style.borderColor = 'rgba(176, 191, 240, 0.4)';
-                  }
+                  e.currentTarget.style.textDecoration = isSelected ? 'underline' : 'none';
+                  e.currentTarget.style.color = isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)';
                 }}
               >
                 {app}
@@ -214,6 +208,18 @@ export default function AnomaliesPage() {
             );
           })}
         </div>
+      </div>
+
+      <div
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '8px',
+          padding: '1.5rem',
+          boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
+          border: '1px solid rgba(230, 225, 219, 0.3)',
+        }}
+      >
 
         <div>
           {currentAnomalies.length === 0 ? (
@@ -224,7 +230,7 @@ export default function AnomaliesPage() {
                 color: 'var(--color-primary-blue)',
               }}
             >
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
               <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
                 Aucune anomalie pour {selectedApp}
               </p>

@@ -39,7 +39,7 @@ const formatDateRange = (period: EventPeriod): string => {
   const startDate = new Date(period.startDate).toLocaleDateString('fr-FR');
   const endDate = new Date(period.endDate).toLocaleDateString('fr-FR');
 
-  let dateStr = `${startDate} - ${endDate}`;
+  let dateStr = `Du ${startDate} au ${endDate}`;
 
   if (period.startTime || period.endTime) {
     const times = [];
@@ -264,6 +264,53 @@ export default function EvenementsPage() {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
+  // Statistics calculations
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthNum = now.getMonth();
+
+  const majorIncidents = events.filter(e => e.type === 'Incident majeur');
+
+  // Incidents in current month
+  const incidentsThisMonth = majorIncidents.filter(event => {
+    return event.periods.some(period => {
+      const startDate = new Date(period.startDate);
+      const endDate = new Date(period.endDate);
+      const monthStart = new Date(currentYear, currentMonthNum, 1);
+      const monthEnd = new Date(currentYear, currentMonthNum + 1, 0);
+
+      return (
+        (startDate >= monthStart && startDate <= monthEnd) ||
+        (endDate >= monthStart && endDate <= monthEnd) ||
+        (startDate <= monthStart && endDate >= monthEnd)
+      );
+    });
+  }).length;
+
+  // Incidents in current year
+  const incidentsThisYear = majorIncidents.filter(event => {
+    return event.periods.some(period => {
+      const startDate = new Date(period.startDate);
+      const endDate = new Date(period.endDate);
+      const yearStart = new Date(currentYear, 0, 1);
+      const yearEnd = new Date(currentYear, 11, 31);
+
+      return (
+        (startDate >= yearStart && startDate <= yearEnd) ||
+        (endDate >= yearStart && endDate <= yearEnd) ||
+        (startDate <= yearStart && endDate >= yearEnd)
+      );
+    });
+  }).length;
+
+  // Incidents by application
+  const incidentsByApp: { [key: string]: number } = {};
+  majorIncidents.forEach(event => {
+    event.applications.forEach(app => {
+      incidentsByApp[app] = (incidentsByApp[app] || 0) + 1;
+    });
+  });
+
   return (
     <div style={{ padding: '2rem' }}>
       <div
@@ -292,7 +339,7 @@ export default function EvenementsPage() {
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '50px',
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: '500',
@@ -322,18 +369,6 @@ export default function EvenementsPage() {
             border: '1px solid rgba(230, 225, 219, 0.3)',
           }}
         >
-          <h2
-            style={{
-              fontSize: '1.25rem',
-              fontWeight: '600',
-              color: 'var(--color-primary-dark)',
-              marginTop: 0,
-              marginBottom: '1rem',
-            }}
-          >
-            Liste des événements
-          </h2>
-
           {/* Filters */}
           <div
             style={{
@@ -473,21 +508,48 @@ export default function EvenementsPage() {
                   key={event.id}
                   id={`event-${event.id}`}
                   style={{
-                    backgroundColor: highlightedId === event.id ? 'rgba(64, 107, 222, 0.1)' : 'rgba(255, 255, 255, 0.6)',
-                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
                     borderRadius: '8px',
                     padding: '1rem',
                     border: highlightedId === event.id
                       ? '2px solid var(--color-secondary-blue)'
                       : '1px solid rgba(230, 225, 219, 0.5)',
-                    boxShadow: highlightedId === event.id
-                      ? '0 4px 12px rgba(64, 107, 222, 0.2)'
-                      : '0 1px 3px rgba(29, 30, 60, 0.08)',
                     transition: 'all 0.3s',
                   }}
                 >
+                  {/* Applications badges - positioned top-right */}
+                  {event.applications && event.applications.length > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '1rem',
+                      right: isAuthenticated ? '4rem' : '1rem',
+                      display: 'flex',
+                      gap: '0.35rem',
+                      flexWrap: 'wrap',
+                      justifyContent: 'flex-end',
+                      maxWidth: '200px',
+                    }}>
+                      {event.applications.map((app) => (
+                        <span
+                          key={app}
+                          style={{
+                            fontSize: '0.65rem',
+                            padding: '0.15rem 0.4rem',
+                            backgroundColor: 'rgba(64, 107, 222, 0.15)',
+                            color: 'var(--color-secondary-blue)',
+                            borderRadius: '8px',
+                            fontWeight: '600',
+                            border: '1px solid rgba(64, 107, 222, 0.3)',
+                          }}
+                        >
+                          {app}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, paddingRight: isAuthenticated ? '0' : '220px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                         <div
                           style={{
@@ -520,28 +582,6 @@ export default function EvenementsPage() {
                           {event.type}
                         </span>
                       </div>
-
-                      {/* Applications badges */}
-                      {event.applications && event.applications.length > 0 && (
-                        <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                          {event.applications.map((app) => (
-                            <span
-                              key={app}
-                              style={{
-                                fontSize: '0.65rem',
-                                padding: '0.15rem 0.4rem',
-                                backgroundColor: 'rgba(64, 107, 222, 0.15)',
-                                color: 'var(--color-secondary-blue)',
-                                borderRadius: '8px',
-                                fontWeight: '600',
-                                border: '1px solid rgba(64, 107, 222, 0.3)',
-                              }}
-                            >
-                              {app}
-                            </span>
-                          ))}
-                        </div>
-                      )}
 
                       {event.description && (
                         <p
@@ -593,7 +633,7 @@ export default function EvenementsPage() {
                       {event.changeTicket && (
                         <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
                           <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Change ticket:{' '}
+                            N° Changement:{' '}
                           </span>
                           {event.changeTicketUrl ? (
                             <a
@@ -718,182 +758,284 @@ export default function EvenementsPage() {
           )}
         </div>
 
-        {/* Calendar */}
-        <div
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.4)',
-            backdropFilter: 'blur(15px)',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
-            border: '1px solid rgba(230, 225, 219, 0.3)',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <button
-              onClick={prevMonth}
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--color-secondary-blue)',
-                color: 'var(--color-white)',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              ‹
-            </button>
+        {/* Right column - Calendar and Statistics */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Calendar */}
+          <div
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(15px)',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
+              border: '1px solid rgba(230, 225, 219, 0.3)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <button
+                onClick={prevMonth}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  backgroundColor: 'var(--color-secondary-blue)',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ‹
+              </button>
+              <h2
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  color: 'var(--color-primary-dark)',
+                  margin: 0,
+                }}
+              >
+                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </h2>
+              <button
+                onClick={nextMonth}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  backgroundColor: 'var(--color-secondary-blue)',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ›
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+              {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
+                <div
+                  key={i}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '0.7rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    padding: '0.25rem',
+                  }}
+                >
+                  {day}
+                </div>
+              ))}
+
+              {calendarDays.map((day, index) => {
+                const dayEvents = day ? getEventsForDay(day) : [];
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      minHeight: '48px',
+                      backgroundColor: day ? 'rgba(255, 255, 255, 0.6)' : 'transparent',
+                      borderRadius: '4px',
+                      padding: '0.25rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      position: 'relative',
+                    }}
+                  >
+                    {day && (
+                      <>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--color-primary-dark)',
+                            fontWeight: '500',
+                          }}
+                        >
+                          {day}
+                        </span>
+                        {dayEvents.length > 0 && (
+                          <div style={{ display: 'flex', gap: '2px', marginTop: '2px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {dayEvents.map((event) => (
+                              <div
+                                key={event.id}
+                                onMouseEnter={(e) => {
+                                  const tooltip = e.currentTarget.querySelector('[data-tooltip]') as HTMLElement;
+                                  if (tooltip) tooltip.style.display = 'block';
+                                }}
+                                onMouseLeave={(e) => {
+                                  const tooltip = e.currentTarget.querySelector('[data-tooltip]') as HTMLElement;
+                                  if (tooltip) tooltip.style.display = 'none';
+                                }}
+                                onClick={() => handleEventClick(event.id)}
+                                style={{
+                                  width: '6px',
+                                  height: '6px',
+                                  borderRadius: '50%',
+                                  backgroundColor: getEventColor(event.type),
+                                  cursor: 'pointer',
+                                  position: 'relative',
+                                }}
+                              >
+                                <div
+                                  data-tooltip
+                                  style={{
+                                    display: 'none',
+                                    position: 'absolute',
+                                    bottom: '100%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    backgroundColor: 'var(--color-primary-dark)',
+                                    color: 'var(--color-white)',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.7rem',
+                                    whiteSpace: 'nowrap',
+                                    zIndex: 1000,
+                                    marginBottom: '4px',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                    maxWidth: '250px',
+                                  }}
+                                >
+                                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{event.title}</div>
+                                  <div style={{ marginBottom: '0.15rem' }}>{event.type}</div>
+                                  {event.periods && event.periods.length > 0 && (
+                                    <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
+                                      {event.periods.map((period, idx) => (
+                                        <div key={period.id} style={{ marginBottom: idx < event.periods.length - 1 ? '0.15rem' : '0' }}>
+                                          {formatDateRange(period)}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {event.applications && event.applications.length > 0 && (
+                                    <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
+                                      {event.applications.join(', ')}
+                                    </div>
+                                  )}
+                                  <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
+                                    Cliquer pour voir le détail
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Statistics Report */}
+          <div
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(15px)',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
+              border: '1px solid rgba(230, 225, 219, 0.3)',
+            }}
+          >
             <h2
               style={{
                 fontSize: '1.1rem',
                 fontWeight: '600',
                 color: 'var(--color-primary-dark)',
-                margin: 0,
+                margin: '0 0 1rem 0',
               }}
             >
-              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              Statistiques
             </h2>
-            <button
-              onClick={nextMonth}
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--color-secondary-blue)',
-                color: 'var(--color-white)',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              ›
-            </button>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
-            {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Current month */}
               <div
-                key={i}
                 style={{
-                  textAlign: 'center',
-                  fontSize: '0.7rem',
-                  fontWeight: '600',
-                  color: 'var(--color-primary-dark)',
-                  padding: '0.25rem',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(217, 36, 36, 0.1)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(217, 36, 36, 0.2)',
                 }}
               >
-                {day}
-              </div>
-            ))}
-
-            {calendarDays.map((day, index) => {
-              const dayEvents = day ? getEventsForDay(day) : [];
-              return (
-                <div
-                  key={index}
-                  style={{
-                    minHeight: '48px',
-                    backgroundColor: day ? 'rgba(255, 255, 255, 0.6)' : 'transparent',
-                    borderRadius: '4px',
-                    padding: '0.25rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    position: 'relative',
-                  }}
-                >
-                  {day && (
-                    <>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--color-primary-dark)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        {day}
-                      </span>
-                      {dayEvents.length > 0 && (
-                        <div style={{ display: 'flex', gap: '2px', marginTop: '2px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                          {dayEvents.map((event) => (
-                            <div
-                              key={event.id}
-                              onMouseEnter={(e) => {
-                                const tooltip = e.currentTarget.querySelector('[data-tooltip]') as HTMLElement;
-                                if (tooltip) tooltip.style.display = 'block';
-                              }}
-                              onMouseLeave={(e) => {
-                                const tooltip = e.currentTarget.querySelector('[data-tooltip]') as HTMLElement;
-                                if (tooltip) tooltip.style.display = 'none';
-                              }}
-                              onClick={() => handleEventClick(event.id)}
-                              style={{
-                                width: '6px',
-                                height: '6px',
-                                borderRadius: '50%',
-                                backgroundColor: getEventColor(event.type),
-                                cursor: 'pointer',
-                                position: 'relative',
-                              }}
-                            >
-                              <div
-                                data-tooltip
-                                style={{
-                                  display: 'none',
-                                  position: 'absolute',
-                                  bottom: '100%',
-                                  left: '50%',
-                                  transform: 'translateX(-50%)',
-                                  backgroundColor: 'var(--color-primary-dark)',
-                                  color: 'var(--color-white)',
-                                  padding: '0.5rem',
-                                  borderRadius: '4px',
-                                  fontSize: '0.7rem',
-                                  whiteSpace: 'nowrap',
-                                  zIndex: 1000,
-                                  marginBottom: '4px',
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                  maxWidth: '250px',
-                                }}
-                              >
-                                <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{event.title}</div>
-                                <div style={{ marginBottom: '0.15rem' }}>{event.type}</div>
-                                {event.periods && event.periods.length > 0 && (
-                                  <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
-                                    {event.periods.map((period, idx) => (
-                                      <div key={period.id} style={{ marginBottom: idx < event.periods.length - 1 ? '0.15rem' : '0' }}>
-                                        {event.periods.length > 1 && `P${idx + 1}: `}
-                                        {formatDateRange(period)}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                                {event.applications && event.applications.length > 0 && (
-                                  <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
-                                    {event.applications.join(', ')}
-                                  </div>
-                                )}
-                                <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
-                                  Cliquer pour voir le détail
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
+                  Incidents majeurs ce mois
                 </div>
-              );
-            })}
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
+                  {incidentsThisMonth}
+                </div>
+              </div>
+
+              {/* Current year */}
+              <div
+                style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(217, 36, 36, 0.1)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(217, 36, 36, 0.2)',
+                }}
+              >
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
+                  Incidents majeurs cette année
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
+                  {incidentsThisYear}
+                </div>
+              </div>
+
+              {/* By application */}
+              <div
+                style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(64, 107, 222, 0.1)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(64, 107, 222, 0.2)',
+                }}
+              >
+                <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.5rem' }}>
+                  Par application
+                </div>
+                {Object.keys(incidentsByApp).length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    {Object.entries(incidentsByApp)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([app, count]) => (
+                        <div key={app} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-primary-dark)' }}>{app}</span>
+                          <span
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: '700',
+                              color: '#D92424',
+                              backgroundColor: 'rgba(217, 36, 36, 0.15)',
+                              padding: '0.15rem 0.5rem',
+                              borderRadius: '10px',
+                            }}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', fontStyle: 'italic' }}>
+                    Aucun incident enregistré
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1101,7 +1243,7 @@ export default function EvenementsPage() {
                     backgroundColor: 'var(--color-secondary-blue)',
                     color: 'var(--color-white)',
                     border: 'none',
-                    borderRadius: '4px',
+                    borderRadius: '50px',
                     cursor: 'pointer',
                     fontSize: '0.7rem',
                     fontWeight: '500',
@@ -1292,7 +1434,7 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                Change ticket
+                N° Changement
               </label>
               <input
                 type="text"
@@ -1320,7 +1462,7 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                Change ticket URL
+                N° Changement URL
               </label>
               <input
                 type="url"
