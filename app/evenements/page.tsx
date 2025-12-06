@@ -741,7 +741,7 @@ export default function EvenementsPage() {
                       {event.changeTicket && (
                         <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
                           <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Changement en cause (Incident):{' '}
+                            Changement en cause:{' '}
                           </span>
                           {event.changeTicketUrl ? (
                             <a
@@ -1084,12 +1084,14 @@ export default function EvenementsPage() {
                               if (tooltip) tooltip.style.display = 'none';
                             }}
                             style={{
-                              display: 'flex',
+                              display: dayEvents.length > 0 ? 'flex' : 'block',
                               gap: '2px',
                               marginTop: '2px',
                               flexWrap: 'wrap',
                               justifyContent: 'center',
                               position: 'relative',
+                              width: '100%',
+                              height: dayEvents.length === 0 ? '1px' : 'auto',
                             }}
                           >
                             {/* Combined tooltip for long periods and events */}
@@ -1117,7 +1119,7 @@ export default function EvenementsPage() {
                               {dayLongPeriods.length > 0 && (
                                 <div style={{ marginBottom: dayEvents.length > 0 ? '0.5rem' : '0' }}>
                                   <div style={{ fontWeight: '600', marginBottom: '0.25rem', fontSize: '0.65rem', opacity: 0.8 }}>
-                                    PÉRIODES LONGUES
+                                    PÉRIODE
                                   </div>
                                   {dayLongPeriods.map((period) => (
                                     <div key={period.id} style={{ marginBottom: '0.25rem' }}>
@@ -1469,7 +1471,7 @@ export default function EvenementsPage() {
                     fontWeight: '500',
                   }}
                 >
-                  Périodes *
+                  Occurence *
                 </label>
                 <button
                   type="button"
@@ -1670,7 +1672,7 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                Changement en cause (Incident)
+                Changement en cause
               </label>
               <input
                 type="text"
@@ -1698,7 +1700,7 @@ export default function EvenementsPage() {
                   fontWeight: '500',
                 }}
               >
-                Changement en cause (Incident) - URL
+                Changement en cause - URL
               </label>
               <input
                 type="url"

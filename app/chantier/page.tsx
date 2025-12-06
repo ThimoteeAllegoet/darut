@@ -41,10 +41,12 @@ export default function ChantierPage() {
   const [description, setDescription] = useState('');
   const [state, setState] = useState<ChantierState>('En cours');
   const [progress, setProgress] = useState(0);
+  const [showProgress, setShowProgress] = useState(true);
   const [history, setHistory] = useState<ChantierHistoryEntry[]>([]);
 
   // History form state
   const [historyMessage, setHistoryMessage] = useState('');
+  const [historyDate, setHistoryDate] = useState('');
   const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null);
 
   const handleAddChantier = () => {
@@ -59,6 +61,7 @@ export default function ChantierPage() {
     setDescription(chantier.description);
     setState(chantier.state);
     setProgress(chantier.progress);
+    setShowProgress(chantier.showProgress !== false);
     setHistory([...chantier.history]);
     setIsModalOpen(true);
   };
@@ -71,6 +74,7 @@ export default function ChantierPage() {
       description,
       state,
       progress,
+      showProgress,
       history,
     };
 
@@ -89,8 +93,10 @@ export default function ChantierPage() {
     setDescription('');
     setState('En cours');
     setProgress(0);
+    setShowProgress(true);
     setHistory([]);
     setHistoryMessage('');
+    setHistoryDate('');
     setEditingHistoryId(null);
   };
 
@@ -101,14 +107,14 @@ export default function ChantierPage() {
   };
 
   const handleAddHistoryEntry = () => {
-    if (!historyMessage.trim()) return;
+    if (!historyMessage.trim() || !historyDate.trim()) return;
 
     if (editingHistoryId) {
       // Edit existing entry
       setHistory(
         history.map((entry) =>
           entry.id === editingHistoryId
-            ? { ...entry, message: historyMessage, date: new Date().toISOString() }
+            ? { ...entry, message: historyMessage, date: historyDate }
             : entry
         )
       );
@@ -117,19 +123,21 @@ export default function ChantierPage() {
       // Add new entry
       const newEntry: ChantierHistoryEntry = {
         id: Date.now().toString(),
-        date: new Date().toISOString(),
+        date: historyDate,
         message: historyMessage,
       };
       setHistory([...history, newEntry]);
     }
 
     setHistoryMessage('');
+    setHistoryDate('');
     setIsHistoryModalOpen(false);
   };
 
   const handleEditHistoryEntry = (entry: ChantierHistoryEntry) => {
     setEditingHistoryId(entry.id);
     setHistoryMessage(entry.message);
+    setHistoryDate(entry.date);
     setIsHistoryModalOpen(true);
   };
 
@@ -198,7 +206,7 @@ export default function ChantierPage() {
             color: 'var(--color-primary-blue)',
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏗️</div>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚚</div>
           <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
             Aucun chantier enregistré
           </p>
@@ -217,10 +225,6 @@ export default function ChantierPage() {
           }}
         >
           {sortedChantiers.map((chantier) => {
-            const latestHistory = chantier.history.length > 0
-              ? chantier.history[chantier.history.length - 1]
-              : null;
-
             return (
               <div
                 key={chantier.id}
@@ -282,87 +286,106 @@ export default function ChantierPage() {
                 </p>
 
                 {/* Progress bar */}
-                <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '0.35rem',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: '0.7rem',
-                        color: 'var(--color-primary-blue)',
-                        fontWeight: '600',
-                      }}
-                    >
-                      Progression
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        color: getProgressColor(chantier.progress),
-                      }}
-                    >
-                      {chantier.progress}%
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '8px',
-                      backgroundColor: 'rgba(176, 191, 240, 0.2)',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                    }}
-                  >
+                {chantier.showProgress !== false && (
+                  <div>
                     <div
                       style={{
-                        width: `${chantier.progress}%`,
-                        height: '100%',
-                        backgroundColor: getProgressColor(chantier.progress),
-                        borderRadius: '4px',
-                        transition: 'width 0.3s',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Latest history entry */}
-                {latestHistory && (
-                  <div
-                    style={{
-                      padding: '0.75rem',
-                      backgroundColor: 'rgba(176, 191, 240, 0.1)',
-                      borderRadius: '6px',
-                      borderLeft: '3px solid var(--color-secondary-blue)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: '0.65rem',
-                        color: 'var(--color-primary-blue)',
-                        fontWeight: '600',
-                        marginBottom: '0.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '0.35rem',
                       }}
                     >
-                      Dernière mise à jour - {new Date(latestHistory.date).toLocaleDateString('fr-FR')} à{' '}
-                      {new Date(latestHistory.date).toLocaleTimeString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          color: 'var(--color-primary-blue)',
+                          fontWeight: '600',
+                        }}
+                      >
+                        Progression
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          color: getProgressColor(chantier.progress),
+                        }}
+                      >
+                        {chantier.progress}%
+                      </span>
                     </div>
                     <div
                       style={{
-                        fontSize: '0.8rem',
-                        color: 'var(--color-primary-dark)',
-                        lineHeight: '1.3',
+                        width: '100%',
+                        height: '8px',
+                        backgroundColor: 'rgba(176, 191, 240, 0.2)',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
                       }}
                     >
-                      {latestHistory.message}
+                      <div
+                        style={{
+                          width: `${chantier.progress}%`,
+                          height: '100%',
+                          backgroundColor: getProgressColor(chantier.progress),
+                          borderRadius: '4px',
+                          transition: 'width 0.3s',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Full history */}
+                {chantier.history.length > 0 && (
+                  <div>
+                    <div
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        color: 'var(--color-primary-dark)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Historique
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {chantier.history.slice().reverse().map((entry) => (
+                        <div
+                          key={entry.id}
+                          style={{
+                            padding: '0.75rem',
+                            backgroundColor: 'rgba(176, 191, 240, 0.1)',
+                            borderRadius: '6px',
+                            borderLeft: '3px solid var(--color-secondary-blue)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: '0.65rem',
+                              color: 'var(--color-primary-blue)',
+                              fontWeight: '600',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
+                            {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
+                            {new Date(entry.date).toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '0.8rem',
+                              color: 'var(--color-primary-dark)',
+                              lineHeight: '1.3',
+                            }}
+                          >
+                            {entry.message}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -583,61 +606,89 @@ export default function ChantierPage() {
             </div>
 
             {/* Progress */}
-            <div style={{ marginBottom: '1rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.25rem',
-                  fontSize: '0.8rem',
-                  color: 'var(--color-primary-dark)',
-                  fontWeight: '500',
-                }}
-              >
-                Progression (0-100) *
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                 <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(parseInt(e.target.value))}
+                  type="checkbox"
+                  id="showProgress"
+                  checked={showProgress}
+                  onChange={(e) => setShowProgress(e.target.checked)}
                   style={{
-                    flex: 1,
+                    width: '16px',
+                    height: '16px',
                     cursor: 'pointer',
                   }}
                 />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val >= 0 && val <= 100) {
-                      setProgress(val);
-                    }
-                  }}
+                <label
+                  htmlFor="showProgress"
                   style={{
-                    width: '70px',
-                    padding: '0.5rem',
-                    border: '2px solid var(--color-neutral-beige)',
-                    borderRadius: '4px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                    textAlign: 'center',
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: '0.85rem',
-                    fontWeight: '600',
+                    fontSize: '0.8rem',
                     color: 'var(--color-primary-dark)',
+                    fontWeight: '500',
+                    cursor: 'pointer',
                   }}
                 >
-                  %
-                </span>
+                  Afficher la progression
+                </label>
               </div>
+              {showProgress && (
+                <>
+                  <label
+                    style={{
+                      display: 'block',
+                      marginBottom: '0.25rem',
+                      fontSize: '0.8rem',
+                      color: 'var(--color-primary-dark)',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Progression (0-100) *
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={progress}
+                      onChange={(e) => setProgress(parseInt(e.target.value))}
+                      style={{
+                        flex: 1,
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={progress}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 0 && val <= 100) {
+                          setProgress(val);
+                        }
+                      }}
+                      style={{
+                        width: '70px',
+                        padding: '0.5rem',
+                        border: '2px solid var(--color-neutral-beige)',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                        outline: 'none',
+                        textAlign: 'center',
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        color: 'var(--color-primary-dark)',
+                      }}
+                    >
+                      %
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* History Section */}
@@ -665,6 +716,7 @@ export default function ChantierPage() {
                   onClick={() => {
                     setEditingHistoryId(null);
                     setHistoryMessage('');
+                    setHistoryDate(new Date().toISOString());
                     setIsHistoryModalOpen(true);
                   }}
                   style={{
@@ -883,6 +935,7 @@ export default function ChantierPage() {
           onClick={() => {
             setIsHistoryModalOpen(false);
             setHistoryMessage('');
+            setHistoryDate('');
             setEditingHistoryId(null);
           }}
         >
@@ -906,6 +959,33 @@ export default function ChantierPage() {
             >
               {editingHistoryId ? 'Modifier l\'entrée' : 'Nouvelle entrée d\'historique'}
             </h3>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Date et heure *
+              </label>
+              <input
+                type="datetime-local"
+                value={historyDate ? new Date(historyDate).toISOString().slice(0, 16) : ''}
+                onChange={(e) => setHistoryDate(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
 
             <div style={{ marginBottom: '1rem' }}>
               <label
@@ -942,6 +1022,7 @@ export default function ChantierPage() {
                 onClick={() => {
                   setIsHistoryModalOpen(false);
                   setHistoryMessage('');
+                  setHistoryDate('');
                   setEditingHistoryId(null);
                 }}
                 style={{

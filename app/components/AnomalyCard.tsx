@@ -180,15 +180,15 @@ export default function AnomalyCard({
               {anomaly.description}
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'stretch' }}>
               {(anomaly.appearanceDate || anomaly.correctionDate || anomaly.deliveryDate) && (
                 <div
                   style={{
-                    flex: 1,
+                    flex: '0 0 25%',
                     padding: '0.5rem 0.75rem',
-                    backgroundColor: 'rgba(176, 191, 240, 0.15)',
+                    backgroundColor: 'rgba(217, 201, 229, 0.15)',
                     borderRadius: '6px',
-                    border: '1px solid rgba(176, 191, 240, 0.3)',
+                    border: '1px solid rgba(217, 201, 229, 0.3)',
                   }}
                 >
                   <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.4rem' }}>
@@ -216,13 +216,11 @@ export default function AnomalyCard({
                   </div>
                 </div>
               )}
-            </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
               {(anomaly.ticketSNOW || anomaly.ticketJIRA || anomaly.ticketMainteneur) && (
                 <div
                   style={{
-                    flex: 1,
+                    flex: '0 0 25%',
                     padding: '0.5rem 0.75rem',
                     backgroundColor: 'rgba(217, 201, 229, 0.15)',
                     borderRadius: '6px',
@@ -294,11 +292,11 @@ export default function AnomalyCard({
               {anomaly.hasWorkaround && (
                 <div
                   style={{
-                    flex: 1,
+                    flex: '0 0 50%',
                     padding: '0.5rem 0.75rem',
-                    backgroundColor: 'rgba(255, 193, 7, 0.15)',
+                    backgroundColor: 'rgba(217, 201, 229, 0.15)',
                     borderRadius: '6px',
-                    border: '1px solid rgba(255, 193, 7, 0.3)',
+                    border: '1px solid rgba(217, 201, 229, 0.3)',
                   }}
                 >
                   <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.4rem' }}>
