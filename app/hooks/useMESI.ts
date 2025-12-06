@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MESIItem, ApplicationName } from '../types/mesi';
+import { MESIItem } from '../types/mesi';
 
 const STORAGE_KEY = 'darut_mesi';
 
@@ -24,13 +24,11 @@ export function useMESI() {
   }, [items]);
 
   const addItem = (
-    applicationName: ApplicationName,
-    data: Omit<MESIItem, 'id' | 'applicationName' | 'createdAt' | 'updatedAt'>
+    data: Omit<MESIItem, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
     const newItem: MESIItem = {
       ...data,
       id: Date.now().toString(),
-      applicationName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -39,7 +37,7 @@ export function useMESI() {
 
   const updateItem = (
     id: string,
-    data: Omit<MESIItem, 'id' | 'applicationName' | 'createdAt' | 'updatedAt'>
+    data: Omit<MESIItem, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
     setItems(
       items.map((item) =>
@@ -54,15 +52,10 @@ export function useMESI() {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const getItemsByApp = (applicationName: ApplicationName): MESIItem[] => {
-    return items.filter((item) => item.applicationName === applicationName);
-  };
-
   return {
     items,
     addItem,
     updateItem,
     deleteItem,
-    getItemsByApp,
   };
 }

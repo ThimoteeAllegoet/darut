@@ -401,14 +401,7 @@ export default function EvenementsPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.5rem' }}>
         {/* Event List */}
-        <div
-          style={{
-            backgroundColor: 'var(--color-white)',
-            borderRadius: '8px',
-            padding: '1.5rem',
-            border: '1px solid rgba(230, 225, 219, 0.3)',
-          }}
-        >
+        <div>
           {/* Filters */}
           <div
             style={{
@@ -549,6 +542,7 @@ export default function EvenementsPage() {
                   id={`event-${event.id}`}
                   style={{
                     position: 'relative',
+                    backgroundColor: 'var(--color-white)',
                     borderRadius: '8px',
                     padding: '1rem',
                     border: highlightedId === event.id
@@ -557,39 +551,8 @@ export default function EvenementsPage() {
                     transition: 'all 0.3s',
                   }}
                 >
-                  {/* Applications badges - positioned top-right */}
-                  {event.applications && event.applications.length > 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '1rem',
-                      right: isAuthenticated ? '10rem' : '1rem',
-                      display: 'flex',
-                      gap: '0.35rem',
-                      flexWrap: 'wrap',
-                      justifyContent: 'flex-end',
-                      maxWidth: '200px',
-                    }}>
-                      {event.applications.map((app) => (
-                        <span
-                          key={app}
-                          style={{
-                            fontSize: '0.65rem',
-                            padding: '0.15rem 0.4rem',
-                            backgroundColor: 'rgba(64, 107, 222, 0.15)',
-                            color: 'var(--color-secondary-blue)',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            border: '1px solid rgba(64, 107, 222, 0.3)',
-                          }}
-                        >
-                          {app}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1, paddingRight: isAuthenticated ? '0' : '220px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                         <div
                           style={{
@@ -754,70 +717,109 @@ export default function EvenementsPage() {
                         </div>
                       )}
                     </div>
-                    {isAuthenticated && (
-                      <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                        <button
-                          onClick={() => handleEditEvent(event)}
-                          style={{
-                            padding: '0.4rem 0.8rem',
-                            backgroundColor: '#6B7280',
-                            color: 'var(--color-white)',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.35rem',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#4B5563';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#6B7280';
-                          }}
-                          title="Modifier"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                          Modifier
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          style={{
-                            padding: '0.4rem 0.8rem',
-                            backgroundColor: '#6B7280',
-                            color: 'var(--color-white)',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.35rem',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#4B5563';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#6B7280';
-                          }}
-                          title="Supprimer"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                          Supprimer
-                        </button>
-                      </div>
-                    )}
+
+                    {/* Right side container for badges and buttons */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: '0.75rem',
+                      flexShrink: 0,
+                    }}>
+                      {/* Applications badges */}
+                      {event.applications && event.applications.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          gap: '0.35rem',
+                          flexWrap: 'wrap',
+                          justifyContent: 'flex-end',
+                          maxWidth: '200px',
+                        }}>
+                          {event.applications.map((app) => (
+                            <span
+                              key={app}
+                              style={{
+                                fontSize: '0.65rem',
+                                padding: '0.15rem 0.4rem',
+                                backgroundColor: 'rgba(64, 107, 222, 0.15)',
+                                color: 'var(--color-secondary-blue)',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                border: '1px solid rgba(64, 107, 222, 0.3)',
+                              }}
+                            >
+                              {app}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Admin buttons */}
+                      {isAuthenticated && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            onClick={() => handleEditEvent(event)}
+                            style={{
+                              padding: '0.4rem 0.8rem',
+                              backgroundColor: '#6B7280',
+                              color: 'var(--color-white)',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#4B5563';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#6B7280';
+                            }}
+                            title="Modifier"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                            Modifier
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(event.id)}
+                            style={{
+                              padding: '0.4rem 0.8rem',
+                              backgroundColor: '#6B7280',
+                              color: 'var(--color-white)',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#4B5563';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#6B7280';
+                            }}
+                            title="Supprimer"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            Supprimer
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

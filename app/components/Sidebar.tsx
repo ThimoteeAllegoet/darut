@@ -29,7 +29,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       style={{
         width: '250px',
         height: '100vh',
-        backgroundColor: 'var(--color-primary-dark)',
+        backgroundColor: '#0f3032',
         color: 'var(--color-white)',
         display: 'flex',
         flexDirection: 'column',
@@ -42,24 +42,9 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <div
         style={{
           padding: '1.5rem',
-          borderBottom: '1px solid var(--color-primary-blue)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1rem',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <Image
-          src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.svg"
-          alt="France Travail"
-          width={160}
-          height={36}
-          style={{
-            objectFit: 'contain',
-            filter: 'brightness(0) invert(1)',
-          }}
-          priority
-        />
         <div style={{ textAlign: 'center', width: '100%' }}>
           <h1
             style={{
@@ -75,7 +60,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
             style={{
               fontSize: '0.75rem',
               margin: 0,
-              color: 'var(--color-light-blue)',
+              color: 'rgba(255, 255, 255, 0.6)',
             }}
           >
             Outils de suivi
@@ -95,8 +80,8 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
                 alignItems: 'center',
                 gap: '0.75rem',
                 padding: '0.75rem 1.5rem',
-                color: isActive ? 'var(--color-white)' : 'var(--color-light-blue)',
-                backgroundColor: isActive ? 'var(--color-primary-blue)' : 'transparent',
+                color: isActive ? 'var(--color-white)' : 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                 textDecoration: 'none',
                 fontSize: '0.95rem',
                 transition: 'all 0.2s',
@@ -104,14 +89,14 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.5)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                   e.currentTarget.style.color = 'var(--color-white)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--color-light-blue)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
                 }
               }}
             >
@@ -125,7 +110,27 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <div
         style={{
           padding: '1rem 1.5rem',
-          borderTop: '1px solid var(--color-primary-blue)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Image
+          src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.svg"
+          alt="France Travail"
+          width={140}
+          height={32}
+          style={{
+            objectFit: 'contain',
+            filter: 'brightness(0) invert(1)',
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          padding: '0 1.5rem 1rem 1.5rem',
         }}
       >
         {isAuthenticated ? (

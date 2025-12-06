@@ -157,13 +157,12 @@ export default function AnomaliesPage() {
         >
           {applications.map((app) => {
             const isSelected = selectedApp === app;
-            const appAnomaliesCount = getAnomaliesByApp(app).length;
             return (
               <button
                 key={app}
                 onClick={() => setSelectedApp(app)}
                 style={{
-                  padding: '0.5rem 0.85rem 0.75rem 0.85rem',
+                  padding: '0.5rem 0.85rem',
                   backgroundColor: 'transparent',
                   color: isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)',
                   border: 'none',
@@ -173,9 +172,6 @@ export default function AnomaliesPage() {
                   fontWeight: isSelected ? '700' : '600',
                   transition: 'all 0.2s',
                   whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderBottom = '2px solid var(--color-primary-dark)';
@@ -186,23 +182,7 @@ export default function AnomaliesPage() {
                   e.currentTarget.style.color = isSelected ? 'var(--color-primary-dark)' : 'rgba(40, 50, 118, 0.7)';
                 }}
               >
-                <span>{app}</span>
-                {appAnomaliesCount > 0 && (
-                  <span
-                    style={{
-                      backgroundColor: isSelected
-                        ? 'var(--color-secondary-yellow)'
-                        : 'var(--color-secondary-blue)',
-                      color: isSelected ? 'var(--color-primary-dark)' : 'var(--color-white)',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '10px',
-                      fontSize: '0.7rem',
-                      fontWeight: '700',
-                    }}
-                  >
-                    {appAnomaliesCount}
-                  </span>
-                )}
+                {app}
               </button>
             );
           })}
@@ -280,13 +260,13 @@ export default function AnomaliesPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div
                             style={{
-                              width: '52px',
-                              height: '52px',
+                              width: '39px',
+                              height: '39px',
                               position: 'relative',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '1.5rem',
+                              fontSize: '1.125rem',
                               fontWeight: '700',
                               flexShrink: 0,
                             }}

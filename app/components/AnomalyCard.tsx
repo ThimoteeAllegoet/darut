@@ -80,13 +80,13 @@ export default function AnomalyCard({
 
         <div
           style={{
-            width: '52px',
-            height: '52px',
+            width: '39px',
+            height: '39px',
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.5rem',
+            fontSize: '1.125rem',
             fontWeight: '700',
             flexShrink: 0,
           }}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MediathequeItem, ApplicationName } from '../types/mediatheque';
+import { MediathequeItem } from '../types/mediatheque';
 
 const STORAGE_KEY = 'darut_mediatheque';
 
@@ -24,13 +24,11 @@ export function useMediatheque() {
   }, [items]);
 
   const addItem = (
-    applicationName: ApplicationName,
-    data: Omit<MediathequeItem, 'id' | 'applicationName' | 'createdAt' | 'updatedAt'>
+    data: Omit<MediathequeItem, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
     const newItem: MediathequeItem = {
       ...data,
       id: Date.now().toString(),
-      applicationName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -39,7 +37,7 @@ export function useMediatheque() {
 
   const updateItem = (
     id: string,
-    data: Omit<MediathequeItem, 'id' | 'applicationName' | 'createdAt' | 'updatedAt'>
+    data: Omit<MediathequeItem, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
     setItems(
       items.map((item) =>
@@ -54,15 +52,10 @@ export function useMediatheque() {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const getItemsByApp = (applicationName: ApplicationName): MediathequeItem[] => {
-    return items.filter((item) => item.applicationName === applicationName);
-  };
-
   return {
     items,
     addItem,
     updateItem,
     deleteItem,
-    getItemsByApp,
   };
 }
