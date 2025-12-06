@@ -95,14 +95,11 @@ export default function MediathequePage() {
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '50px',
               cursor: 'pointer',
-              fontSize: '0.85rem',
+              fontSize: '0.9rem',
               fontWeight: '500',
               transition: 'background-color 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#2f4fb5';
@@ -111,10 +108,7 @@ export default function MediathequePage() {
               e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Nouvelle rubrique
+            + Nouvelle rubrique
           </button>
         )}
       </div>

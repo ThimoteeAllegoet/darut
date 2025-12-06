@@ -45,6 +45,11 @@ export default function AnomalyModal({
   const [ticketMainteneur, setTicketMainteneur] = useState('');
   const [ticketMainteneurUrl, setTicketMainteneurUrl] = useState('');
 
+  // Workaround
+  const [hasWorkaround, setHasWorkaround] = useState(false);
+  const [workaroundText, setWorkaroundText] = useState('');
+  const [workaroundUrl, setWorkaroundUrl] = useState('');
+
   // History
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -63,6 +68,9 @@ export default function AnomalyModal({
       setTicketJIRAUrl(anomaly.ticketJIRAUrl || '');
       setTicketMainteneur(anomaly.ticketMainteneur || '');
       setTicketMainteneurUrl(anomaly.ticketMainteneurUrl || '');
+      setHasWorkaround(anomaly.hasWorkaround || false);
+      setWorkaroundText(anomaly.workaroundText || '');
+      setWorkaroundUrl(anomaly.workaroundUrl || '');
       setHistory(anomaly.history || []);
     } else {
       resetForm();
@@ -82,6 +90,9 @@ export default function AnomalyModal({
     setTicketJIRAUrl('');
     setTicketMainteneur('');
     setTicketMainteneurUrl('');
+    setHasWorkaround(false);
+    setWorkaroundText('');
+    setWorkaroundUrl('');
     setHistory([]);
     setShowHistory(false);
   };
@@ -103,6 +114,9 @@ export default function AnomalyModal({
       ticketJIRAUrl,
       ticketMainteneur,
       ticketMainteneurUrl,
+      hasWorkaround,
+      workaroundText,
+      workaroundUrl,
       history,
     });
     handleClose();
@@ -355,6 +369,65 @@ export default function AnomalyModal({
                 style={inputStyle}
               />
             </div>
+          </div>
+
+          {/* Workaround section */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <input
+                id="hasWorkaround"
+                type="checkbox"
+                checked={hasWorkaround}
+                onChange={(e) => setHasWorkaround(e.target.checked)}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  marginRight: '0.5rem',
+                  cursor: 'pointer',
+                }}
+              />
+              <label
+                htmlFor="hasWorkaround"
+                style={{
+                  ...labelStyle,
+                  margin: 0,
+                  cursor: 'pointer',
+                }}
+              >
+                Possède une solution de contournement
+              </label>
+            </div>
+
+            {hasWorkaround && (
+              <div style={{ marginTop: '0.5rem', padding: '0.75rem', border: '1px solid rgba(255, 193, 7, 0.3)', borderRadius: '4px', backgroundColor: 'rgba(255, 193, 7, 0.05)' }}>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <label htmlFor="workaroundText" style={labelStyle}>
+                    Description de la solution
+                  </label>
+                  <textarea
+                    id="workaroundText"
+                    value={workaroundText}
+                    onChange={(e) => setWorkaroundText(e.target.value)}
+                    rows={2}
+                    placeholder="Décrivez la solution de contournement..."
+                    style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="workaroundUrl" style={labelStyle}>
+                    Lien vers la solution
+                  </label>
+                  <input
+                    id="workaroundUrl"
+                    type="url"
+                    value={workaroundUrl}
+                    onChange={(e) => setWorkaroundUrl(e.target.value)}
+                    placeholder="https://..."
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Historique collapsable */}

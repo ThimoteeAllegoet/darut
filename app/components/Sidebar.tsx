@@ -15,6 +15,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
 
   const allMenuItems = [
     { name: 'Anomalies', path: '/anomalies', icon: '🔧', adminOnly: false },
+    { name: 'Chantier', path: '/chantier', icon: '🏗️', adminOnly: true },
     { name: 'Clipboard', path: '/messages', icon: '📋', adminOnly: true },
     { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
     { name: 'Médiathèque', path: '/mediatheque', icon: '📚', adminOnly: false },

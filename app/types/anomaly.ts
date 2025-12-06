@@ -44,6 +44,11 @@ export interface Anomaly {
   ticketMainteneur: string;
   ticketMainteneurUrl: string;
 
+  // Workaround
+  hasWorkaround?: boolean;
+  workaroundText?: string;
+  workaroundUrl?: string;
+
   // History
   history: HistoryEntry[];
 

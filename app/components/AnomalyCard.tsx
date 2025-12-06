@@ -180,7 +180,7 @@ export default function AnomalyCard({
               {anomaly.description}
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
               {(anomaly.appearanceDate || anomaly.correctionDate || anomaly.deliveryDate) && (
                 <div
                   style={{
@@ -216,7 +216,9 @@ export default function AnomalyCard({
                   </div>
                 </div>
               )}
+            </div>
 
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
               {(anomaly.ticketSNOW || anomaly.ticketJIRA || anomaly.ticketMainteneur) && (
                 <div
                   style={{
@@ -282,6 +284,45 @@ export default function AnomalyCard({
                           onClick={(e) => !anomaly.ticketMainteneurUrl && e.preventDefault()}
                         >
                           {anomaly.ticketMainteneur}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {anomaly.hasWorkaround && (
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: 'rgba(255, 193, 7, 0.15)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 193, 7, 0.3)',
+                  }}
+                >
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.4rem' }}>
+                    SOLUTION DE CONTOURNEMENT
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
+                    {anomaly.workaroundText && (
+                      <div style={{ marginBottom: '0.3rem', lineHeight: '1.4' }}>
+                        {anomaly.workaroundText}
+                      </div>
+                    )}
+                    {anomaly.workaroundUrl && (
+                      <div>
+                        <a
+                          href={anomaly.workaroundUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'var(--color-primary-dark)',
+                            textDecoration: 'underline',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Voir la solution
                         </a>
                       </div>
                     )}
