@@ -12,7 +12,21 @@ export function useEvents() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setEvents(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Migration: ajouter les nouveaux champs si absents
+        const migrated = parsed.map((event: any) => ({
+          ...event,
+          applications: event.applications || [],
+          startTime: event.startTime || '',
+          endTime: event.endTime || '',
+          changeTicket: event.changeTicket || '',
+          changeTicketUrl: event.changeTicketUrl || '',
+          contentUrl: event.contentUrl || '',
+        }));
+        setEvents(migrated);
+        if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        }
       } catch (error) {
         console.error('Error loading events:', error);
       }

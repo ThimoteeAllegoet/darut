@@ -176,26 +176,26 @@ export default function AnomalyCard({
                     border: '1px solid rgba(176, 191, 240, 0.3)',
                   }}
                 >
-                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.4rem' }}>
                     DATES
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
                     {anomaly.appearanceDate && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>Apparition:</span>{' '}
-                        {new Date(anomaly.appearanceDate).toLocaleDateString('fr-FR')}
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '600', minWidth: '80px' }}>Apparition</span>
+                        <span>{new Date(anomaly.appearanceDate).toLocaleDateString('fr-FR')}</span>
                       </div>
                     )}
                     {anomaly.correctionDate && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>Correction:</span>{' '}
-                        {new Date(anomaly.correctionDate).toLocaleDateString('fr-FR')}
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '600', minWidth: '80px' }}>Correction</span>
+                        <span>{new Date(anomaly.correctionDate).toLocaleDateString('fr-FR')}</span>
                       </div>
                     )}
                     {anomaly.deliveryDate && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>Livraison:</span>{' '}
-                        {new Date(anomaly.deliveryDate).toLocaleDateString('fr-FR')}
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '600', minWidth: '80px' }}>Livraison</span>
+                        <span>{new Date(anomaly.deliveryDate).toLocaleDateString('fr-FR')}</span>
                       </div>
                     )}
                   </div>
@@ -212,13 +212,13 @@ export default function AnomalyCard({
                     border: '1px solid rgba(217, 201, 229, 0.3)',
                   }}
                 >
-                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.4rem' }}>
                     TICKETS
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
                     {anomaly.ticketSNOW && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>SNOW:</span>{' '}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', minWidth: '90px' }}>SNOW</span>
                         <a
                           href={anomaly.ticketSNOWUrl || '#'}
                           target="_blank"
@@ -235,8 +235,8 @@ export default function AnomalyCard({
                       </div>
                     )}
                     {anomaly.ticketJIRA && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>JIRA:</span>{' '}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', minWidth: '90px' }}>JIRA</span>
                         <a
                           href={anomaly.ticketJIRAUrl || '#'}
                           target="_blank"
@@ -253,8 +253,8 @@ export default function AnomalyCard({
                       </div>
                     )}
                     {anomaly.ticketMainteneur && (
-                      <div>
-                        <span style={{ fontWeight: '500' }}>Mainteneur:</span>{' '}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', minWidth: '90px' }}>Mainteneur</span>
                         <a
                           href={anomaly.ticketMainteneurUrl || '#'}
                           target="_blank"

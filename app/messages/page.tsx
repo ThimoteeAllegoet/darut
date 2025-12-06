@@ -123,13 +123,10 @@ export default function MessagesPage() {
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: '2rem', position: 'relative' }}>
       <div
         style={{
           marginBottom: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
         }}
       >
         <h1
@@ -142,29 +139,44 @@ export default function MessagesPage() {
         >
           Messages prédéfinis
         </h1>
+      </div>
+
+      {/* Floating Action Button - Admin only */}
+      {isAuthenticated && (
         <button
           onClick={() => setIsAddingNew(true)}
           style={{
-            padding: '0.5rem 1rem',
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
             backgroundColor: 'var(--color-secondary-blue)',
             color: 'var(--color-white)',
             border: 'none',
-            borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '500',
-            transition: 'background-color 0.2s',
+            fontSize: '1.5rem',
+            boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s',
+            zIndex: 100,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = '#2f4fb5';
+            e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
+          title="Nouveau message"
         >
-          + Nouveau message
+          +
         </button>
-      </div>
+      )}
 
       <div
         style={{

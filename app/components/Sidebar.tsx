@@ -3,6 +3,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 interface SidebarProps {
   onLoginClick: () => void;
@@ -39,6 +40,25 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           borderBottom: '1px solid var(--color-primary-blue)',
         }}
       >
+        <div
+          style={{
+            marginBottom: '1rem',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Image
+            src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.PNG"
+            alt="France Travail"
+            width={180}
+            height={40}
+            style={{
+              objectFit: 'contain',
+              filter: 'brightness(0) invert(1)',
+            }}
+            priority
+          />
+        </div>
         <h1
           style={{
             fontSize: '1.5rem',

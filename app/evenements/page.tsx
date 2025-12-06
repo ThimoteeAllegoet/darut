@@ -3,9 +3,22 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEvents } from '../hooks/useEvents';
-import { Event, EventType } from '../types/event';
+import { Event, EventType, ApplicationName } from '../types/event';
 
 const eventTypes: EventType[] = ['Incident majeur', 'Version', 'Hotfix', 'Autre'];
+
+const applicationNames: ApplicationName[] = [
+  'Bandeau',
+  'CVM',
+  'AGENDA',
+  'Weplan',
+  'GEM',
+  'Visio',
+  'Scanner',
+  'eBorne',
+  'Trace de contact',
+  'Autres',
+];
 
 const getEventColor = (type: EventType): string => {
   switch (type) {
@@ -22,6 +35,22 @@ const getEventColor = (type: EventType): string => {
   }
 };
 
+const formatDateRange = (event: Event): string => {
+  const startDate = new Date(event.startDate).toLocaleDateString('fr-FR');
+  const endDate = new Date(event.endDate).toLocaleDateString('fr-FR');
+
+  let dateStr = `${startDate} - ${endDate}`;
+
+  if (event.startTime || event.endTime) {
+    const times = [];
+    if (event.startTime) times.push(event.startTime);
+    if (event.endTime) times.push(event.endTime);
+    dateStr += ` (${times.join(' - ')})`;
+  }
+
+  return dateStr;
+};
+
 export default function EvenementsPage() {
   const { isAuthenticated } = useAuth();
   const { events, addEvent, updateEvent, deleteEvent } = useEvents();
@@ -35,6 +64,17 @@ export default function EvenementsPage() {
   const [type, setType] = useState<EventType>('Autre');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [changeTicket, setChangeTicket] = useState('');
+  const [changeTicketUrl, setChangeTicketUrl] = useState('');
+  const [contentUrl, setContentUrl] = useState('');
+  const [applications, setApplications] = useState<ApplicationName[]>([]);
+
+  // Filter state
+  const [filterType, setFilterType] = useState<EventType | 'Tous'>('Tous');
+  const [filterApp, setFilterApp] = useState<ApplicationName | 'Tous'>('Tous');
+  const [sortBy, setSortBy] = useState<'date-asc' | 'date-desc'>('date-desc');
 
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -52,6 +92,12 @@ export default function EvenementsPage() {
     setType(event.type);
     setStartDate(event.startDate);
     setEndDate(event.endDate);
+    setStartTime(event.startTime || '');
+    setEndTime(event.endTime || '');
+    setChangeTicket(event.changeTicket || '');
+    setChangeTicketUrl(event.changeTicketUrl || '');
+    setContentUrl(event.contentUrl || '');
+    setApplications(event.applications || []);
     setIsModalOpen(true);
   };
 
@@ -65,6 +111,12 @@ export default function EvenementsPage() {
         type,
         startDate,
         endDate,
+        startTime,
+        endTime,
+        changeTicket,
+        changeTicketUrl,
+        contentUrl,
+        applications,
       });
     } else {
       addEvent({
@@ -73,6 +125,12 @@ export default function EvenementsPage() {
         type,
         startDate,
         endDate,
+        startTime,
+        endTime,
+        changeTicket,
+        changeTicketUrl,
+        contentUrl,
+        applications,
       });
     }
 
@@ -86,6 +144,18 @@ export default function EvenementsPage() {
     setType('Autre');
     setStartDate('');
     setEndDate('');
+    setStartTime('');
+    setEndTime('');
+    setChangeTicket('');
+    setChangeTicketUrl('');
+    setContentUrl('');
+    setApplications([]);
+  };
+
+  const toggleApplication = (app: ApplicationName) => {
+    setApplications((prev) =>
+      prev.includes(app) ? prev.filter((a) => a !== app) : [...prev, app]
+    );
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -141,6 +211,19 @@ export default function EvenementsPage() {
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
+
+  // Filter and sort events
+  const filteredEvents = events
+    .filter((event) => {
+      if (filterType !== 'Tous' && event.type !== filterType) return false;
+      if (filterApp !== 'Tous' && !event.applications.includes(filterApp)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.startDate).getTime();
+      const dateB = new Date(b.startDate).getTime();
+      return sortBy === 'date-desc' ? dateB - dateA : dateA - dateB;
+    });
 
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDay = getFirstDayOfMonth(currentMonth);
@@ -219,7 +302,121 @@ export default function EvenementsPage() {
             Liste des événements
           </h2>
 
-          {events.length === 0 ? (
+          {/* Filters */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.75rem',
+              marginBottom: '1.25rem',
+              padding: '1rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              borderRadius: '6px',
+              border: '1px solid rgba(230, 225, 219, 0.5)',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '0.7rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '600',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                Type
+              </label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as EventType | 'Tous')}
+                style={{
+                  width: '100%',
+                  padding: '0.4rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  backgroundColor: 'var(--color-white)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                <option value="Tous">Tous</option>
+                {eventTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '0.7rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '600',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                Application
+              </label>
+              <select
+                value={filterApp}
+                onChange={(e) => setFilterApp(e.target.value as ApplicationName | 'Tous')}
+                style={{
+                  width: '100%',
+                  padding: '0.4rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  backgroundColor: 'var(--color-white)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                <option value="Tous">Tous</option>
+                {applicationNames.map((app) => (
+                  <option key={app} value={app}>
+                    {app}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '0.7rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '600',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                Tri
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'date-asc' | 'date-desc')}
+                style={{
+                  width: '100%',
+                  padding: '0.4rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  backgroundColor: 'var(--color-white)',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                <option value="date-desc">Plus récent</option>
+                <option value="date-asc">Plus ancien</option>
+              </select>
+            </div>
+          </div>
+
+          {filteredEvents.length === 0 ? (
             <div
               style={{
                 textAlign: 'center',
@@ -229,9 +426,9 @@ export default function EvenementsPage() {
             >
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
               <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
-                Aucun événement enregistré
+                {events.length === 0 ? 'Aucun événement enregistré' : 'Aucun événement ne correspond aux filtres'}
               </p>
-              {isAuthenticated && (
+              {isAuthenticated && events.length === 0 && (
                 <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
                   Cliquez sur "Nouvel événement" pour en ajouter un
                 </p>
@@ -239,145 +436,227 @@ export default function EvenementsPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {events
-                .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
-                .map((event) => (
-                  <div
-                    key={event.id}
-                    id={`event-${event.id}`}
-                    style={{
-                      backgroundColor: highlightedId === event.id ? 'rgba(64, 107, 222, 0.1)' : 'rgba(255, 255, 255, 0.6)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '8px',
-                      padding: '1rem',
-                      border: highlightedId === event.id
-                        ? '2px solid var(--color-secondary-blue)'
-                        : '1px solid rgba(230, 225, 219, 0.5)',
-                      boxShadow: highlightedId === event.id
-                        ? '0 4px 12px rgba(64, 107, 222, 0.2)'
-                        : '0 1px 3px rgba(29, 30, 60, 0.08)',
-                      transition: 'all 0.3s',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                          <div
-                            style={{
-                              width: '12px',
-                              height: '12px',
-                              borderRadius: '50%',
-                              backgroundColor: getEventColor(event.type),
-                            }}
-                          />
-                          <h3
-                            style={{
-                              fontSize: '1rem',
-                              fontWeight: '600',
-                              color: 'var(--color-primary-dark)',
-                              margin: 0,
-                            }}
-                          >
-                            {event.title}
-                          </h3>
-                          <span
-                            style={{
-                              fontSize: '0.7rem',
-                              padding: '0.15rem 0.5rem',
-                              backgroundColor: getEventColor(event.type),
-                              color: 'var(--color-white)',
-                              borderRadius: '10px',
-                              fontWeight: '600',
-                            }}
-                          >
-                            {event.type}
-                          </span>
-                        </div>
-                        {event.description && (
-                          <p
-                            style={{
-                              fontSize: '0.85rem',
-                              color: 'var(--color-primary-blue)',
-                              margin: '0 0 0.5rem 0',
-                            }}
-                          >
-                            {event.description}
-                          </p>
-                        )}
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
-                          <span style={{ fontWeight: '500' }}>Du:</span>{' '}
-                          {new Date(event.startDate).toLocaleDateString('fr-FR')}
-                          {' '}<span style={{ fontWeight: '500' }}>au:</span>{' '}
-                          {new Date(event.endDate).toLocaleDateString('fr-FR')}
-                        </div>
+              {filteredEvents.map((event) => (
+                <div
+                  key={event.id}
+                  id={`event-${event.id}`}
+                  style={{
+                    backgroundColor: highlightedId === event.id ? 'rgba(64, 107, 222, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    border: highlightedId === event.id
+                      ? '2px solid var(--color-secondary-blue)'
+                      : '1px solid rgba(230, 225, 219, 0.5)',
+                    boxShadow: highlightedId === event.id
+                      ? '0 4px 12px rgba(64, 107, 222, 0.2)'
+                      : '0 1px 3px rgba(29, 30, 60, 0.08)',
+                    transition: 'all 0.3s',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <div
+                          style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            backgroundColor: getEventColor(event.type),
+                          }}
+                        />
+                        <h3
+                          style={{
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            color: 'var(--color-primary-dark)',
+                            margin: 0,
+                          }}
+                        >
+                          {event.title}
+                        </h3>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            padding: '0.15rem 0.5rem',
+                            backgroundColor: getEventColor(event.type),
+                            color: 'var(--color-white)',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {event.type}
+                        </span>
                       </div>
-                      {isAuthenticated && (
-                        <div style={{ display: 'flex', gap: '0.25rem', marginLeft: '1rem' }}>
-                          <button
-                            onClick={() => handleEditEvent(event)}
+
+                      {/* Applications badges */}
+                      {event.applications && event.applications.length > 0 && (
+                        <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          {event.applications.map((app) => (
+                            <span
+                              key={app}
+                              style={{
+                                fontSize: '0.65rem',
+                                padding: '0.15rem 0.4rem',
+                                backgroundColor: 'rgba(64, 107, 222, 0.15)',
+                                color: 'var(--color-secondary-blue)',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                border: '1px solid rgba(64, 107, 222, 0.3)',
+                              }}
+                            >
+                              {app}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {event.description && (
+                        <p
+                          style={{
+                            fontSize: '0.85rem',
+                            color: 'var(--color-primary-blue)',
+                            margin: '0 0 0.5rem 0',
+                          }}
+                        >
+                          {event.description}
+                        </p>
+                      )}
+
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', marginBottom: '0.5rem' }}>
+                        <span style={{ fontWeight: '500' }}>Du:</span>{' '}
+                        {new Date(event.startDate).toLocaleDateString('fr-FR')}
+                        {event.startTime && ` à ${event.startTime}`}
+                        {' '}<span style={{ fontWeight: '500' }}>au:</span>{' '}
+                        {new Date(event.endDate).toLocaleDateString('fr-FR')}
+                        {event.endTime && ` à ${event.endTime}`}
+                      </div>
+
+                      {/* Change ticket link */}
+                      {event.changeTicket && (
+                        <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                            Change ticket:{' '}
+                          </span>
+                          {event.changeTicketUrl ? (
+                            <a
+                              href={event.changeTicketUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: 'var(--color-secondary-blue)',
+                                textDecoration: 'underline',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {event.changeTicket}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--color-primary-blue)' }}>
+                              {event.changeTicket}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Content URL button (only for Version and Hotfix) */}
+                      {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
+                        <div>
+                          <a
+                            href={event.contentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             style={{
-                              width: '28px',
-                              height: '28px',
-                              backgroundColor: 'transparent',
-                              color: 'rgba(40, 50, 118, 0.5)',
-                              border: '1px solid rgba(40, 50, 118, 0.2)',
+                              display: 'inline-block',
+                              padding: '0.35rem 0.75rem',
+                              backgroundColor: 'var(--color-secondary-blue)',
+                              color: 'var(--color-white)',
+                              border: 'none',
                               borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.85rem',
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              textDecoration: 'none',
+                              transition: 'background-color 0.2s',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.1)';
-                              e.currentTarget.style.color = 'var(--color-secondary-blue)';
-                              e.currentTarget.style.borderColor = 'var(--color-secondary-blue)';
+                              e.currentTarget.style.backgroundColor = '#2f4fb5';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.color = 'rgba(40, 50, 118, 0.5)';
-                              e.currentTarget.style.borderColor = 'rgba(40, 50, 118, 0.2)';
+                              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
                             }}
-                            title="Modifier"
                           >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(event.id)}
-                            style={{
-                              width: '28px',
-                              height: '28px',
-                              backgroundColor: 'transparent',
-                              color: 'rgba(217, 36, 36, 0.5)',
-                              border: '1px solid rgba(217, 36, 36, 0.2)',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '0.85rem',
-                              transition: 'all 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'rgba(217, 36, 36, 0.1)';
-                              e.currentTarget.style.color = 'var(--color-accent-red)';
-                              e.currentTarget.style.borderColor = 'var(--color-accent-red)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.color = 'rgba(217, 36, 36, 0.5)';
-                              e.currentTarget.style.borderColor = 'rgba(217, 36, 36, 0.2)';
-                            }}
-                            title="Supprimer"
-                          >
-                            🗑️
-                          </button>
+                            Voir le contenu
+                          </a>
                         </div>
                       )}
                     </div>
+                    {isAuthenticated && (
+                      <div style={{ display: 'flex', gap: '0.25rem', marginLeft: '1rem' }}>
+                        <button
+                          onClick={() => handleEditEvent(event)}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            backgroundColor: 'transparent',
+                            color: 'rgba(40, 50, 118, 0.5)',
+                            border: '1px solid rgba(40, 50, 118, 0.2)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.1)';
+                            e.currentTarget.style.color = 'var(--color-secondary-blue)';
+                            e.currentTarget.style.borderColor = 'var(--color-secondary-blue)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = 'rgba(40, 50, 118, 0.5)';
+                            e.currentTarget.style.borderColor = 'rgba(40, 50, 118, 0.2)';
+                          }}
+                          title="Modifier"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            backgroundColor: 'transparent',
+                            color: 'rgba(217, 36, 36, 0.5)',
+                            border: '1px solid rgba(217, 36, 36, 0.2)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(217, 36, 36, 0.1)';
+                            e.currentTarget.style.color = 'var(--color-accent-red)';
+                            e.currentTarget.style.borderColor = 'var(--color-accent-red)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = 'rgba(217, 36, 36, 0.5)';
+                            e.currentTarget.style.borderColor = 'rgba(217, 36, 36, 0.2)';
+                          }}
+                          title="Supprimer"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -528,7 +807,15 @@ export default function EvenementsPage() {
                                 }}
                               >
                                 <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{event.title}</div>
-                                <div>{event.type}</div>
+                                <div style={{ marginBottom: '0.15rem' }}>{event.type}</div>
+                                <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
+                                  {formatDateRange(event)}
+                                </div>
+                                {event.applications && event.applications.length > 0 && (
+                                  <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
+                                    {event.applications.join(', ')}
+                                  </div>
+                                )}
                                 <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
                                   Cliquer pour voir le détail
                                 </div>
@@ -572,14 +859,16 @@ export default function EvenementsPage() {
               borderRadius: '8px',
               padding: '1.5rem',
               width: '100%',
-              maxWidth: '500px',
+              maxWidth: '600px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h2
               style={{
-                margin: '0 0 1rem 0',
+                margin: '0 0 1.25rem 0',
                 fontSize: '1.25rem',
                 color: 'var(--color-primary-dark)',
               }}
@@ -587,6 +876,7 @@ export default function EvenementsPage() {
               {editingEvent ? 'Modifier l\'événement' : 'Nouvel événement'}
             </h2>
 
+            {/* Title */}
             <div style={{ marginBottom: '0.75rem' }}>
               <label
                 style={{
@@ -615,6 +905,7 @@ export default function EvenementsPage() {
               />
             </div>
 
+            {/* Description */}
             <div style={{ marginBottom: '0.75rem' }}>
               <label
                 style={{
@@ -644,6 +935,7 @@ export default function EvenementsPage() {
               />
             </div>
 
+            {/* Type selector */}
             <div style={{ marginBottom: '0.75rem' }}>
               <label
                 style={{
@@ -680,7 +972,51 @@ export default function EvenementsPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+            {/* Applications multi-select */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Applications
+              </label>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {applicationNames.map((app) => (
+                  <button
+                    key={app}
+                    type="button"
+                    onClick={() => toggleApplication(app)}
+                    style={{
+                      padding: '0.3rem 0.6rem',
+                      backgroundColor: applications.includes(app)
+                        ? 'var(--color-secondary-blue)'
+                        : 'rgba(176, 191, 240, 0.2)',
+                      color: applications.includes(app)
+                        ? 'var(--color-white)'
+                        : 'var(--color-primary-dark)',
+                      border: applications.includes(app)
+                        ? 'none'
+                        : '1px solid rgba(176, 191, 240, 0.4)',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontSize: '0.7rem',
+                      fontWeight: '500',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {app}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date and Time fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <div>
                 <label
                   style={{
@@ -734,6 +1070,149 @@ export default function EvenementsPage() {
                 />
               </div>
             </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--color-primary-dark)',
+                    fontWeight: '500',
+                  }}
+                >
+                  Heure de début
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '2px solid var(--color-neutral-beige)',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--color-primary-dark)',
+                    fontWeight: '500',
+                  }}
+                >
+                  Heure de fin
+                </label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '2px solid var(--color-neutral-beige)',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Change Ticket */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Change ticket
+              </label>
+              <input
+                type="text"
+                value={changeTicket}
+                onChange={(e) => setChangeTicket(e.target.value)}
+                placeholder="Ex: CHG0012345"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Change ticket URL
+              </label>
+              <input
+                type="url"
+                value={changeTicketUrl}
+                onChange={(e) => setChangeTicketUrl(e.target.value)}
+                placeholder="https://..."
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            {/* Content URL (only for Version and Hotfix) */}
+            {(type === 'Version' || type === 'Hotfix') && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--color-primary-dark)',
+                    fontWeight: '500',
+                  }}
+                >
+                  URL du contenu
+                </label>
+                <input
+                  type="url"
+                  value={contentUrl}
+                  onChange={(e) => setContentUrl(e.target.value)}
+                  placeholder="https://..."
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    border: '2px solid var(--color-neutral-beige)',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button
