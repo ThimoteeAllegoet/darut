@@ -165,10 +165,11 @@ export default function AnomalyCard({
               {anomaly.description}
             </p>
 
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
               {(anomaly.appearanceDate || anomaly.correctionDate || anomaly.deliveryDate) && (
                 <div
                   style={{
+                    flex: 1,
                     padding: '0.5rem 0.75rem',
                     backgroundColor: 'rgba(176, 191, 240, 0.15)',
                     borderRadius: '6px',
@@ -204,6 +205,7 @@ export default function AnomalyCard({
               {(anomaly.ticketSNOW || anomaly.ticketJIRA || anomaly.ticketMainteneur) && (
                 <div
                   style={{
+                    flex: 1,
                     padding: '0.5rem 0.75rem',
                     backgroundColor: 'rgba(217, 201, 229, 0.15)',
                     borderRadius: '6px',
@@ -213,51 +215,60 @@ export default function AnomalyCard({
                   <div style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
                     TICKETS
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
                     {anomaly.ticketSNOW && (
-                      <a
-                        href={anomaly.ticketSNOWUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'var(--color-primary-dark)',
-                          textDecoration: 'underline',
-                          fontWeight: '500',
-                        }}
-                        onClick={(e) => !anomaly.ticketSNOWUrl && e.preventDefault()}
-                      >
-                        SNOW: {anomaly.ticketSNOW}
-                      </a>
+                      <div>
+                        <span style={{ fontWeight: '500' }}>SNOW:</span>{' '}
+                        <a
+                          href={anomaly.ticketSNOWUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'var(--color-primary-dark)',
+                            textDecoration: 'underline',
+                            fontWeight: '500',
+                          }}
+                          onClick={(e) => !anomaly.ticketSNOWUrl && e.preventDefault()}
+                        >
+                          {anomaly.ticketSNOW}
+                        </a>
+                      </div>
                     )}
                     {anomaly.ticketJIRA && (
-                      <a
-                        href={anomaly.ticketJIRAUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'var(--color-primary-dark)',
-                          textDecoration: 'underline',
-                          fontWeight: '500',
-                        }}
-                        onClick={(e) => !anomaly.ticketJIRAUrl && e.preventDefault()}
-                      >
-                        JIRA: {anomaly.ticketJIRA}
-                      </a>
+                      <div>
+                        <span style={{ fontWeight: '500' }}>JIRA:</span>{' '}
+                        <a
+                          href={anomaly.ticketJIRAUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'var(--color-primary-dark)',
+                            textDecoration: 'underline',
+                            fontWeight: '500',
+                          }}
+                          onClick={(e) => !anomaly.ticketJIRAUrl && e.preventDefault()}
+                        >
+                          {anomaly.ticketJIRA}
+                        </a>
+                      </div>
                     )}
                     {anomaly.ticketMainteneur && (
-                      <a
-                        href={anomaly.ticketMainteneurUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'var(--color-primary-dark)',
-                          textDecoration: 'underline',
-                          fontWeight: '500',
-                        }}
-                        onClick={(e) => !anomaly.ticketMainteneurUrl && e.preventDefault()}
-                      >
-                        Mainteneur: {anomaly.ticketMainteneur}
-                      </a>
+                      <div>
+                        <span style={{ fontWeight: '500' }}>Mainteneur:</span>{' '}
+                        <a
+                          href={anomaly.ticketMainteneurUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'var(--color-primary-dark)',
+                            textDecoration: 'underline',
+                            fontWeight: '500',
+                          }}
+                          onClick={(e) => !anomaly.ticketMainteneurUrl && e.preventDefault()}
+                        >
+                          {anomaly.ticketMainteneur}
+                        </a>
+                      </div>
                     )}
                   </div>
                 </div>

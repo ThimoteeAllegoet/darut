@@ -74,8 +74,23 @@ export function useAnomalies() {
   };
 
   const deleteAnomaly = (id: string) => {
-    const filtered = anomalies.filter((a) => a.id !== id);
-    saveAnomalies(filtered);
+    const anomalyToDelete = anomalies.find((a) => a.id === id);
+    if (!anomalyToDelete) return;
+
+    const appAnomalies = anomalies.filter((a) => a.applicationName === anomalyToDelete.applicationName);
+    const filtered = appAnomalies.filter((a) => a.id !== id);
+
+    // Réorganiser les priorités pour qu'elles soient contigües
+    const reindexed = filtered
+      .sort((a, b) => a.priority - b.priority)
+      .map((anomaly, index) => ({
+        ...anomaly,
+        priority: index + 1,
+        updatedAt: new Date().toISOString(),
+      }));
+
+    const otherAnomalies = anomalies.filter((a) => a.applicationName !== anomalyToDelete.applicationName);
+    saveAnomalies([...otherAnomalies, ...reindexed]);
   };
 
   const reorderAnomalies = (applicationName: ApplicationName, reorderedAnomalies: Anomaly[]) => {

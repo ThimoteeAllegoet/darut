@@ -15,6 +15,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
   const menuItems = [
     { name: 'Anomalies', path: '/anomalies', icon: '⚠️' },
     { name: 'Messages', path: '/messages', icon: '💬' },
+    { name: 'Événements', path: '/evenements', icon: '📅' },
   ];
 
   return (

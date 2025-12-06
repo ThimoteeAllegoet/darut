@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PredefinedMessage {
   id: string;
@@ -16,12 +17,35 @@ const defaultMessages: PredefinedMessage[] = [
   },
 ];
 
+const STORAGE_KEY = 'darut_messages';
+
 export default function MessagesPage() {
-  const [messages, setMessages] = useState<PredefinedMessage[]>(defaultMessages);
+  const { isAuthenticated } = useAuth();
+  const [messages, setMessages] = useState<PredefinedMessage[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState('');
   const [newContent, setNewContent] = useState('');
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        setMessages(JSON.parse(stored));
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        setMessages(defaultMessages);
+      }
+    } else {
+      setMessages(defaultMessages);
+    }
+  }, []);
+
+  const saveMessages = (msgs: PredefinedMessage[]) => {
+    setMessages(msgs);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
+  };
 
   const handleCopy = async (message: PredefinedMessage) => {
     try {
@@ -36,23 +60,67 @@ export default function MessagesPage() {
   const handleAddMessage = () => {
     if (!newLabel.trim() || !newContent.trim()) return;
 
-    const newMessage: PredefinedMessage = {
-      id: Date.now().toString(),
-      label: newLabel,
-      content: newContent,
-    };
+    if (editingId) {
+      const updated = messages.map((m) =>
+        m.id === editingId ? { ...m, label: newLabel, content: newContent } : m
+      );
+      saveMessages(updated);
+      setEditingId(null);
+    } else {
+      const newMessage: PredefinedMessage = {
+        id: Date.now().toString(),
+        label: newLabel,
+        content: newContent,
+      };
+      saveMessages([...messages, newMessage]);
+    }
 
-    setMessages([...messages, newMessage]);
     setNewLabel('');
     setNewContent('');
     setIsAddingNew(false);
   };
 
+  const handleEditMessage = (message: PredefinedMessage) => {
+    setEditingId(message.id);
+    setNewLabel(message.label);
+    setNewContent(message.content);
+    setIsAddingNew(true);
+  };
+
   const handleDeleteMessage = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
-      setMessages(messages.filter((m) => m.id !== id));
+      saveMessages(messages.filter((m) => m.id !== id));
     }
   };
+
+  const handleCancel = () => {
+    setIsAddingNew(false);
+    setEditingId(null);
+    setNewLabel('');
+    setNewContent('');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '3rem 1rem',
+            color: 'var(--color-primary-blue)',
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+          <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
+            Accès restreint
+          </p>
+          <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            Vous devez être en mode administration pour accéder aux messages prédéfinis
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -181,11 +249,7 @@ export default function MessagesPage() {
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button
-                onClick={() => {
-                  setIsAddingNew(false);
-                  setNewLabel('');
-                  setNewContent('');
-                }}
+                onClick={handleCancel}
                 style={{
                   padding: '0.5rem 1rem',
                   backgroundColor: 'var(--color-neutral-beige)',
@@ -212,13 +276,13 @@ export default function MessagesPage() {
                   fontWeight: '500',
                 }}
               >
-                Ajouter
+                {editingId ? 'Modifier' : 'Ajouter'}
               </button>
             </div>
           </div>
         )}
 
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
           {messages.map((message) => (
             <div
               key={message.id}
@@ -226,22 +290,24 @@ export default function MessagesPage() {
                 backgroundColor: 'rgba(255, 255, 255, 0.6)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '8px',
-                padding: '1rem',
+                padding: '0.75rem',
                 border: '1px solid rgba(230, 225, 219, 0.5)',
                 boxShadow: '0 1px 3px rgba(29, 30, 60, 0.08)',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'flex-start',
+                  alignItems: 'center',
                   marginBottom: '0.5rem',
                 }}
               >
                 <h3
                   style={{
-                    fontSize: '1rem',
+                    fontSize: '0.85rem',
                     fontWeight: '600',
                     color: 'var(--color-primary-dark)',
                     margin: 0,
@@ -251,35 +317,46 @@ export default function MessagesPage() {
                 </h3>
                 <div style={{ display: 'flex', gap: '0.25rem' }}>
                   <button
-                    onClick={() => handleCopy(message)}
+                    onClick={() => handleEditMessage(message)}
                     style={{
-                      padding: '0.4rem 0.75rem',
-                      backgroundColor:
-                        copiedId === message.id
-                          ? 'var(--color-accent-green)'
-                          : 'var(--color-secondary-blue)',
-                      color: 'var(--color-white)',
-                      border: 'none',
+                      width: '24px',
+                      height: '24px',
+                      backgroundColor: 'transparent',
+                      color: 'rgba(40, 50, 118, 0.5)',
+                      border: '1px solid rgba(40, 50, 118, 0.2)',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontSize: '0.8rem',
-                      fontWeight: '500',
-                      transition: 'background-color 0.2s',
+                      fontSize: '0.75rem',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(40, 50, 118, 0.1)';
+                      e.currentTarget.style.color = 'var(--color-secondary-blue)';
+                      e.currentTarget.style.borderColor = 'var(--color-secondary-blue)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = 'rgba(40, 50, 118, 0.5)';
+                      e.currentTarget.style.borderColor = 'rgba(40, 50, 118, 0.2)';
+                    }}
+                    title="Modifier"
                   >
-                    {copiedId === message.id ? 'Copié !' : 'Copier'}
+                    ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteMessage(message.id)}
                     style={{
-                      width: '28px',
-                      height: '28px',
+                      width: '24px',
+                      height: '24px',
                       backgroundColor: 'transparent',
                       color: 'rgba(217, 36, 36, 0.5)',
                       border: '1px solid rgba(217, 36, 36, 0.2)',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontSize: '0.85rem',
+                      fontSize: '0.75rem',
                       transition: 'all 0.2s',
                       display: 'flex',
                       alignItems: 'center',
@@ -303,15 +380,39 @@ export default function MessagesPage() {
               </div>
               <p
                 style={{
-                  fontSize: '0.85rem',
+                  fontSize: '0.75rem',
                   color: 'var(--color-primary-blue)',
                   margin: 0,
-                  lineHeight: '1.5',
-                  whiteSpace: 'pre-wrap',
+                  marginBottom: '0.5rem',
+                  lineHeight: '1.4',
+                  flex: 1,
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
                 }}
               >
                 {message.content}
               </p>
+              <button
+                onClick={() => handleCopy(message)}
+                style={{
+                  padding: '0.4rem',
+                  backgroundColor:
+                    copiedId === message.id
+                      ? 'var(--color-accent-green)'
+                      : 'var(--color-secondary-blue)',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s',
+                }}
+              >
+                {copiedId === message.id ? '✓ Copié !' : 'Copier'}
+              </button>
             </div>
           ))}
         </div>
