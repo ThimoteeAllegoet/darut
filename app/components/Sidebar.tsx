@@ -13,11 +13,14 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
   const { mode, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
 
-  const menuItems = [
-    { name: 'Anomalies', path: '/anomalies', icon: '⚠️' },
-    { name: 'Messages', path: '/messages', icon: '💬' },
-    { name: 'Événements', path: '/evenements', icon: '📅' },
+  const allMenuItems = [
+    { name: 'Anomalies', path: '/anomalies', icon: '⚠️', adminOnly: false },
+    { name: 'Messages', path: '/messages', icon: '💬', adminOnly: true },
+    { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
+    { name: 'Recherche CVM', path: '/recherche-cvm', icon: '🔍', adminOnly: true },
   ];
+
+  const menuItems = allMenuItems.filter(item => !item.adminOnly || isAuthenticated);
 
   return (
     <aside
@@ -42,33 +45,34 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       >
         <div
           style={{
-            marginBottom: '1rem',
             display: 'flex',
-            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginBottom: '0.5rem',
           }}
         >
           <Image
             src="/images/Bloc_Marque_RF_France_Travail_RVB_Horizontal_Gris.PNG"
             alt="France Travail"
-            width={180}
-            height={40}
+            width={80}
+            height={18}
             style={{
               objectFit: 'contain',
               filter: 'brightness(0) invert(1)',
             }}
             priority
           />
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              margin: 0,
+              color: 'var(--color-white)',
+            }}
+          >
+            DARUT
+          </h1>
         </div>
-        <h1
-          style={{
-            fontSize: '1.5rem',
-            fontWeight: '600',
-            margin: 0,
-            color: 'var(--color-white)',
-          }}
-        >
-          DARUT
-        </h1>
         <p
           style={{
             fontSize: '0.75rem',

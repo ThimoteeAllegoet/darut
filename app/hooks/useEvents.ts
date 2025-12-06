@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Event, EventType } from '../types/event';
+import { Event, EventType, EventPeriod } from '../types/event';
 
 const STORAGE_KEY = 'darut_events';
 
@@ -13,16 +13,35 @@ export function useEvents() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        // Migration: ajouter les nouveaux champs si absents
-        const migrated = parsed.map((event: any) => ({
-          ...event,
-          applications: event.applications || [],
-          startTime: event.startTime || '',
-          endTime: event.endTime || '',
-          changeTicket: event.changeTicket || '',
-          changeTicketUrl: event.changeTicketUrl || '',
-          contentUrl: event.contentUrl || '',
-        }));
+        // Migration: convert old single-period events to multi-period format
+        const migrated = parsed.map((event: any) => {
+          let periods: EventPeriod[] = event.periods || [];
+
+          // If event has legacy startDate/endDate but no periods, migrate to periods array
+          if ((!periods || periods.length === 0) && event.startDate && event.endDate) {
+            periods = [{
+              id: Date.now().toString(),
+              startDate: event.startDate,
+              endDate: event.endDate,
+              startTime: event.startTime || undefined,
+              endTime: event.endTime || undefined,
+            }];
+          }
+
+          return {
+            ...event,
+            periods,
+            applications: event.applications || [],
+            // Keep legacy fields for backward compatibility
+            startDate: event.startDate || (periods[0]?.startDate),
+            endDate: event.endDate || (periods[0]?.endDate),
+            startTime: event.startTime || '',
+            endTime: event.endTime || '',
+            changeTicket: event.changeTicket || '',
+            changeTicketUrl: event.changeTicketUrl || '',
+            contentUrl: event.contentUrl || '',
+          };
+        });
         setEvents(migrated);
         if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));

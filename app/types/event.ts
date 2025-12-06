@@ -12,13 +12,23 @@ export type ApplicationName =
   | 'Trace de contact'
   | 'Autres';
 
+export interface EventPeriod {
+  id: string;
+  startDate: string;
+  endDate: string;
+  startTime?: string;
+  endTime?: string;
+}
+
 export interface Event {
   id: string;
   title: string;
   description: string;
   type: EventType;
-  startDate: string;
-  endDate: string;
+  periods: EventPeriod[];
+  // Legacy fields for backward compatibility
+  startDate?: string;
+  endDate?: string;
   startTime?: string;
   endTime?: string;
   changeTicket?: string;

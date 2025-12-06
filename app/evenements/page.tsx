@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEvents } from '../hooks/useEvents';
-import { Event, EventType, ApplicationName } from '../types/event';
+import { Event, EventType, ApplicationName, EventPeriod } from '../types/event';
 
 const eventTypes: EventType[] = ['Incident majeur', 'Version', 'Hotfix', 'Autre'];
 
@@ -35,16 +35,16 @@ const getEventColor = (type: EventType): string => {
   }
 };
 
-const formatDateRange = (event: Event): string => {
-  const startDate = new Date(event.startDate).toLocaleDateString('fr-FR');
-  const endDate = new Date(event.endDate).toLocaleDateString('fr-FR');
+const formatDateRange = (period: EventPeriod): string => {
+  const startDate = new Date(period.startDate).toLocaleDateString('fr-FR');
+  const endDate = new Date(period.endDate).toLocaleDateString('fr-FR');
 
   let dateStr = `${startDate} - ${endDate}`;
 
-  if (event.startTime || event.endTime) {
+  if (period.startTime || period.endTime) {
     const times = [];
-    if (event.startTime) times.push(event.startTime);
-    if (event.endTime) times.push(event.endTime);
+    if (period.startTime) times.push(period.startTime);
+    if (period.endTime) times.push(period.endTime);
     dateStr += ` (${times.join(' - ')})`;
   }
 
@@ -62,10 +62,13 @@ export default function EvenementsPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<EventType>('Autre');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [periods, setPeriods] = useState<EventPeriod[]>([{
+    id: Date.now().toString(),
+    startDate: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
+  }]);
   const [changeTicket, setChangeTicket] = useState('');
   const [changeTicketUrl, setChangeTicketUrl] = useState('');
   const [contentUrl, setContentUrl] = useState('');
@@ -90,10 +93,13 @@ export default function EvenementsPage() {
     setTitle(event.title);
     setDescription(event.description);
     setType(event.type);
-    setStartDate(event.startDate);
-    setEndDate(event.endDate);
-    setStartTime(event.startTime || '');
-    setEndTime(event.endTime || '');
+    setPeriods(event.periods.length > 0 ? event.periods.map(p => ({ ...p })) : [{
+      id: Date.now().toString(),
+      startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
+    }]);
     setChangeTicket(event.changeTicket || '');
     setChangeTicketUrl(event.changeTicketUrl || '');
     setContentUrl(event.contentUrl || '');
@@ -102,36 +108,32 @@ export default function EvenementsPage() {
   };
 
   const handleSaveEvent = () => {
-    if (!title.trim() || !startDate || !endDate) return;
+    if (!title.trim()) return;
+
+    // Validate at least one period with dates
+    const validPeriods = periods.filter(p => p.startDate && p.endDate);
+    if (validPeriods.length === 0) return;
+
+    const eventData = {
+      title,
+      description,
+      type,
+      periods: validPeriods,
+      // Set legacy fields to first period for backward compatibility
+      startDate: validPeriods[0].startDate,
+      endDate: validPeriods[0].endDate,
+      startTime: validPeriods[0].startTime,
+      endTime: validPeriods[0].endTime,
+      changeTicket,
+      changeTicketUrl,
+      contentUrl,
+      applications,
+    };
 
     if (editingEvent) {
-      updateEvent(editingEvent.id, {
-        title,
-        description,
-        type,
-        startDate,
-        endDate,
-        startTime,
-        endTime,
-        changeTicket,
-        changeTicketUrl,
-        contentUrl,
-        applications,
-      });
+      updateEvent(editingEvent.id, eventData);
     } else {
-      addEvent({
-        title,
-        description,
-        type,
-        startDate,
-        endDate,
-        startTime,
-        endTime,
-        changeTicket,
-        changeTicketUrl,
-        contentUrl,
-        applications,
-      });
+      addEvent(eventData);
     }
 
     setIsModalOpen(false);
@@ -142,10 +144,13 @@ export default function EvenementsPage() {
     setTitle('');
     setDescription('');
     setType('Autre');
-    setStartDate('');
-    setEndDate('');
-    setStartTime('');
-    setEndTime('');
+    setPeriods([{
+      id: Date.now().toString(),
+      startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
+    }]);
     setChangeTicket('');
     setChangeTicketUrl('');
     setContentUrl('');
@@ -175,6 +180,29 @@ export default function EvenementsPage() {
     }
   };
 
+  // Period management functions
+  const addPeriod = () => {
+    setPeriods([...periods, {
+      id: Date.now().toString(),
+      startDate: '',
+      endDate: '',
+      startTime: '',
+      endTime: '',
+    }]);
+  };
+
+  const removePeriod = (periodId: string) => {
+    if (periods.length > 1) {
+      setPeriods(periods.filter(p => p.id !== periodId));
+    }
+  };
+
+  const updatePeriod = (periodId: string, field: keyof EventPeriod, value: string) => {
+    setPeriods(periods.map(p =>
+      p.id === periodId ? { ...p, [field]: value } : p
+    ));
+  };
+
   // Calendar rendering logic
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -195,7 +223,10 @@ export default function EvenementsPage() {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
     return events.filter((event) => {
-      return dateStr >= event.startDate && dateStr <= event.endDate;
+      // Check if the date falls within any of the event's periods
+      return event.periods.some(period =>
+        dateStr >= period.startDate && dateStr <= period.endDate
+      );
     });
   };
 
@@ -220,8 +251,9 @@ export default function EvenementsPage() {
       return true;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.startDate).getTime();
-      const dateB = new Date(b.startDate).getTime();
+      // Use first period for sorting
+      const dateA = a.periods.length > 0 ? new Date(a.periods[0].startDate).getTime() : 0;
+      const dateB = b.periods.length > 0 ? new Date(b.periods[0].startDate).getTime() : 0;
       return sortBy === 'date-desc' ? dateB - dateA : dateA - dateB;
     });
 
@@ -523,13 +555,38 @@ export default function EvenementsPage() {
                         </p>
                       )}
 
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', marginBottom: '0.5rem' }}>
-                        <span style={{ fontWeight: '500' }}>Du:</span>{' '}
-                        {new Date(event.startDate).toLocaleDateString('fr-FR')}
-                        {event.startTime && ` à ${event.startTime}`}
-                        {' '}<span style={{ fontWeight: '500' }}>au:</span>{' '}
-                        {new Date(event.endDate).toLocaleDateString('fr-FR')}
-                        {event.endTime && ` à ${event.endTime}`}
+                      {/* Display all periods */}
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        {event.periods && event.periods.length > 0 ? (
+                          event.periods.map((period, index) => (
+                            <div
+                              key={period.id}
+                              style={{
+                                fontSize: '0.75rem',
+                                color: 'var(--color-primary-blue)',
+                                marginBottom: index < event.periods.length - 1 ? '0.25rem' : '0',
+                                paddingLeft: event.periods.length > 1 ? '0.5rem' : '0',
+                                borderLeft: event.periods.length > 1 ? '2px solid rgba(64, 107, 222, 0.3)' : 'none',
+                              }}
+                            >
+                              {event.periods.length > 1 && (
+                                <span style={{ fontWeight: '600', marginRight: '0.25rem' }}>
+                                  Période {index + 1}:
+                                </span>
+                              )}
+                              <span style={{ fontWeight: '500' }}>Du:</span>{' '}
+                              {new Date(period.startDate).toLocaleDateString('fr-FR')}
+                              {period.startTime && ` à ${period.startTime}`}
+                              {' '}<span style={{ fontWeight: '500' }}>au:</span>{' '}
+                              {new Date(period.endDate).toLocaleDateString('fr-FR')}
+                              {period.endTime && ` à ${period.endTime}`}
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)' }}>
+                            Aucune période définie
+                          </div>
+                        )}
                       </div>
 
                       {/* Change ticket link */}
@@ -804,13 +861,21 @@ export default function EvenementsPage() {
                                   zIndex: 1000,
                                   marginBottom: '4px',
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                  maxWidth: '250px',
                                 }}
                               >
                                 <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{event.title}</div>
                                 <div style={{ marginBottom: '0.15rem' }}>{event.type}</div>
-                                <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
-                                  {formatDateRange(event)}
-                                </div>
+                                {event.periods && event.periods.length > 0 && (
+                                  <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
+                                    {event.periods.map((period, idx) => (
+                                      <div key={period.id} style={{ marginBottom: idx < event.periods.length - 1 ? '0.15rem' : '0' }}>
+                                        {event.periods.length > 1 && `P${idx + 1}: `}
+                                        {formatDateRange(period)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                                 {event.applications && event.applications.length > 0 && (
                                   <div style={{ fontSize: '0.65rem', marginBottom: '0.15rem' }}>
                                     {event.applications.join(', ')}
@@ -1015,115 +1080,205 @@ export default function EvenementsPage() {
               </div>
             </div>
 
-            {/* Date and Time fields */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <div>
+            {/* Periods Section */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <label
                   style={{
                     display: 'block',
-                    marginBottom: '0.25rem',
                     fontSize: '0.8rem',
                     color: 'var(--color-primary-dark)',
                     fontWeight: '500',
                   }}
                 >
-                  Date de début *
+                  Périodes *
                 </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                <button
+                  type="button"
+                  onClick={addPeriod}
                   style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '2px solid var(--color-neutral-beige)',
+                    padding: '0.25rem 0.6rem',
+                    backgroundColor: 'var(--color-secondary-blue)',
+                    color: 'var(--color-white)',
+                    border: 'none',
                     borderRadius: '4px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    marginBottom: '0.25rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--color-primary-dark)',
+                    cursor: 'pointer',
+                    fontSize: '0.7rem',
                     fontWeight: '500',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2f4fb5';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
                   }}
                 >
-                  Date de fin *
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '2px solid var(--color-neutral-beige)',
-                    borderRadius: '4px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                  }}
-                />
+                  + Ajouter une période
+                </button>
               </div>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <div>
-                <label
+              {periods.map((period, index) => (
+                <div
+                  key={period.id}
                   style={{
-                    display: 'block',
-                    marginBottom: '0.25rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--color-primary-dark)',
-                    fontWeight: '500',
+                    marginBottom: '0.75rem',
+                    padding: '0.75rem',
+                    backgroundColor: 'rgba(176, 191, 240, 0.1)',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(176, 191, 240, 0.3)',
                   }}
                 >
-                  Heure de début
-                </label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '2px solid var(--color-neutral-beige)',
-                    borderRadius: '4px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    marginBottom: '0.25rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--color-primary-dark)',
-                    fontWeight: '500',
-                  }}
-                >
-                  Heure de fin
-                </label>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '2px solid var(--color-neutral-beige)',
-                    borderRadius: '4px',
-                    fontSize: '0.85rem',
-                    outline: 'none',
-                  }}
-                />
-              </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)' }}>
+                      Période {index + 1}
+                    </span>
+                    {periods.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removePeriod(period.id)}
+                        style={{
+                          width: '22px',
+                          height: '22px',
+                          backgroundColor: 'transparent',
+                          color: 'rgba(217, 36, 36, 0.6)',
+                          border: '1px solid rgba(217, 36, 36, 0.3)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.7rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(217, 36, 36, 0.1)';
+                          e.currentTarget.style.color = 'var(--color-accent-red)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = 'rgba(217, 36, 36, 0.6)';
+                        }}
+                        title="Supprimer cette période"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Date fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '0.25rem',
+                          fontSize: '0.7rem',
+                          color: 'var(--color-primary-dark)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Date de début *
+                      </label>
+                      <input
+                        type="date"
+                        value={period.startDate}
+                        onChange={(e) => updatePeriod(period.id, 'startDate', e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          border: '2px solid var(--color-neutral-beige)',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '0.25rem',
+                          fontSize: '0.7rem',
+                          color: 'var(--color-primary-dark)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Date de fin *
+                      </label>
+                      <input
+                        type="date"
+                        value={period.endDate}
+                        onChange={(e) => updatePeriod(period.id, 'endDate', e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          border: '2px solid var(--color-neutral-beige)',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Time fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '0.25rem',
+                          fontSize: '0.7rem',
+                          color: 'var(--color-primary-dark)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Heure de début
+                      </label>
+                      <input
+                        type="time"
+                        value={period.startTime || ''}
+                        onChange={(e) => updatePeriod(period.id, 'startTime', e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          border: '2px solid var(--color-neutral-beige)',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: 'block',
+                          marginBottom: '0.25rem',
+                          fontSize: '0.7rem',
+                          color: 'var(--color-primary-dark)',
+                          fontWeight: '500',
+                        }}
+                      >
+                        Heure de fin
+                      </label>
+                      <input
+                        type="time"
+                        value={period.endTime || ''}
+                        onChange={(e) => updatePeriod(period.id, 'endTime', e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          border: '2px solid var(--color-neutral-beige)',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Change Ticket */}
