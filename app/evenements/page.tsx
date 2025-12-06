@@ -482,7 +482,7 @@ export default function EvenementsPage() {
               onClick={handleAddLongPeriod}
               style={{
                 padding: '0.5rem 1rem',
-                backgroundColor: '#6B7280',
+                backgroundColor: 'var(--color-secondary-blue)',
                 color: 'var(--color-white)',
                 border: 'none',
                 borderRadius: '50px',
@@ -492,10 +492,10 @@ export default function EvenementsPage() {
                 transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#4B5563';
+                e.currentTarget.style.backgroundColor = '#2f4fb5';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#6B7280';
+                e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
               }}
             >
               + Ajouter une période
@@ -959,6 +959,7 @@ export default function EvenementsPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
+                  lineHeight: 1,
                 }}
               >
                 ‹
@@ -1014,6 +1015,7 @@ export default function EvenementsPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
+                  lineHeight: 1,
                 }}
               >
                 ›
@@ -1091,7 +1093,8 @@ export default function EvenementsPage() {
                               justifyContent: 'center',
                               position: 'relative',
                               width: '100%',
-                              height: dayEvents.length === 0 ? '1px' : 'auto',
+                              minHeight: dayEvents.length === 0 ? '12px' : 'auto',
+                              cursor: 'pointer',
                             }}
                           >
                             {/* Combined tooltip for long periods and events */}
