@@ -89,6 +89,7 @@ export default function EvenementsPage() {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [editingLongPeriod, setEditingLongPeriod] = useState<LongPeriod | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; event: Event | null }>({ x: 0, y: 0, event: null });
 
   // Form state
   const [title, setTitle] = useState('');
@@ -1125,11 +1126,15 @@ export default function EvenementsPage() {
                                 }}
                                 onMouseEnter={(e) => {
                                   e.currentTarget.style.transform = 'scale(1.1)';
+                                  setTooltip({ x: e.clientX, y: e.clientY, event });
+                                }}
+                                onMouseMove={(e) => {
+                                  setTooltip({ x: e.clientX, y: e.clientY, event });
                                 }}
                                 onMouseLeave={(e) => {
                                   e.currentTarget.style.transform = 'scale(1)';
+                                  setTooltip({ x: 0, y: 0, event: null });
                                 }}
-                                title={event.title}
                               />
                             ))}
                           </div>
@@ -1155,7 +1160,7 @@ export default function EvenementsPage() {
               if (activePeriodsThisMonth.length === 0) return null;
 
               return (
-                <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'rgba(176, 191, 240, 0.1)', borderRadius: '6px' }}>
+                <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'white', borderRadius: '6px', border: '1px solid rgba(230, 225, 219, 0.5)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
                     PÉRIODES ACTIVES CE MOIS-CI
                   </div>
@@ -1172,18 +1177,20 @@ export default function EvenementsPage() {
                       >
                         <div
                           style={{
-                            width: '16px',
-                            height: '16px',
+                            width: '20px',
+                            height: '20px',
                             backgroundColor: period.color,
                             borderRadius: '3px',
                             flexShrink: 0,
+                            border: '2px solid rgba(0, 0, 0, 0.2)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.15)',
                           }}
                         />
                         <div style={{ flex: 1 }}>
-                          <span style={{ fontWeight: '600', color: 'var(--color-primary-dark)' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--color-primary-dark)' }}>
                             {period.title}
                           </span>
-                          <span style={{ color: 'var(--color-primary-blue)', marginLeft: '0.5rem' }}>
+                          <span style={{ color: 'var(--color-primary-blue)', marginLeft: '0.5rem', fontWeight: '500' }}>
                             ({new Date(period.startDate).toLocaleDateString('fr-FR')} - {new Date(period.endDate).toLocaleDateString('fr-FR')})
                           </span>
                         </div>
@@ -2154,6 +2161,34 @@ export default function EvenementsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tooltip suivant la souris */}
+      {tooltip.event && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${tooltip.x + 15}px`,
+            top: `${tooltip.y + 15}px`,
+            backgroundColor: 'rgba(40, 50, 118, 0.95)',
+            color: 'var(--color-white)',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
+            pointerEvents: 'none',
+            zIndex: 10000,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            maxWidth: '250px',
+          }}
+        >
+          <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{tooltip.event.title}</div>
+          <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>{tooltip.event.type}</div>
+          {tooltip.event.applications && tooltip.event.applications.length > 0 && (
+            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
+              {tooltip.event.applications.join(', ')}
+            </div>
+          )}
         </div>
       )}
     </div>
