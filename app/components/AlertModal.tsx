@@ -73,7 +73,7 @@ export default function AlertModal() {
       >
         {/* Header */}
         <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '2px solid var(--color-accent-red)', paddingBottom: '0.75rem' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '2rem', color: 'var(--color-accent-red)' }}>emergency</span>
+          <span className="material-symbols-outlined" style={{ fontSize: '2rem', color: 'var(--color-accent-red)' }}>emergency_home</span>
           <div style={{ flex: 1 }}>
             <h2
               style={{
@@ -125,8 +125,9 @@ export default function AlertModal() {
             borderRadius: '6px',
             marginBottom: '1rem',
           }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              ⚠️ Applications concernées
+            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>warning</span>
+              Applications concernées
             </div>
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
               {activeAlert.concernedApplications.map((app) => (
@@ -223,8 +224,9 @@ export default function AlertModal() {
               marginBottom: '1rem',
             }}
           >
-            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#15803d', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-              ✓ Solution de contournement
+            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#15803d', marginBottom: '0.4rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '0.95rem' }}>emoji_objects</span>
+              Solution de contournement
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', lineHeight: '1.5' }}>
               {activeAlert.workaround}
