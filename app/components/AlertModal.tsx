@@ -3,17 +3,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAlert } from '../hooks/useAlert';
+import { useAuth } from '../contexts/AuthContext';
 
 const ALERT_SHOWN_KEY = 'darut_alert_shown_session';
 
 export default function AlertModal() {
   const { getActiveAlert } = useAlert();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [activeAlert, setActiveAlert] = useState<ReturnType<typeof getActiveAlert>>(null);
 
   useEffect(() => {
+    // Don't show alert if user is in admin mode
+    if (isAuthenticated) {
+      return;
+    }
+
     // Check if alert has been shown in this session
     const hasBeenShown = sessionStorage.getItem(ALERT_SHOWN_KEY);
 
@@ -30,7 +37,7 @@ export default function AlertModal() {
         }
       }
     }
-  }, [getActiveAlert, router, pathname]);
+  }, [getActiveAlert, router, pathname, isAuthenticated]);
 
   const handleClose = () => {
     setIsVisible(false);
