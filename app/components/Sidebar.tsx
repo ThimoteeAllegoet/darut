@@ -139,7 +139,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <div
         style={{
           padding: '0.5rem 1.5rem',
-          textAlign: 'center',
+          textAlign: 'right',
         }}
       >
         <span
