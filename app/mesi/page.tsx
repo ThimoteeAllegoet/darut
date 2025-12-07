@@ -1,10 +1,8 @@
 'use client';
-
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useMESI } from '../hooks/useMESI';
 import { MESIItem } from '../types/mesi';
-
 export default function MESIPage() {
   const { isAuthenticated } = useAuth();
   const { items, addItem, updateItem, deleteItem } = useMESI();
@@ -14,59 +12,48 @@ export default function MESIPage() {
   // Form state
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
-
   const handleAddItem = () => {
     setEditingItem(null);
     resetForm();
     setIsModalOpen(true);
   };
-
   const handleEditItem = (item: MESIItem) => {
     setEditingItem(item);
     setTitle(item.title);
     setUrl(item.url);
     setIsModalOpen(true);
   };
-
   const handleSaveItem = () => {
     if (!title.trim() || !url.trim()) return;
-
     const itemData = {
       title: title.trim(),
       url: url.trim(),
     };
-
     if (editingItem) {
       updateItem(editingItem.id, itemData);
     } else {
       addItem(itemData);
     }
-
     setIsModalOpen(false);
     resetForm();
   };
-
   const handleDeleteItem = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette rubrique ?')) {
       deleteItem(id);
     }
   };
-
   const handleViewItem = (itemUrl: string) => {
     window.open(itemUrl, '_blank', 'noopener,noreferrer');
   };
-
   const resetForm = () => {
     setTitle('');
     setUrl('');
     setEditingItem(null);
   };
-
   const handleModalClose = () => {
     setIsModalOpen(false);
     resetForm();
   };
-
   return (
     <div style={{ padding: '2rem' }}>
       <div
@@ -141,7 +128,6 @@ export default function MESIPage() {
                 borderRadius: '8px',
                 padding: '1.5rem',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-                border: '1px solid rgba(230, 225, 219, 0.3)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '1rem',

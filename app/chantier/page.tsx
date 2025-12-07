@@ -1,16 +1,12 @@
 'use client';
-
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useChantier } from '../hooks/useChantier';
 import { Chantier, ChantierState, ChantierHistoryEntry, ChantierHistoryType } from '../types/chantier';
-
 const chantierStates: ChantierState[] = ['En cours', 'Terminé', 'En attente', 'Bloqué'];
-
 const getHistoryTypeColor = (type: ChantierHistoryType): string => {
   return type === 'information' ? '#406BDE' : '#D92424';
 };
-
 const getStateColor = (state: ChantierState): string => {
   switch (state) {
     case 'En cours':
@@ -25,14 +21,12 @@ const getStateColor = (state: ChantierState): string => {
       return '#9CA3AF'; // Gray
   }
 };
-
 const getProgressColor = (progress: number): string => {
   if (progress >= 75) return '#22C55E'; // Green
   if (progress >= 50) return '#406BDE'; // Blue
   if (progress >= 25) return '#FF9900'; // Orange
   return '#D92424'; // Red
 };
-
 export default function ChantierPage() {
   const { isAuthenticated } = useAuth();
   const { chantiers, addChantier, updateChantier, deleteChantier } = useChantier();
@@ -54,13 +48,11 @@ export default function ChantierPage() {
   const [historyDate, setHistoryDate] = useState('');
   const [historyType, setHistoryType] = useState<ChantierHistoryType>('information');
   const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null);
-
   const handleAddChantier = () => {
     setEditingChantier(null);
     resetForm();
     setIsModalOpen(true);
   };
-
   const handleEditChantier = (chantier: Chantier) => {
     setEditingChantier(chantier);
     setTitle(chantier.title);
@@ -72,10 +64,8 @@ export default function ChantierPage() {
     setHistory([...chantier.history]);
     setIsModalOpen(true);
   };
-
   const handleSaveChantier = () => {
     if (!title.trim() || !description.trim()) return;
-
     const chantierData = {
       title,
       description,
@@ -85,17 +75,14 @@ export default function ChantierPage() {
       deliveryPeriod: deliveryPeriod.trim() || undefined,
       history,
     };
-
     if (editingChantier) {
       updateChantier(editingChantier.id, chantierData);
     } else {
       addChantier(chantierData);
     }
-
     setIsModalOpen(false);
     resetForm();
   };
-
   const resetForm = () => {
     setTitle('');
     setDescription('');
@@ -109,16 +96,13 @@ export default function ChantierPage() {
     setHistoryType('information');
     setEditingHistoryId(null);
   };
-
   const handleDeleteChantier = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce chantier ?')) {
       deleteChantier(id);
     }
   };
-
   const handleAddHistoryEntry = () => {
     if (!historyMessage.trim() || !historyDate.trim()) return;
-
     if (editingHistoryId) {
       // Edit existing entry
       setHistory(
@@ -139,13 +123,11 @@ export default function ChantierPage() {
       };
       setHistory([...history, newEntry]);
     }
-
     setHistoryMessage('');
     setHistoryDate('');
     setHistoryType('information');
     setIsHistoryModalOpen(false);
   };
-
   const handleEditHistoryEntry = (entry: ChantierHistoryEntry) => {
     setEditingHistoryId(entry.id);
     setHistoryMessage(entry.message);
@@ -153,7 +135,6 @@ export default function ChantierPage() {
     setHistoryType(entry.type || 'information');
     setIsHistoryModalOpen(true);
   };
-
   const handleDeleteHistoryEntry = (entryId: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée d\'historique ?')) {
       setHistory(history.filter((entry) => entry.id !== entryId));
@@ -164,7 +145,6 @@ export default function ChantierPage() {
   const sortedChantiers = [...chantiers].sort((a, b) => {
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
   });
-
   return (
     <div style={{ padding: '2rem' }}>
       <div
@@ -245,7 +225,6 @@ export default function ChantierPage() {
                   backgroundColor: 'var(--color-white)',
                   borderRadius: '8px',
                   padding: '1.25rem',
-                  border: '1px solid rgba(230, 225, 219, 0.3)',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                   display: 'flex',
                   flexDirection: 'column',

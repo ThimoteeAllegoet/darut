@@ -15,7 +15,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         style={{
           marginLeft: '250px',
           minHeight: '100vh',
-          backgroundColor: 'var(--color-off-white-1)',
+          backgroundColor: '#f4f6f8',
         }}
       >
         {children}

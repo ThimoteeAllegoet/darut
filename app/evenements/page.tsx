@@ -1,14 +1,11 @@
 'use client';
-
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEvents } from '../hooks/useEvents';
 import { useLongPeriods } from '../hooks/useLongPeriods';
 import { Event, EventType, ApplicationName, EventPeriod } from '../types/event';
 import { LongPeriod } from '../types/longPeriod';
-
 const eventTypes: EventType[] = ['Incident majeur', 'Version', 'Hotfix', 'Autre'];
-
 const applicationNames: ApplicationName[] = [
   'Bandeau',
   'CVM',
@@ -21,7 +18,6 @@ const applicationNames: ApplicationName[] = [
   'Trace de contact',
   'Autres',
 ];
-
 const getEventColor = (type: EventType): string => {
   switch (type) {
     case 'Incident majeur':
@@ -36,23 +32,18 @@ const getEventColor = (type: EventType): string => {
       return '#283276';
   }
 };
-
 const formatDateRange = (period: EventPeriod): string => {
   const startDate = new Date(period.startDate).toLocaleDateString('fr-FR');
   const endDate = new Date(period.endDate).toLocaleDateString('fr-FR');
-
   let dateStr = `Du ${startDate} au ${endDate}`;
-
   if (period.startTime || period.endTime) {
     const times = [];
     if (period.startTime) times.push(period.startTime);
     if (period.endTime) times.push(period.endTime);
     dateStr += ` (${times.join(' - ')})`;
   }
-
   return dateStr;
 };
-
 const getOrdinalLabel = (index: number): string => {
   const ordinals = [
     'Première occurrence',
@@ -68,7 +59,6 @@ const getOrdinalLabel = (index: number): string => {
   ];
   return ordinals[index] || `${index + 1}ème occurrence`;
 };
-
 const presetColors = [
   '#FFE5E5', // Light red
   '#E5F3FF', // Light blue
@@ -79,7 +69,6 @@ const presetColors = [
   '#FFE5F3', // Light pink
   '#E5FFF3', // Light mint
 ];
-
 export default function EvenementsPage() {
   const { isAuthenticated } = useAuth();
   const { events, addEvent, updateEvent, deleteEvent } = useEvents();
@@ -122,13 +111,11 @@ export default function EvenementsPage() {
 
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
-
   const handleAddEvent = () => {
     setEditingEvent(null);
     resetForm();
     setIsModalOpen(true);
   };
-
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setTitle(event.title);
@@ -149,14 +136,12 @@ export default function EvenementsPage() {
     setApplications(event.applications || []);
     setIsModalOpen(true);
   };
-
   const handleSaveEvent = () => {
     if (!title.trim()) return;
 
     // Validate at least one period with dates
     const validPeriods = periods.filter(p => p.startDate && p.endDate);
     if (validPeriods.length === 0) return;
-
     const eventData = {
       title,
       description,
@@ -174,17 +159,14 @@ export default function EvenementsPage() {
       contentUrl,
       applications,
     };
-
     if (editingEvent) {
       updateEvent(editingEvent.id, eventData);
     } else {
       addEvent(eventData);
     }
-
     setIsModalOpen(false);
     resetForm();
   };
-
   const resetForm = () => {
     setTitle('');
     setDescription('');
@@ -203,13 +185,11 @@ export default function EvenementsPage() {
     setContentUrl('');
     setApplications([]);
   };
-
   const toggleApplication = (app: ApplicationName) => {
     setApplications((prev) =>
       prev.includes(app) ? prev.filter((a) => a !== app) : [...prev, app]
     );
   };
-
   const handleDeleteEvent = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
       deleteEvent(id);
@@ -222,7 +202,6 @@ export default function EvenementsPage() {
     resetLongPeriodForm();
     setIsLongPeriodModalOpen(true);
   };
-
   const handleEditLongPeriod = (longPeriod: LongPeriod) => {
     setEditingLongPeriod(longPeriod);
     setLongPeriodTitle(longPeriod.title);
@@ -231,40 +210,33 @@ export default function EvenementsPage() {
     setLongPeriodColor(longPeriod.color);
     setIsLongPeriodModalOpen(true);
   };
-
   const handleSaveLongPeriod = () => {
     if (!longPeriodTitle.trim() || !longPeriodStartDate || !longPeriodEndDate) return;
-
     const longPeriodData = {
       title: longPeriodTitle,
       startDate: longPeriodStartDate,
       endDate: longPeriodEndDate,
       color: longPeriodColor,
     };
-
     if (editingLongPeriod) {
       updateLongPeriod(editingLongPeriod.id, longPeriodData);
     } else {
       addLongPeriod(longPeriodData);
     }
-
     setIsLongPeriodModalOpen(false);
     resetLongPeriodForm();
   };
-
   const resetLongPeriodForm = () => {
     setLongPeriodTitle('');
     setLongPeriodStartDate('');
     setLongPeriodEndDate('');
     setLongPeriodColor(presetColors[0]);
   };
-
   const handleDeleteLongPeriod = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette période ?')) {
       deleteLongPeriod(id);
     }
   };
-
   const handleEventClick = (eventId: string) => {
     setHighlightedId(eventId);
     setTimeout(() => setHighlightedId(null), 2000);
@@ -286,13 +258,11 @@ export default function EvenementsPage() {
       endTime: '',
     }]);
   };
-
   const removePeriod = (periodId: string) => {
     if (periods.length > 1) {
       setPeriods(periods.filter(p => p.id !== periodId));
     }
   };
-
   const updatePeriod = (periodId: string, field: keyof EventPeriod, value: string) => {
     setPeriods(periods.map(p =>
       p.id === periodId ? { ...p, [field]: value } : p
@@ -305,19 +275,16 @@ export default function EvenementsPage() {
     const month = date.getMonth();
     return new Date(year, month + 1, 0).getDate();
   };
-
   const getFirstDayOfMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     return firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday=0 to Monday=0
   };
-
   const getEventsForDay = (day: number): Event[] => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
     return events.filter((event) => {
       // Check if the date falls within any of the event's periods
       return event.periods.some(period =>
@@ -325,30 +292,24 @@ export default function EvenementsPage() {
       );
     });
   };
-
   const getLongPeriodsForDay = (day: number): LongPeriod[] => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
     return longPeriods.filter((period) =>
       dateStr >= period.startDate && dateStr <= period.endDate
     );
   };
-
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
-
   const prevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
-
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
-
   const goToToday = () => {
     setCurrentMonth(new Date());
   };
@@ -366,7 +327,6 @@ export default function EvenementsPage() {
       const dateB = b.periods.length > 0 ? new Date(b.periods[0].startDate).getTime() : 0;
       return sortBy === 'date-desc' ? dateB - dateA : dateA - dateB;
     });
-
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDay = getFirstDayOfMonth(currentMonth);
   const calendarDays: (number | null)[] = [
@@ -377,7 +337,6 @@ export default function EvenementsPage() {
   // Statistics calculations based on displayed calendar month/year
   const displayedYear = currentMonth.getFullYear();
   const displayedMonth = currentMonth.getMonth();
-
   const majorIncidents = events.filter(e => e.type === 'Incident majeur');
 
   // Incidents in displayed month
@@ -387,7 +346,6 @@ export default function EvenementsPage() {
       const endDate = new Date(period.endDate);
       const monthStart = new Date(displayedYear, displayedMonth, 1);
       const monthEnd = new Date(displayedYear, displayedMonth + 1, 0);
-
       return (
         (startDate >= monthStart && startDate <= monthEnd) ||
         (endDate >= monthStart && endDate <= monthEnd) ||
@@ -403,7 +361,6 @@ export default function EvenementsPage() {
       const endDate = new Date(period.endDate);
       const yearStart = new Date(displayedYear, 0, 1);
       const yearEnd = new Date(displayedYear, 11, 31);
-
       return (
         (startDate >= yearStart && startDate <= yearEnd) ||
         (endDate >= yearStart && endDate <= yearEnd) ||
@@ -420,21 +377,18 @@ export default function EvenementsPage() {
       const endDate = new Date(period.endDate);
       const yearStart = new Date(displayedYear, 0, 1);
       const yearEnd = new Date(displayedYear, 11, 31);
-
       return (
         (startDate >= yearStart && startDate <= yearEnd) ||
         (endDate >= yearStart && endDate <= yearEnd) ||
         (startDate <= yearStart && endDate >= yearEnd)
       );
     });
-
     if (eventInYear) {
       event.applications.forEach(app => {
         incidentsByApp[app] = (incidentsByApp[app] || 0) + 1;
       });
     }
   });
-
   return (
     <div style={{ padding: '2rem' }}>
       <div
@@ -517,7 +471,6 @@ export default function EvenementsPage() {
               padding: '1rem',
               backgroundColor: 'white',
               borderRadius: '6px',
-              border: '1px solid rgba(230, 225, 219, 0.3)',
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
@@ -749,35 +702,6 @@ export default function EvenementsPage() {
                       gap: '0.75rem',
                       flexShrink: 0,
                     }}>
-                      {/* Content URL button (only for Version and Hotfix) */}
-                      {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
-                        <a
-                          href={event.contentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: 'inline-block',
-                            padding: '0.35rem 0.75rem',
-                            backgroundColor: 'var(--color-secondary-blue)',
-                            color: 'var(--color-white)',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            textDecoration: 'none',
-                            transition: 'background-color 0.2s',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#2f4fb5';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
-                          }}
-                        >
-                          Voir le contenu
-                        </a>
-                      )}
-
                       {/* Admin buttons */}
                       {isAuthenticated && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -871,6 +795,35 @@ export default function EvenementsPage() {
                           ))}
                         </div>
                       )}
+
+                      {/* Content URL button (only for Version and Hotfix) */}
+                      {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
+                        <a
+                          href={event.contentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.35rem 0.75rem',
+                            backgroundColor: 'var(--color-secondary-blue)',
+                            color: 'var(--color-white)',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            transition: 'background-color 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#2f4fb5';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+                          }}
+                        >
+                          Voir le contenu
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -952,7 +905,7 @@ export default function EvenementsPage() {
               backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              border: '1px solid rgba(230, 225, 219, 0.3)',
+              
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -1069,9 +1022,7 @@ export default function EvenementsPage() {
                   if (count === 3) return { width: '32%', height: '100%' };
                   return { width: '24%', height: '100%' };
                 };
-
                 const eventSize = getEventSize(dayEvents.length);
-
                 return (
                   <div
                     key={index}
@@ -1150,15 +1101,12 @@ export default function EvenementsPage() {
             {(() => {
               const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
               const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-
               const activePeriodsThisMonth = longPeriods.filter(period => {
                 const periodStart = new Date(period.startDate);
                 const periodEnd = new Date(period.endDate);
                 return (periodStart <= monthEnd && periodEnd >= monthStart);
               });
-
               if (activePeriodsThisMonth.length === 0) return null;
-
               return (
                 <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'white', borderRadius: '6px', border: '1px solid rgba(230, 225, 219, 0.5)' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
@@ -1208,7 +1156,7 @@ export default function EvenementsPage() {
               backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              border: '1px solid rgba(230, 225, 219, 0.3)',
+              
             }}
           >
             <h2
@@ -2185,7 +2133,7 @@ export default function EvenementsPage() {
           <div style={{ fontWeight: '600', marginBottom: '0.35rem' }}>
             {tooltip.event.title} ({tooltip.event.type})
           </div>
-          {tooltip.event.periods && tooltip.event.periods.map((period) => {
+          {tooltip.event.type !== 'Version' && tooltip.event.type !== 'Hotfix' && tooltip.event.periods && tooltip.event.periods.map((period) => {
             const times = [];
             if (period.startTime) times.push(period.startTime);
             if (period.endTime) times.push(period.endTime);

@@ -48,7 +48,6 @@ export default function AnomalyCard({
         padding: '1rem',
         marginBottom: '0.75rem',
         boxShadow: isDragging ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
-        border: '1px solid rgba(230, 225, 219, 0.3)',
         position: 'relative',
       }}
     >

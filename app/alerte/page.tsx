@@ -1,11 +1,9 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../hooks/useAlert';
 import { Alert } from '../types/alert';
-
 export default function AlertePage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -17,7 +15,6 @@ export default function AlertePage() {
       router.push('/');
     }
   }, [isAuthenticated, router]);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
 
@@ -32,13 +29,11 @@ export default function AlertePage() {
   const [snowTicketUrl, setSnowTicketUrl] = useState('');
   const [affectedPopulation, setAffectedPopulation] = useState('');
   const [isActive, setIsActive] = useState(false);
-
   const handleAddAlert = () => {
     setEditingAlert(null);
     resetForm();
     setIsModalOpen(true);
   };
-
   const handleEditAlert = (alert: Alert) => {
     setEditingAlert(alert);
     setTitle(alert.title);
@@ -53,10 +48,8 @@ export default function AlertePage() {
     setIsActive(alert.isActive);
     setIsModalOpen(true);
   };
-
   const handleSaveAlert = () => {
     if (!title.trim() || !description.trim() || !impact.trim() || !startDate || !affectedPopulation.trim()) return;
-
     const alertData = {
       title: title.trim(),
       description: description.trim(),
@@ -69,17 +62,14 @@ export default function AlertePage() {
       affectedPopulation: affectedPopulation.trim(),
       isActive,
     };
-
     if (editingAlert) {
       updateAlert(editingAlert.id, alertData);
     } else {
       addAlert(alertData);
     }
-
     setIsModalOpen(false);
     resetForm();
   };
-
   const resetForm = () => {
     setTitle('');
     setDescription('');
@@ -93,22 +83,18 @@ export default function AlertePage() {
     setIsActive(false);
     setEditingAlert(null);
   };
-
   const handleDeleteAlert = (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette alerte ?')) {
       deleteAlert(id);
     }
   };
-
   const handleToggleActive = (alert: Alert) => {
     updateAlert(alert.id, { ...alert, isActive: !alert.isActive });
   };
-
   const handleModalClose = () => {
     setIsModalOpen(false);
     resetForm();
   };
-
   const handleApplicationToggle = (app: string) => {
     if (concernedApplications.includes(app)) {
       setConcernedApplications(concernedApplications.filter(a => a !== app));
@@ -116,14 +102,12 @@ export default function AlertePage() {
       setConcernedApplications([...concernedApplications, app]);
     }
   };
-
   const availableApplications = ['Bandeau', 'CVM', 'AGENDA', 'Weplan', 'GEM', 'Visio', 'Scanner', 'eBorne', 'Trace de contact', 'Autres'];
 
   // Don't render if not authenticated
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <div style={{ padding: '2rem' }}>
       <div

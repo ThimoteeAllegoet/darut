@@ -235,7 +235,6 @@ export default function MessagesPage() {
           padding: '1rem',
           backgroundColor: 'white',
           borderRadius: '6px',
-          border: '1px solid rgba(230, 225, 219, 0.3)',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
         }}
       >
@@ -459,7 +458,6 @@ export default function MessagesPage() {
                 backgroundColor: 'var(--color-white)',
                 borderRadius: '8px',
                 padding: '0.75rem',
-                border: '1px solid rgba(230, 225, 219, 0.3)',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                 display: 'flex',
                 flexDirection: 'column',
