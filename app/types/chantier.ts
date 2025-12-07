@@ -1,9 +1,12 @@
 export type ChantierState = 'En cours' | 'Terminé' | 'En attente' | 'Bloqué';
 
+export type ChantierHistoryType = 'information' | 'problème';
+
 export interface ChantierHistoryEntry {
   id: string;
   date: string;
   message: string;
+  type: ChantierHistoryType;
 }
 
 export interface Chantier {

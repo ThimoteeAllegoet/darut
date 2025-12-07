@@ -52,43 +52,46 @@ export default function AlertModal() {
       <div
         style={{
           backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '2rem',
+          borderRadius: '8px',
+          padding: '1.5rem',
           width: '100%',
-          maxWidth: '600px',
+          maxWidth: '550px',
           maxHeight: '90vh',
           overflow: 'auto',
-          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-          border: '3px solid var(--color-accent-red)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+          border: '2px solid var(--color-accent-red)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🚨</div>
-          <h2
-            style={{
-              fontSize: '1.75rem',
-              fontWeight: '700',
-              color: 'var(--color-accent-red)',
-              margin: '0 0 0.5rem 0',
-            }}
-          >
-            INCIDENT MAJEUR EN COURS
-          </h2>
-          <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-            Depuis le {new Date(activeAlert.startDate).toLocaleDateString('fr-FR')} à{' '}
-            {new Date(activeAlert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '2px solid var(--color-accent-red)', paddingBottom: '0.75rem' }}>
+          <div style={{ fontSize: '2rem' }}>🚨</div>
+          <div style={{ flex: 1 }}>
+            <h2
+              style={{
+                fontSize: '1.4rem',
+                fontWeight: '700',
+                color: 'var(--color-accent-red)',
+                margin: '0',
+              }}
+            >
+              INCIDENT MAJEUR
+            </h2>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginTop: '0.15rem' }}>
+              Depuis le {new Date(activeAlert.startDate).toLocaleDateString('fr-FR')} à{' '}
+              {new Date(activeAlert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </div>
           </div>
         </div>
 
         {/* Title */}
         <h3
           style={{
-            fontSize: '1.3rem',
-            fontWeight: '600',
+            fontSize: '1.15rem',
+            fontWeight: '700',
             color: 'var(--color-primary-dark)',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
+            lineHeight: '1.3',
           }}
         >
           {activeAlert.title}
@@ -97,117 +100,125 @@ export default function AlertModal() {
         {/* Description */}
         <p
           style={{
-            fontSize: '1rem',
+            fontSize: '0.9rem',
             color: 'var(--color-primary-blue)',
-            marginBottom: '1.5rem',
-            lineHeight: '1.6',
+            marginBottom: '1rem',
+            lineHeight: '1.5',
           }}
         >
           {activeAlert.description}
         </p>
 
-        {/* Grid Info */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+        {/* Applications concernées - PROMINENT */}
+        {activeAlert.concernedApplications.length > 0 && (
+          <div style={{
+            padding: '1rem',
+            backgroundColor: 'var(--color-accent-red)',
+            borderRadius: '6px',
+            marginBottom: '1rem',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'rgba(255, 255, 255, 0.9)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              ⚠️ Applications concernées
+            </div>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {activeAlert.concernedApplications.map((app) => (
+                <span
+                  key={app}
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    backgroundColor: 'white',
+                    color: 'var(--color-accent-red)',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
+                  }}
+                >
+                  {app}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Grid Info - 2 columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
           <div
             style={{
-              padding: '1rem',
-              backgroundColor: 'rgba(217, 36, 36, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(217, 36, 36, 0.2)',
+              padding: '0.75rem',
+              backgroundColor: 'rgba(217, 36, 36, 0.08)',
+              borderRadius: '6px',
+              border: '1px solid rgba(217, 36, 36, 0.25)',
             }}
           >
-            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-accent-red)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-accent-red)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
               Impact
             </div>
-            <div style={{ fontSize: '0.95rem', color: 'var(--color-primary-dark)', lineHeight: '1.5' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', lineHeight: '1.4', fontWeight: '500' }}>
               {activeAlert.impact}
             </div>
           </div>
 
           <div
             style={{
-              padding: '1rem',
-              backgroundColor: 'rgba(64, 107, 222, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(64, 107, 222, 0.2)',
+              padding: '0.75rem',
+              backgroundColor: 'rgba(64, 107, 222, 0.08)',
+              borderRadius: '6px',
+              border: '1px solid rgba(64, 107, 222, 0.25)',
             }}
           >
-            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-secondary-blue)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-secondary-blue)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
               Population impactée
             </div>
-            <div style={{ fontSize: '0.95rem', color: 'var(--color-primary-dark)' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', fontWeight: '500' }}>
               {activeAlert.affectedPopulation}
             </div>
           </div>
-
-          {activeAlert.concernedApplications.length > 0 && (
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-primary-dark)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                Applications concernées
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {activeAlert.concernedApplications.map((app) => (
-                  <span
-                    key={app}
-                    style={{
-                      fontSize: '0.85rem',
-                      padding: '0.35rem 0.75rem',
-                      backgroundColor: 'var(--color-accent-red)',
-                      color: 'var(--color-white)',
-                      borderRadius: '20px',
-                      fontWeight: '600',
-                    }}
-                  >
-                    {app}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeAlert.snowTicket && (
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--color-primary-dark)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                Référence SNOW
-              </div>
-              {activeAlert.snowTicketUrl ? (
-                <a
-                  href={activeAlert.snowTicketUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: '1rem',
-                    color: 'var(--color-secondary-blue)',
-                    textDecoration: 'none',
-                    fontWeight: '700',
-                  }}
-                >
-                  {activeAlert.snowTicket}
-                </a>
-              ) : (
-                <div style={{ fontSize: '1rem', color: 'var(--color-primary-dark)', fontWeight: '700' }}>
-                  {activeAlert.snowTicket}
-                </div>
-              )}
-            </div>
-          )}
         </div>
+
+        {/* SNOW Ticket */}
+        {activeAlert.snowTicket && (
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-primary-dark)', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
+              Référence SNOW
+            </div>
+            {activeAlert.snowTicketUrl ? (
+              <a
+                href={activeAlert.snowTicketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: '0.9rem',
+                  color: 'var(--color-secondary-blue)',
+                  textDecoration: 'none',
+                  fontWeight: '700',
+                }}
+              >
+                {activeAlert.snowTicket}
+              </a>
+            ) : (
+              <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: '700' }}>
+                {activeAlert.snowTicket}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Workaround */}
         {activeAlert.workaround && (
           <div
             style={{
-              padding: '1rem',
-              backgroundColor: 'rgba(34, 197, 94, 0.15)',
-              borderRadius: '8px',
+              padding: '0.75rem',
+              backgroundColor: 'rgba(34, 197, 94, 0.12)',
+              borderRadius: '6px',
               border: '1px solid rgba(34, 197, 94, 0.3)',
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
             }}
           >
-            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#15803d', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-              Solution de contournement
+            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: '#15803d', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+              ✓ Solution de contournement
             </div>
-            <div style={{ fontSize: '0.95rem', color: 'var(--color-primary-dark)', lineHeight: '1.6' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', lineHeight: '1.5' }}>
               {activeAlert.workaround}
             </div>
           </div>
@@ -218,14 +229,14 @@ export default function AlertModal() {
           onClick={handleClose}
           style={{
             width: '100%',
-            padding: '0.75rem',
+            padding: '0.65rem',
             backgroundColor: 'var(--color-accent-red)',
             color: 'var(--color-white)',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '6px',
             cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: '600',
+            fontSize: '0.95rem',
+            fontWeight: '700',
             transition: 'background-color 0.2s',
           }}
           onMouseEnter={(e) => {

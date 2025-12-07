@@ -14,14 +14,14 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
   const pathname = usePathname();
 
   const allMenuItems = [
-    { name: 'Alerte', path: '/alerte', icon: '🚨', adminOnly: true },
     { name: 'Anomalies', path: '/anomalies', icon: '🔧', adminOnly: false },
+    { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
     { name: 'Chantier', path: '/chantier', icon: '🚚', adminOnly: true },
     { name: 'Clipboard', path: '/messages', icon: '📋', adminOnly: true },
-    { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
     { name: 'Médiathèque', path: '/mediatheque', icon: '📚', adminOnly: false },
     { name: 'MESI', path: '/mesi', icon: '🚀', adminOnly: false },
     { name: 'Recherche CVM', path: '/recherche-cvm', icon: '💬', adminOnly: true },
+    { name: 'Alerte', path: '/alerte', icon: '🚨', adminOnly: true },
   ];
 
   const menuItems = allMenuItems.filter(item => !item.adminOnly || isAuthenticated);

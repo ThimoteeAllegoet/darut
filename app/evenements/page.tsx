@@ -778,34 +778,6 @@ export default function EvenementsPage() {
                       gap: '0.75rem',
                       flexShrink: 0,
                     }}>
-                      {/* Applications badges */}
-                      {event.applications && event.applications.length > 0 && (
-                        <div style={{
-                          display: 'flex',
-                          gap: '0.35rem',
-                          flexWrap: 'wrap',
-                          justifyContent: 'flex-end',
-                          maxWidth: '200px',
-                        }}>
-                          {event.applications.map((app) => (
-                            <span
-                              key={app}
-                              style={{
-                                fontSize: '0.65rem',
-                                padding: '0.15rem 0.4rem',
-                                backgroundColor: 'rgba(64, 107, 222, 0.15)',
-                                color: 'var(--color-secondary-blue)',
-                                borderRadius: '8px',
-                                fontWeight: '600',
-                                border: '1px solid rgba(64, 107, 222, 0.3)',
-                              }}
-                            >
-                              {app}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
                       {/* Admin buttons */}
                       {isAuthenticated && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -869,6 +841,34 @@ export default function EvenementsPage() {
                           >
                             🗑️
                           </button>
+                        </div>
+                      )}
+
+                      {/* Applications badges */}
+                      {event.applications && event.applications.length > 0 && (
+                        <div style={{
+                          display: 'flex',
+                          gap: '0.35rem',
+                          flexWrap: 'wrap',
+                          justifyContent: 'flex-end',
+                          maxWidth: '200px',
+                        }}>
+                          {event.applications.map((app) => (
+                            <span
+                              key={app}
+                              style={{
+                                fontSize: '0.65rem',
+                                padding: '0.15rem 0.4rem',
+                                backgroundColor: 'rgba(64, 107, 222, 0.15)',
+                                color: 'var(--color-secondary-blue)',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                border: '1px solid rgba(64, 107, 222, 0.3)',
+                              }}
+                            >
+                              {app}
+                            </span>
+                          ))}
                         </div>
                       )}
                     </div>

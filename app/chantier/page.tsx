@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useChantier } from '../hooks/useChantier';
-import { Chantier, ChantierState, ChantierHistoryEntry } from '../types/chantier';
+import { Chantier, ChantierState, ChantierHistoryEntry, ChantierHistoryType } from '../types/chantier';
 
 const chantierStates: ChantierState[] = ['En cours', 'Terminé', 'En attente', 'Bloqué'];
+
+const getHistoryTypeColor = (type: ChantierHistoryType): string => {
+  return type === 'information' ? '#406BDE' : '#D92424';
+};
 
 const getStateColor = (state: ChantierState): string => {
   switch (state) {
@@ -48,6 +52,7 @@ export default function ChantierPage() {
   // History form state
   const [historyMessage, setHistoryMessage] = useState('');
   const [historyDate, setHistoryDate] = useState('');
+  const [historyType, setHistoryType] = useState<ChantierHistoryType>('information');
   const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null);
 
   const handleAddChantier = () => {
@@ -101,6 +106,7 @@ export default function ChantierPage() {
     setHistory([]);
     setHistoryMessage('');
     setHistoryDate('');
+    setHistoryType('information');
     setEditingHistoryId(null);
   };
 
@@ -118,7 +124,7 @@ export default function ChantierPage() {
       setHistory(
         history.map((entry) =>
           entry.id === editingHistoryId
-            ? { ...entry, message: historyMessage, date: historyDate }
+            ? { ...entry, message: historyMessage, date: historyDate, type: historyType }
             : entry
         )
       );
@@ -129,12 +135,14 @@ export default function ChantierPage() {
         id: Date.now().toString(),
         date: historyDate,
         message: historyMessage,
+        type: historyType,
       };
       setHistory([...history, newEntry]);
     }
 
     setHistoryMessage('');
     setHistoryDate('');
+    setHistoryType('information');
     setIsHistoryModalOpen(false);
   };
 
@@ -142,6 +150,7 @@ export default function ChantierPage() {
     setEditingHistoryId(entry.id);
     setHistoryMessage(entry.message);
     setHistoryDate(entry.date);
+    setHistoryType(entry.type || 'information');
     setIsHistoryModalOpen(true);
   };
 
@@ -371,41 +380,44 @@ export default function ChantierPage() {
                       Historique
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {chantier.history.slice().reverse().map((entry) => (
-                        <div
-                          key={entry.id}
-                          style={{
-                            padding: '0.75rem',
-                            backgroundColor: 'rgba(176, 191, 240, 0.1)',
-                            borderRadius: '6px',
-                            borderLeft: '3px solid var(--color-secondary-blue)',
-                          }}
-                        >
+                      {chantier.history.slice().reverse().map((entry) => {
+                        const entryColor = getHistoryTypeColor(entry.type || 'information');
+                        return (
                           <div
+                            key={entry.id}
                             style={{
-                              fontSize: '0.65rem',
-                              color: 'var(--color-primary-blue)',
-                              fontWeight: '600',
-                              marginBottom: '0.25rem',
+                              padding: '0.75rem',
+                              backgroundColor: entry.type === 'problème' ? 'rgba(217, 36, 36, 0.05)' : 'rgba(64, 107, 222, 0.05)',
+                              borderLeft: `3px solid ${entryColor}`,
                             }}
                           >
-                            {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
-                            {new Date(entry.date).toLocaleTimeString('fr-FR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            <div
+                              style={{
+                                fontSize: '0.65rem',
+                                color: entryColor,
+                                fontWeight: '600',
+                                marginBottom: '0.25rem',
+                              }}
+                            >
+                              {entry.type === 'problème' ? '⚠️ ' : 'ℹ️ '}
+                              {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
+                              {new Date(entry.date).toLocaleTimeString('fr-FR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '0.8rem',
+                                color: 'var(--color-primary-dark)',
+                                lineHeight: '1.3',
+                              }}
+                            >
+                              {entry.message}
+                            </div>
                           </div>
-                          <div
-                            style={{
-                              fontSize: '0.8rem',
-                              color: 'var(--color-primary-dark)',
-                              lineHeight: '1.3',
-                            }}
-                          >
-                            {entry.message}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -766,6 +778,7 @@ export default function ChantierPage() {
                     setEditingHistoryId(null);
                     setHistoryMessage('');
                     setHistoryDate(new Date().toISOString());
+                    setHistoryType('information');
                     setIsHistoryModalOpen(true);
                   }}
                   style={{
@@ -817,50 +830,52 @@ export default function ChantierPage() {
                   {history
                     .slice()
                     .reverse()
-                    .map((entry) => (
-                      <div
-                        key={entry.id}
-                        style={{
-                          padding: '0.75rem',
-                          marginBottom: '0.5rem',
-                          backgroundColor: 'rgba(176, 191, 240, 0.1)',
-                          borderRadius: '6px',
-                          borderLeft: '3px solid var(--color-secondary-blue)',
-                        }}
-                      >
+                    .map((entry) => {
+                      const entryColor = getHistoryTypeColor(entry.type || 'information');
+                      return (
                         <div
+                          key={entry.id}
                           style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            gap: '0.5rem',
+                            padding: '0.75rem',
+                            marginBottom: '0.5rem',
+                            backgroundColor: entry.type === 'problème' ? 'rgba(217, 36, 36, 0.05)' : 'rgba(64, 107, 222, 0.05)',
+                            borderLeft: `3px solid ${entryColor}`,
                           }}
                         >
-                          <div style={{ flex: 1 }}>
-                            <div
-                              style={{
-                                fontSize: '0.65rem',
-                                color: 'var(--color-primary-blue)',
-                                fontWeight: '600',
-                                marginBottom: '0.25rem',
-                              }}
-                            >
-                              {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
-                              {new Date(entry.date).toLocaleTimeString('fr-FR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              gap: '0.5rem',
+                            }}
+                          >
+                            <div style={{ flex: 1 }}>
+                              <div
+                                style={{
+                                  fontSize: '0.65rem',
+                                  color: entryColor,
+                                  fontWeight: '600',
+                                  marginBottom: '0.25rem',
+                                }}
+                              >
+                                {entry.type === 'problème' ? '⚠️ ' : 'ℹ️ '}
+                                {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
+                                {new Date(entry.date).toLocaleTimeString('fr-FR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '0.8rem',
+                                  color: 'var(--color-primary-dark)',
+                                  lineHeight: '1.3',
+                                }}
+                              >
+                                {entry.message}
+                              </div>
                             </div>
-                            <div
-                              style={{
-                                fontSize: '0.8rem',
-                                color: 'var(--color-primary-dark)',
-                                lineHeight: '1.3',
-                              }}
-                            >
-                              {entry.message}
-                            </div>
-                          </div>
                           <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
                             <button
                               onClick={() => handleEditHistoryEntry(entry)}
@@ -921,7 +936,8 @@ export default function ChantierPage() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -985,6 +1001,7 @@ export default function ChantierPage() {
             setIsHistoryModalOpen(false);
             setHistoryMessage('');
             setHistoryDate('');
+            setHistoryType('information');
             setEditingHistoryId(null);
           }}
         >
@@ -1036,6 +1053,74 @@ export default function ChantierPage() {
               />
             </div>
 
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Type *
+              </label>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem 0.75rem',
+                    border: '2px solid',
+                    borderColor: historyType === 'information' ? '#406BDE' : 'var(--color-neutral-beige)',
+                    backgroundColor: historyType === 'information' ? 'rgba(64, 107, 222, 0.1)' : 'white',
+                    borderRadius: '6px',
+                    flex: 1,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="historyType"
+                    value="information"
+                    checked={historyType === 'information'}
+                    onChange={(e) => setHistoryType(e.target.value as ChantierHistoryType)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#406BDE' }}>
+                    ℹ️ Information
+                  </span>
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem 0.75rem',
+                    border: '2px solid',
+                    borderColor: historyType === 'problème' ? '#D92424' : 'var(--color-neutral-beige)',
+                    backgroundColor: historyType === 'problème' ? 'rgba(217, 36, 36, 0.1)' : 'white',
+                    borderRadius: '6px',
+                    flex: 1,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="historyType"
+                    value="problème"
+                    checked={historyType === 'problème'}
+                    onChange={(e) => setHistoryType(e.target.value as ChantierHistoryType)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#D92424' }}>
+                    ⚠️ Problème
+                  </span>
+                </label>
+              </div>
+            </div>
+
             <div style={{ marginBottom: '1rem' }}>
               <label
                 style={{
@@ -1072,6 +1157,7 @@ export default function ChantierPage() {
                   setIsHistoryModalOpen(false);
                   setHistoryMessage('');
                   setHistoryDate('');
+                  setHistoryType('information');
                   setEditingHistoryId(null);
                 }}
                 style={{
