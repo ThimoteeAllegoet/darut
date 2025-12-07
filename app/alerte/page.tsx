@@ -100,6 +100,10 @@ export default function AlertePage() {
     }
   };
 
+  const handleToggleActive = (alert: Alert) => {
+    updateAlert(alert.id, { ...alert, isActive: !alert.isActive });
+  };
+
   const handleModalClose = () => {
     setIsModalOpen(false);
     resetForm();
@@ -113,7 +117,7 @@ export default function AlertePage() {
     }
   };
 
-  const availableApplications = ['GUSI', 'SI RH', 'SIRH AE', 'SI Finance'];
+  const availableApplications = ['Bandeau', 'CVM', 'AGENDA', 'Weplan', 'GEM', 'Visio', 'Scanner', 'eBorne', 'Trace de contact', 'Autres'];
 
   // Don't render if not authenticated
   if (!isAuthenticated) {
@@ -227,6 +231,38 @@ export default function AlertePage() {
                 {isAuthenticated && (
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
+                      onClick={() => handleToggleActive(alert)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        backgroundColor: 'transparent',
+                        color: alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(255, 153, 0, 0.7)',
+                        border: `1px solid ${alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 153, 0, 0.3)'}`,
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '1.1rem',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = alert.isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 153, 0, 0.1)';
+                        e.currentTarget.style.color = alert.isActive ? '#22C55E' : '#FF9900';
+                        e.currentTarget.style.borderColor = alert.isActive ? '#22C55E' : '#FF9900';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(255, 153, 0, 0.7)';
+                        e.currentTarget.style.borderColor = alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 153, 0, 0.3)';
+                      }}
+                      title={alert.isActive ? 'Désactiver l\'alerte' : 'Activer l\'alerte'}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>
+                        {alert.isActive ? 'toggle_on' : 'toggle_off'}
+                      </span>
+                    </button>
+                    <button
                       onClick={() => handleEditAlert(alert)}
                       style={{
                         width: '32px',
@@ -236,7 +272,7 @@ export default function AlertePage() {
                         border: '1px solid rgba(40, 50, 118, 0.2)',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '0.85rem',
+                        fontSize: '1.1rem',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -254,7 +290,7 @@ export default function AlertePage() {
                       }}
                       title="Modifier"
                     >
-                      ✏️
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteAlert(alert.id)}
@@ -266,7 +302,7 @@ export default function AlertePage() {
                         border: '1px solid rgba(217, 36, 36, 0.2)',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '0.85rem',
+                        fontSize: '1.1rem',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -284,7 +320,7 @@ export default function AlertePage() {
                       }}
                       title="Supprimer"
                     >
-                      🗑️
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
                     </button>
                   </div>
                 )}

@@ -76,7 +76,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <nav style={{ flex: 1, padding: '1rem 0' }}>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
-          const showIndicator = item.hasIndicator && activeAlert;
+          const showIndicator = item.hasIndicator && activeAlert && pathname !== '/alerte';
           return (
             <Link
               key={item.path}
@@ -195,7 +195,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
               transition: 'background-color 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#0f2a30';
+              e.currentTarget.style.backgroundColor = '#2a5a64';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#19434b';

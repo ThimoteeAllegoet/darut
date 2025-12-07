@@ -511,7 +511,7 @@ export default function MessagesPage() {
                       border: '1px solid rgba(40, 50, 118, 0.2)',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontSize: '0.75rem',
+                      fontSize: '0.9rem',
                       transition: 'all 0.2s',
                       display: 'flex',
                       alignItems: 'center',
@@ -529,7 +529,7 @@ export default function MessagesPage() {
                     }}
                     title="Modifier"
                   >
-                    ✏️
+                    <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>edit</span>
                   </button>
                   <button
                     onClick={() => handleDeleteMessage(message.id)}
@@ -541,7 +541,7 @@ export default function MessagesPage() {
                       border: '1px solid rgba(217, 36, 36, 0.2)',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontSize: '0.75rem',
+                      fontSize: '0.9rem',
                       transition: 'all 0.2s',
                       display: 'flex',
                       alignItems: 'center',
@@ -559,7 +559,7 @@ export default function MessagesPage() {
                     }}
                     title="Supprimer"
                   >
-                    🗑️
+                    <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>delete</span>
                   </button>
                 </div>
               </div>

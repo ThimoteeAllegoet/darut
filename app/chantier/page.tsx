@@ -442,7 +442,7 @@ export default function ChantierPage() {
                         border: '1px solid rgba(40, 50, 118, 0.2)',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '0.85rem',
+                        fontSize: '1.1rem',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -460,7 +460,7 @@ export default function ChantierPage() {
                       }}
                       title="Modifier"
                     >
-                      ✏️
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteChantier(chantier.id)}
@@ -472,7 +472,7 @@ export default function ChantierPage() {
                         border: '1px solid rgba(217, 36, 36, 0.2)',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '0.85rem',
+                        fontSize: '1.1rem',
                         transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
@@ -490,7 +490,7 @@ export default function ChantierPage() {
                       }}
                       title="Supprimer"
                     >
-                      🗑️
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
                     </button>
                   </div>
                 )}
@@ -887,7 +887,7 @@ export default function ChantierPage() {
                                 border: '1px solid rgba(40, 50, 118, 0.2)',
                                 borderRadius: '4px',
                                 cursor: 'pointer',
-                                fontSize: '0.7rem',
+                                fontSize: '0.9rem',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -903,7 +903,7 @@ export default function ChantierPage() {
                               }}
                               title="Modifier"
                             >
-                              ✏️
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>edit</span>
                             </button>
                             <button
                               onClick={() => handleDeleteHistoryEntry(entry.id)}
@@ -915,7 +915,7 @@ export default function ChantierPage() {
                                 border: '1px solid rgba(217, 36, 36, 0.2)',
                                 borderRadius: '4px',
                                 cursor: 'pointer',
-                                fontSize: '0.7rem',
+                                fontSize: '0.9rem',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -931,7 +931,7 @@ export default function ChantierPage() {
                               }}
                               title="Supprimer"
                             >
-                              🗑️
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>delete</span>
                             </button>
                           </div>
                         </div>
