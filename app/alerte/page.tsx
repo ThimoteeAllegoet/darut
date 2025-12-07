@@ -1,13 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../hooks/useAlert';
 import { Alert } from '../types/alert';
 
 export default function AlertePage() {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const { alerts, addAlert, updateAlert, deleteAlert } = useAlert();
+
+  // Redirect to homepage if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
 
@@ -104,6 +114,11 @@ export default function AlertePage() {
   };
 
   const availableApplications = ['GUSI', 'SI RH', 'SIRH AE', 'SI Finance'];
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div style={{ padding: '2rem' }}>

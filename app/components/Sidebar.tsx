@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '../contexts/AuthContext';
+import { useAlert } from '../hooks/useAlert';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -11,17 +12,19 @@ interface SidebarProps {
 
 export default function Sidebar({ onLoginClick }: SidebarProps) {
   const { mode, isAuthenticated, logout } = useAuth();
+  const { getActiveAlert } = useAlert();
   const pathname = usePathname();
+  const activeAlert = getActiveAlert();
 
   const allMenuItems = [
-    { name: 'Anomalies', path: '/anomalies', icon: '🔧', adminOnly: false },
-    { name: 'Événements', path: '/evenements', icon: '📅', adminOnly: false },
-    { name: 'Chantier', path: '/chantier', icon: '🚚', adminOnly: true },
-    { name: 'Clipboard', path: '/messages', icon: '📋', adminOnly: true },
-    { name: 'Médiathèque', path: '/mediatheque', icon: '📚', adminOnly: false },
-    { name: 'MESI', path: '/mesi', icon: '🚀', adminOnly: false },
-    { name: 'Recherche CVM', path: '/recherche-cvm', icon: '💬', adminOnly: true },
-    { name: 'Alerte', path: '/alerte', icon: '🚨', adminOnly: true },
+    { name: 'Anomalies', path: '/anomalies', icon: 'build_circle', adminOnly: false },
+    { name: 'Événements', path: '/evenements', icon: 'calendar_month', adminOnly: false },
+    { name: 'Chantier', path: '/chantier', icon: 'front_loader', adminOnly: true },
+    { name: 'Clipboard', path: '/messages', icon: 'note_alt', adminOnly: true },
+    { name: 'Médiathèque', path: '/mediatheque', icon: 'book_2', adminOnly: false },
+    { name: 'MESI', path: '/mesi', icon: 'rocket_launch', adminOnly: false },
+    { name: 'Recherche CVM', path: '/recherche-cvm', icon: 'forum', adminOnly: true },
+    { name: 'Alerte', path: '/alerte', icon: 'report', adminOnly: true, hasIndicator: true },
   ];
 
   const menuItems = allMenuItems.filter(item => !item.adminOnly || isAuthenticated);
@@ -73,6 +76,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <nav style={{ flex: 1, padding: '1rem 0' }}>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
+          const showIndicator = item.hasIndicator && activeAlert;
           return (
             <Link
               key={item.path}
@@ -88,6 +92,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
                 fontSize: '0.95rem',
                 transition: 'all 0.2s',
                 borderLeft: isActive ? '3px solid var(--color-secondary-blue)' : '3px solid transparent',
+                position: 'relative',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -102,8 +107,23 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
                 }
               }}
             >
-              <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '1.4rem' }}>
+                {item.icon}
+              </span>
               {item.name}
+              {showIndicator && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'var(--color-accent-red)',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 8px var(--color-accent-red)',
+                  }}
+                />
+              )}
             </Link>
           );
         })}
@@ -165,7 +185,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
             style={{
               width: '100%',
               padding: '0.5rem',
-              backgroundColor: 'var(--color-secondary-blue)',
+              backgroundColor: '#19434b',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: '4px',
@@ -175,10 +195,10 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
               transition: 'background-color 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#2f4fb5';
+              e.currentTarget.style.backgroundColor = '#0f2a30';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+              e.currentTarget.style.backgroundColor = '#19434b';
             }}
           >
             Mode Administration

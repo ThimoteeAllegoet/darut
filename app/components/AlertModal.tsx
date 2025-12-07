@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAlert } from '../hooks/useAlert';
 
 const ALERT_SHOWN_KEY = 'darut_alert_shown_session';
 
 export default function AlertModal() {
   const { getActiveAlert } = useAlert();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [activeAlert, setActiveAlert] = useState<ReturnType<typeof getActiveAlert>>(null);
 
@@ -20,9 +23,14 @@ export default function AlertModal() {
         setActiveAlert(alert);
         setIsVisible(true);
         sessionStorage.setItem(ALERT_SHOWN_KEY, 'true');
+
+        // Redirect to homepage if not already there
+        if (pathname !== '/') {
+          router.push('/');
+        }
       }
     }
-  }, [getActiveAlert]);
+  }, [getActiveAlert, router, pathname]);
 
   const handleClose = () => {
     setIsVisible(false);
