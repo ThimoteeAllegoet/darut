@@ -17,7 +17,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
   const activeAlert = alerts.find(alert => alert.isActive);
 
   const allMenuItems = [
-    { name: 'Anomalies', path: '/anomalies', icon: 'build_circle', adminOnly: false },
+    { name: 'Anomalies', path: '/anomalies', icon: 'build_circle', adminOnly: false, subtitle: '(Majeurs)' },
     { name: 'Événements', path: '/evenements', icon: 'calendar_month', adminOnly: false },
     { name: 'Chantier', path: '/chantier', icon: 'front_loader', adminOnly: true },
     { name: 'Clipboard', path: '/messages', icon: 'note_alt', adminOnly: true },
@@ -76,7 +76,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
       <nav style={{ flex: 1, padding: '1rem 0' }}>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
-          const showIndicator = item.hasIndicator && activeAlert && pathname !== '/alerte';
+          const showIndicator = item.hasIndicator && activeAlert;
           return (
             <Link
               key={item.path}
@@ -110,7 +110,14 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
               <span className="material-symbols-outlined" style={{ fontSize: '1.4rem' }}>
                 {item.icon}
               </span>
-              {item.name}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                <span>{item.name}</span>
+                {item.subtitle && (
+                  <span style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                    {item.subtitle}
+                  </span>
+                )}
+              </div>
               {showIndicator && (
                 <span
                   style={{

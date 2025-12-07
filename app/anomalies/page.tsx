@@ -111,7 +111,7 @@ export default function AnomaliesPage() {
             margin: 0,
           }}
         >
-          Priorisation et suivi des anomalies
+          Priorisation et suivi des anomalies majeurs
         </h1>
         {isAuthenticated && (
           <button

@@ -73,7 +73,7 @@ export default function AlertModal() {
       >
         {/* Header */}
         <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '2px solid var(--color-accent-red)', paddingBottom: '0.75rem' }}>
-          <div style={{ fontSize: '2rem' }}>🚨</div>
+          <span className="material-symbols-outlined" style={{ fontSize: '2rem', color: 'var(--color-accent-red)' }}>emergency</span>
           <div style={{ flex: 1 }}>
             <h2
               style={{

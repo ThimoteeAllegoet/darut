@@ -397,9 +397,14 @@ export default function ChantierPage() {
                                 color: entryColor,
                                 fontWeight: '600',
                                 marginBottom: '0.25rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
                               }}
                             >
-                              {entry.type === 'problème' ? '⚠️ ' : 'ℹ️ '}
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.85rem' }}>
+                                {entry.type === 'problème' ? 'warning' : 'info'}
+                              </span>
                               {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
                               {new Date(entry.date).toLocaleTimeString('fr-FR', {
                                 hour: '2-digit',
@@ -857,9 +862,14 @@ export default function ChantierPage() {
                                   color: entryColor,
                                   fontWeight: '600',
                                   marginBottom: '0.25rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
                                 }}
                               >
-                                {entry.type === 'problème' ? '⚠️ ' : 'ℹ️ '}
+                                <span className="material-symbols-outlined" style={{ fontSize: '0.85rem' }}>
+                                  {entry.type === 'problème' ? 'warning' : 'info'}
+                                </span>
                                 {new Date(entry.date).toLocaleDateString('fr-FR')} à{' '}
                                 {new Date(entry.date).toLocaleTimeString('fr-FR', {
                                   hour: '2-digit',
