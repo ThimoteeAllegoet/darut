@@ -791,7 +791,7 @@ export default function EvenementsPage() {
                               border: '1px solid rgba(40, 50, 118, 0.2)',
                               borderRadius: '4px',
                               cursor: 'pointer',
-                              fontSize: '0.85rem',
+                              fontSize: '1.1rem',
                               transition: 'all 0.2s',
                               display: 'flex',
                               alignItems: 'center',
@@ -809,7 +809,7 @@ export default function EvenementsPage() {
                             }}
                             title="Modifier"
                           >
-                            ✏️
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
                           </button>
                           <button
                             onClick={() => handleDeleteEvent(event.id)}
@@ -821,7 +821,7 @@ export default function EvenementsPage() {
                               border: '1px solid rgba(217, 36, 36, 0.2)',
                               borderRadius: '4px',
                               cursor: 'pointer',
-                              fontSize: '0.85rem',
+                              fontSize: '1.1rem',
                               transition: 'all 0.2s',
                               display: 'flex',
                               alignItems: 'center',
@@ -839,7 +839,7 @@ export default function EvenementsPage() {
                             }}
                             title="Supprimer"
                           >
-                            🗑️
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
                           </button>
                         </div>
                       )}

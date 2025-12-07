@@ -215,7 +215,7 @@ export default function MESIPage() {
                       }}
                       title="Modifier"
                     >
-                      ✏️
+                      <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
@@ -247,7 +247,7 @@ export default function MESIPage() {
                       }}
                       title="Supprimer"
                     >
-                      🗑️
+                      <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>delete</span>
                     </button>
                   </div>
                 )}

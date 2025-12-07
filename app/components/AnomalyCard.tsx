@@ -357,7 +357,7 @@ export default function AnomalyCard({
                 border: '1px solid rgba(40, 50, 118, 0.2)',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '0.85rem',
+                fontSize: '1rem',
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
@@ -375,7 +375,7 @@ export default function AnomalyCard({
               }}
               title="Modifier"
             >
-              ✏️
+              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>edit</span>
             </button>
             <button
               onClick={(e) => {
@@ -392,7 +392,7 @@ export default function AnomalyCard({
                 border: '1px solid rgba(217, 36, 36, 0.2)',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '0.85rem',
+                fontSize: '1rem',
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
@@ -410,7 +410,7 @@ export default function AnomalyCard({
               }}
               title="Supprimer"
             >
-              🗑️
+              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>delete</span>
             </button>
           </div>
         )}

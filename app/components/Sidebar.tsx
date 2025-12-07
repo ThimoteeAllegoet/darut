@@ -12,9 +12,9 @@ interface SidebarProps {
 
 export default function Sidebar({ onLoginClick }: SidebarProps) {
   const { mode, isAuthenticated, logout } = useAuth();
-  const { getActiveAlert } = useAlert();
+  const { alerts } = useAlert();
   const pathname = usePathname();
-  const activeAlert = getActiveAlert();
+  const activeAlert = alerts.find(alert => alert.isActive);
 
   const allMenuItems = [
     { name: 'Anomalies', path: '/anomalies', icon: 'build_circle', adminOnly: false },

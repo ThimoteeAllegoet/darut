@@ -236,8 +236,8 @@ export default function AlertePage() {
                         width: '32px',
                         height: '32px',
                         backgroundColor: 'transparent',
-                        color: alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(255, 153, 0, 0.7)',
-                        border: `1px solid ${alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 153, 0, 0.3)'}`,
+                        color: alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(107, 114, 128, 0.7)',
+                        border: `1px solid ${alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(107, 114, 128, 0.3)'}`,
                         borderRadius: '4px',
                         cursor: 'pointer',
                         fontSize: '1.1rem',
@@ -247,14 +247,14 @@ export default function AlertePage() {
                         justifyContent: 'center',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = alert.isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(255, 153, 0, 0.1)';
-                        e.currentTarget.style.color = alert.isActive ? '#22C55E' : '#FF9900';
-                        e.currentTarget.style.borderColor = alert.isActive ? '#22C55E' : '#FF9900';
+                        e.currentTarget.style.backgroundColor = alert.isActive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(107, 114, 128, 0.1)';
+                        e.currentTarget.style.color = alert.isActive ? '#22C55E' : '#6B7280';
+                        e.currentTarget.style.borderColor = alert.isActive ? '#22C55E' : '#6B7280';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(255, 153, 0, 0.7)';
-                        e.currentTarget.style.borderColor = alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 153, 0, 0.3)';
+                        e.currentTarget.style.color = alert.isActive ? 'rgba(34, 197, 94, 0.7)' : 'rgba(107, 114, 128, 0.7)';
+                        e.currentTarget.style.borderColor = alert.isActive ? 'rgba(34, 197, 94, 0.3)' : 'rgba(107, 114, 128, 0.3)';
                       }}
                       title={alert.isActive ? 'Désactiver l\'alerte' : 'Activer l\'alerte'}
                     >
