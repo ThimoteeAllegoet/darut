@@ -737,60 +737,6 @@ export default function EvenementsPage() {
                         )}
                       </div>
 
-                      {/* Change ticket link */}
-                      {event.changeTicket && (
-                        <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
-                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Changement en cause:{' '}
-                          </span>
-                          {event.changeTicketUrl ? (
-                            <a
-                              href={event.changeTicketUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: 'var(--color-secondary-blue)',
-                                textDecoration: 'underline',
-                                fontWeight: '600',
-                              }}
-                            >
-                              {event.changeTicket}
-                            </a>
-                          ) : (
-                            <span style={{ color: 'var(--color-primary-blue)' }}>
-                              {event.changeTicket}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Parent incident link */}
-                      {event.parentIncident && (
-                        <div style={{ fontSize: '0.75rem', marginBottom: '0.5rem' }}>
-                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Incident parent:{' '}
-                          </span>
-                          {event.parentIncidentUrl ? (
-                            <a
-                              href={event.parentIncidentUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: 'var(--color-secondary-blue)',
-                                textDecoration: 'underline',
-                                fontWeight: '600',
-                              }}
-                            >
-                              {event.parentIncident}
-                            </a>
-                          ) : (
-                            <span style={{ color: 'var(--color-primary-blue)' }}>
-                              {event.parentIncident}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
                       {/* Content URL button (only for Version and Hotfix) */}
                       {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
                         <div>
@@ -831,6 +777,68 @@ export default function EvenementsPage() {
                       gap: '0.75rem',
                       flexShrink: 0,
                     }}>
+                      {/* Change ticket and Parent incident - positioned at bottom right */}
+                      {(event.changeTicket || event.parentIncident) && (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: '0.35rem',
+                          fontSize: '0.7rem',
+                        }}>
+                          {event.changeTicket && (
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                                Changement:{' '}
+                              </span>
+                              {event.changeTicketUrl ? (
+                                <a
+                                  href={event.changeTicketUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: 'var(--color-secondary-blue)',
+                                    textDecoration: 'none',
+                                    fontWeight: '700',
+                                  }}
+                                >
+                                  {event.changeTicket}
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                                  {event.changeTicket}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {event.parentIncident && (
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                                Incident parent:{' '}
+                              </span>
+                              {event.parentIncidentUrl ? (
+                                <a
+                                  href={event.parentIncidentUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: 'var(--color-secondary-blue)',
+                                    textDecoration: 'none',
+                                    fontWeight: '700',
+                                  }}
+                                >
+                                  {event.parentIncident}
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                                  {event.parentIncident}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Applications badges */}
                       {event.applications && event.applications.length > 0 && (
                         <div style={{
@@ -954,15 +962,15 @@ export default function EvenementsPage() {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '1.2rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
-                  lineHeight: 1,
                 }}
               >
-                ‹
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
               </button>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                 <h2
@@ -1010,15 +1018,15 @@ export default function EvenementsPage() {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '1.2rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
-                  lineHeight: 1,
                 }}
               >
-                ›
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </button>
             </div>
 
@@ -1052,6 +1060,14 @@ export default function EvenementsPage() {
                 return (
                   <div
                     key={index}
+                    onMouseEnter={(e) => {
+                      const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
+                      if (tooltip) tooltip.style.display = 'block';
+                    }}
+                    onMouseLeave={(e) => {
+                      const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
+                      if (tooltip) tooltip.style.display = 'none';
+                    }}
                     style={{
                       minHeight: '48px',
                       backgroundColor,
@@ -1062,6 +1078,7 @@ export default function EvenementsPage() {
                       flexDirection: 'column',
                       alignItems: 'center',
                       position: 'relative',
+                      cursor: (dayEvents.length > 0 || dayLongPeriods.length > 0) ? 'pointer' : 'default',
                     }}
                   >
                     {day && (
@@ -1077,14 +1094,6 @@ export default function EvenementsPage() {
                         </span>
                         {(dayEvents.length > 0 || dayLongPeriods.length > 0) && (
                           <div
-                            onMouseEnter={(e) => {
-                              const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
-                              if (tooltip) tooltip.style.display = 'block';
-                            }}
-                            onMouseLeave={(e) => {
-                              const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
-                              if (tooltip) tooltip.style.display = 'none';
-                            }}
                             style={{
                               display: dayEvents.length > 0 ? 'flex' : 'block',
                               gap: '2px',
@@ -1094,7 +1103,6 @@ export default function EvenementsPage() {
                               position: 'relative',
                               width: '100%',
                               minHeight: dayEvents.length === 0 ? '12px' : 'auto',
-                              cursor: 'pointer',
                             }}
                           >
                             {/* Combined tooltip for long periods and events */}

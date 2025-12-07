@@ -13,6 +13,7 @@ export interface Chantier {
   state: ChantierState;
   progress: number; // 0-100
   showProgress?: boolean; // Whether to show progress bar
+  deliveryPeriod?: string; // Free text field for expected delivery date/period
   history: ChantierHistoryEntry[];
   createdAt: string;
   updatedAt: string;

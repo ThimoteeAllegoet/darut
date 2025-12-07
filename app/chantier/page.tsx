@@ -42,6 +42,7 @@ export default function ChantierPage() {
   const [state, setState] = useState<ChantierState>('En cours');
   const [progress, setProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(true);
+  const [deliveryPeriod, setDeliveryPeriod] = useState('');
   const [history, setHistory] = useState<ChantierHistoryEntry[]>([]);
 
   // History form state
@@ -62,6 +63,7 @@ export default function ChantierPage() {
     setState(chantier.state);
     setProgress(chantier.progress);
     setShowProgress(chantier.showProgress !== false);
+    setDeliveryPeriod(chantier.deliveryPeriod || '');
     setHistory([...chantier.history]);
     setIsModalOpen(true);
   };
@@ -75,6 +77,7 @@ export default function ChantierPage() {
       state,
       progress,
       showProgress,
+      deliveryPeriod: deliveryPeriod.trim() || undefined,
       history,
     };
 
@@ -94,6 +97,7 @@ export default function ChantierPage() {
     setState('En cours');
     setProgress(0);
     setShowProgress(true);
+    setDeliveryPeriod('');
     setHistory([]);
     setHistoryMessage('');
     setHistoryDate('');
@@ -284,6 +288,22 @@ export default function ChantierPage() {
                 >
                   {chantier.description}
                 </p>
+
+                {/* Delivery Period */}
+                {chantier.deliveryPeriod && (
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-primary-dark)',
+                      backgroundColor: 'rgba(176, 191, 240, 0.15)',
+                      padding: '0.4rem 0.6rem',
+                      borderRadius: '4px',
+                      display: 'inline-block',
+                    }}
+                  >
+                    <span style={{ fontWeight: '600' }}>Livraison prévue :</span> {chantier.deliveryPeriod}
+                  </div>
+                )}
 
                 {/* Progress bar */}
                 {chantier.showProgress !== false && (
@@ -603,6 +623,35 @@ export default function ChantierPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Delivery Period */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Date/Période de livraison prévisionnelle
+              </label>
+              <input
+                type="text"
+                value={deliveryPeriod}
+                onChange={(e) => setDeliveryPeriod(e.target.value)}
+                placeholder="Ex: Mi-février 2025, Semaine 12, T2 2025..."
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
             </div>
 
             {/* Progress */}
