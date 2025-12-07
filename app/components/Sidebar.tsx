@@ -127,7 +127,6 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
                     height: '8px',
                     backgroundColor: 'var(--color-accent-red)',
                     borderRadius: '50%',
-                    boxShadow: '0 0 8px var(--color-accent-red)',
                   }}
                 />
               )}

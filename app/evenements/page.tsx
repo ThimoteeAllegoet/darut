@@ -795,6 +795,81 @@ export default function EvenementsPage() {
                           ))}
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Bottom right elements - Change ticket, Parent incident, and Content button */}
+                  {(event.changeTicket || event.parentIncident || (event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix'))) && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '0.75rem',
+                      right: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: '0.5rem',
+                      fontSize: '0.65rem',
+                    }}>
+                      {/* Change ticket and Parent incident */}
+                      {(event.changeTicket || event.parentIncident) && (
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: '0.25rem',
+                        }}>
+                          {event.changeTicket && (
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                                Changement:{' '}
+                              </span>
+                              {event.changeTicketUrl ? (
+                                <a
+                                  href={event.changeTicketUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: 'var(--color-secondary-blue)',
+                                    textDecoration: 'none',
+                                    fontWeight: '700',
+                                  }}
+                                >
+                                  {event.changeTicket}
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                                  {event.changeTicket}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {event.parentIncident && (
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                                Incident parent:{' '}
+                              </span>
+                              {event.parentIncidentUrl ? (
+                                <a
+                                  href={event.parentIncidentUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: 'var(--color-secondary-blue)',
+                                    textDecoration: 'none',
+                                    fontWeight: '700',
+                                  }}
+                                >
+                                  {event.parentIncident}
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                                  {event.parentIncident}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Content URL button (only for Version and Hotfix) */}
                       {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
@@ -825,71 +900,6 @@ export default function EvenementsPage() {
                         </a>
                       )}
                     </div>
-                  </div>
-
-                  {/* Change ticket and Parent incident - positioned at bottom right */}
-                  {(event.changeTicket || event.parentIncident) && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '0.75rem',
-                      right: '0.75rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-end',
-                      gap: '0.25rem',
-                      fontSize: '0.65rem',
-                    }}>
-                      {event.changeTicket && (
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Changement:{' '}
-                          </span>
-                          {event.changeTicketUrl ? (
-                            <a
-                              href={event.changeTicketUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: 'var(--color-secondary-blue)',
-                                textDecoration: 'none',
-                                fontWeight: '700',
-                              }}
-                            >
-                              {event.changeTicket}
-                            </a>
-                          ) : (
-                            <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
-                              {event.changeTicket}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {event.parentIncident && (
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                            Incident parent:{' '}
-                          </span>
-                          {event.parentIncidentUrl ? (
-                            <a
-                              href={event.parentIncidentUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: 'var(--color-secondary-blue)',
-                                textDecoration: 'none',
-                                fontWeight: '700',
-                              }}
-                            >
-                              {event.parentIncident}
-                            </a>
-                          ) : (
-                            <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
-                              {event.parentIncident}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
                   )}
                 </div>
               ))}
@@ -905,7 +915,7 @@ export default function EvenementsPage() {
               backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -1156,7 +1166,7 @@ export default function EvenementsPage() {
               backgroundColor: 'var(--color-white)',
               borderRadius: '8px',
               padding: '1.5rem',
-              
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
             <h2

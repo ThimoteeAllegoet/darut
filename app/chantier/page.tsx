@@ -229,13 +229,6 @@ export default function ChantierPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem',
-                  transition: 'box-shadow 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                 }}
               >
                 {/* Header with title and state badge */}

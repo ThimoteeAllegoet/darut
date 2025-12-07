@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AlertProvider } from "./contexts/AlertContext";
 import MainLayout from "./components/MainLayout";
 
 const roboto = Roboto({
@@ -33,7 +34,9 @@ export default function RootLayout({
         style={{ fontFamily: 'Marianne, var(--font-roboto), sans-serif' }}
       >
         <AuthProvider>
-          <MainLayout>{children}</MainLayout>
+          <AlertProvider>
+            <MainLayout>{children}</MainLayout>
+          </AlertProvider>
         </AuthProvider>
       </body>
     </html>
