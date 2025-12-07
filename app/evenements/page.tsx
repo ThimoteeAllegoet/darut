@@ -777,68 +777,6 @@ export default function EvenementsPage() {
                       gap: '0.75rem',
                       flexShrink: 0,
                     }}>
-                      {/* Change ticket and Parent incident - positioned at bottom right */}
-                      {(event.changeTicket || event.parentIncident) && (
-                        <div style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-end',
-                          gap: '0.35rem',
-                          fontSize: '0.7rem',
-                        }}>
-                          {event.changeTicket && (
-                            <div style={{ textAlign: 'right' }}>
-                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                                Changement:{' '}
-                              </span>
-                              {event.changeTicketUrl ? (
-                                <a
-                                  href={event.changeTicketUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{
-                                    color: 'var(--color-secondary-blue)',
-                                    textDecoration: 'none',
-                                    fontWeight: '700',
-                                  }}
-                                >
-                                  {event.changeTicket}
-                                </a>
-                              ) : (
-                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
-                                  {event.changeTicket}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          {event.parentIncident && (
-                            <div style={{ textAlign: 'right' }}>
-                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
-                                Incident parent:{' '}
-                              </span>
-                              {event.parentIncidentUrl ? (
-                                <a
-                                  href={event.parentIncidentUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{
-                                    color: 'var(--color-secondary-blue)',
-                                    textDecoration: 'none',
-                                    fontWeight: '700',
-                                  }}
-                                >
-                                  {event.parentIncident}
-                                </a>
-                              ) : (
-                                <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
-                                  {event.parentIncident}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
                       {/* Applications badges */}
                       {event.applications && event.applications.length > 0 && (
                         <div style={{
@@ -934,6 +872,71 @@ export default function EvenementsPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Change ticket and Parent incident - positioned at bottom right */}
+                  {(event.changeTicket || event.parentIncident) && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '0.75rem',
+                      right: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: '0.25rem',
+                      fontSize: '0.65rem',
+                    }}>
+                      {event.changeTicket && (
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                            Changement:{' '}
+                          </span>
+                          {event.changeTicketUrl ? (
+                            <a
+                              href={event.changeTicketUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: 'var(--color-secondary-blue)',
+                                textDecoration: 'none',
+                                fontWeight: '700',
+                              }}
+                            >
+                              {event.changeTicket}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                              {event.changeTicket}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {event.parentIncident && (
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                            Incident parent:{' '}
+                          </span>
+                          {event.parentIncidentUrl ? (
+                            <a
+                              href={event.parentIncidentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                color: 'var(--color-secondary-blue)',
+                                textDecoration: 'none',
+                                fontWeight: '700',
+                              }}
+                            >
+                              {event.parentIncident}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                              {event.parentIncident}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1057,19 +1060,22 @@ export default function EvenementsPage() {
                   backgroundColor = dayLongPeriods[0].color;
                 }
 
+                // Calculate event indicator size based on count
+                const getEventSize = (count: number) => {
+                  if (count === 0) return { width: 0, height: 0 };
+                  if (count === 1) return { width: '100%', height: '100%' };
+                  if (count === 2) return { width: '48%', height: '100%' };
+                  if (count === 3) return { width: '32%', height: '100%' };
+                  return { width: '24%', height: '100%' };
+                };
+
+                const eventSize = getEventSize(dayEvents.length);
+
                 return (
                   <div
                     key={index}
-                    onMouseEnter={(e) => {
-                      const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
-                      if (tooltip) tooltip.style.display = 'block';
-                    }}
-                    onMouseLeave={(e) => {
-                      const tooltip = e.currentTarget.querySelector('[data-calendar-tooltip]') as HTMLElement;
-                      if (tooltip) tooltip.style.display = 'none';
-                    }}
                     style={{
-                      minHeight: '48px',
+                      minHeight: '60px',
                       backgroundColor,
                       border: day ? '1.5px solid rgba(230, 225, 219, 0.8)' : 'none',
                       borderRadius: '4px',
@@ -1078,7 +1084,6 @@ export default function EvenementsPage() {
                       flexDirection: 'column',
                       alignItems: 'center',
                       position: 'relative',
-                      cursor: (dayEvents.length > 0 || dayLongPeriods.length > 0) ? 'pointer' : 'default',
                     }}
                   >
                     {day && (
@@ -1088,95 +1093,43 @@ export default function EvenementsPage() {
                             fontSize: '0.75rem',
                             color: 'var(--color-primary-dark)',
                             fontWeight: '500',
+                            marginBottom: '0.25rem',
                           }}
                         >
                           {day}
                         </span>
-                        {(dayEvents.length > 0 || dayLongPeriods.length > 0) && (
+                        {dayEvents.length > 0 && (
                           <div
                             style={{
-                              display: dayEvents.length > 0 ? 'flex' : 'block',
+                              display: 'flex',
                               gap: '2px',
-                              marginTop: '2px',
-                              flexWrap: 'wrap',
-                              justifyContent: 'center',
-                              position: 'relative',
                               width: '100%',
-                              minHeight: dayEvents.length === 0 ? '12px' : 'auto',
+                              height: '100%',
+                              flex: 1,
+                              alignItems: 'center',
+                              justifyContent: 'center',
                             }}
                           >
-                            {/* Combined tooltip for long periods and events */}
-                            <div
-                              data-calendar-tooltip
-                              style={{
-                                display: 'none',
-                                position: 'absolute',
-                                bottom: '100%',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                backgroundColor: 'var(--color-primary-dark)',
-                                color: 'var(--color-white)',
-                                padding: '0.5rem',
-                                borderRadius: '4px',
-                                fontSize: '0.7rem',
-                                whiteSpace: 'nowrap',
-                                zIndex: 1000,
-                                marginBottom: '4px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                maxWidth: '250px',
-                                minWidth: '150px',
-                              }}
-                            >
-                              {dayLongPeriods.length > 0 && (
-                                <div style={{ marginBottom: dayEvents.length > 0 ? '0.5rem' : '0' }}>
-                                  <div style={{ fontWeight: '600', marginBottom: '0.25rem', fontSize: '0.65rem', opacity: 0.8 }}>
-                                    PÉRIODE
-                                  </div>
-                                  {dayLongPeriods.map((period) => (
-                                    <div key={period.id} style={{ marginBottom: '0.25rem' }}>
-                                      <div style={{ fontWeight: '600' }}>{period.title}</div>
-                                      <div style={{ fontSize: '0.65rem' }}>
-                                        {new Date(period.startDate).toLocaleDateString('fr-FR')} - {new Date(period.endDate).toLocaleDateString('fr-FR')}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {dayEvents.length > 0 && (
-                                <div>
-                                  <div style={{ fontWeight: '600', marginBottom: '0.25rem', fontSize: '0.65rem', opacity: 0.8 }}>
-                                    ÉVÉNEMENTS
-                                  </div>
-                                  {dayEvents.map((event) => (
-                                    <div key={event.id} style={{ marginBottom: '0.25rem', cursor: 'pointer' }} onClick={() => handleEventClick(event.id)}>
-                                      <div style={{ fontWeight: '600' }}>{event.title}</div>
-                                      <div style={{ fontSize: '0.65rem' }}>{event.type}</div>
-                                      {event.applications && event.applications.length > 0 && (
-                                        <div style={{ fontSize: '0.65rem' }}>
-                                          {event.applications.join(', ')}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                  <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
-                                    Cliquer sur un événement pour voir le détail
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Event dots */}
                             {dayEvents.map((event) => (
                               <div
                                 key={event.id}
                                 onClick={() => handleEventClick(event.id)}
                                 style={{
-                                  width: '6px',
-                                  height: '6px',
-                                  borderRadius: '50%',
+                                  width: eventSize.width,
+                                  height: eventSize.height,
+                                  maxHeight: '24px',
                                   backgroundColor: getEventColor(event.type),
                                   cursor: 'pointer',
+                                  borderRadius: '2px',
+                                  transition: 'all 0.2s',
                                 }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                                title={event.title}
                               />
                             ))}
                           </div>
@@ -1187,6 +1140,59 @@ export default function EvenementsPage() {
                 );
               })}
             </div>
+
+            {/* Legend for active periods in current month */}
+            {(() => {
+              const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+              const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+              const activePeriodsThisMonth = longPeriods.filter(period => {
+                const periodStart = new Date(period.startDate);
+                const periodEnd = new Date(period.endDate);
+                return (periodStart <= monthEnd && periodEnd >= monthStart);
+              });
+
+              if (activePeriodsThisMonth.length === 0) return null;
+
+              return (
+                <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: 'rgba(176, 191, 240, 0.1)', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
+                    PÉRIODES ACTIVES CE MOIS-CI
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    {activePeriodsThisMonth.map((period) => (
+                      <div
+                        key={period.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.7rem',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            backgroundColor: period.color,
+                            borderRadius: '3px',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontWeight: '600', color: 'var(--color-primary-dark)' }}>
+                            {period.title}
+                          </span>
+                          <span style={{ color: 'var(--color-primary-blue)', marginLeft: '0.5rem' }}>
+                            ({new Date(period.startDate).toLocaleDateString('fr-FR')} - {new Date(period.endDate).toLocaleDateString('fr-FR')})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Statistics Report */}
