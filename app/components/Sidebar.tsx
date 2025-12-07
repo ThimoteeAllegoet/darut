@@ -135,6 +135,24 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
         })}
       </nav>
 
+      {/* Version number */}
+      <div
+        style={{
+          padding: '0.5rem 1.5rem',
+          textAlign: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '0.65rem',
+            color: 'rgba(255, 255, 255, 0.3)',
+            fontWeight: '400',
+          }}
+        >
+          v1.0.0
+        </span>
+      </div>
+
       <div
         style={{
           padding: '1rem 1.5rem',

@@ -605,6 +605,7 @@ export default function EvenementsPage() {
                     backgroundColor: 'var(--color-white)',
                     borderRadius: '8px',
                     padding: '1rem',
+                    paddingBottom: event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') ? '3rem' : '1rem',
                     border: highlightedId === event.id
                       ? '2px solid var(--color-secondary-blue)'
                       : '1px solid rgba(230, 225, 219, 0.3)',
