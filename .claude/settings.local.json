@@ -9,7 +9,8 @@
       "Bash(git push:*)",
       "Bash(timeout /t 3 /nobreak)",
       "Bash(dir c:UsersITAL1630darutapp /B /AD)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

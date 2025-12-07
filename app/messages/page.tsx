@@ -232,6 +232,11 @@ export default function MessagesPage() {
           gap: '0.75rem',
           marginBottom: '1.5rem',
           flexWrap: 'wrap',
+          padding: '1rem',
+          backgroundColor: 'white',
+          borderRadius: '6px',
+          border: '1px solid rgba(230, 225, 219, 0.3)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
         }}
       >
         <div style={{ flex: '1 1 250px' }}>
@@ -454,7 +459,8 @@ export default function MessagesPage() {
                 backgroundColor: 'var(--color-white)',
                 borderRadius: '8px',
                 padding: '0.75rem',
-                border: '1px solid rgba(230, 225, 219, 0.5)',
+                border: '1px solid rgba(230, 225, 219, 0.3)',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.5rem',

@@ -29,6 +29,7 @@
 
   --background: #f4f6f8;
   --foreground: var(--color-primary-dark);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 @theme inline {

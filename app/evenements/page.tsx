@@ -515,9 +515,10 @@ export default function EvenementsPage() {
               gap: '0.75rem',
               marginBottom: '1.25rem',
               padding: '1rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              backgroundColor: 'white',
               borderRadius: '6px',
-              border: '1px solid rgba(230, 225, 219, 0.5)',
+              border: '1px solid rgba(230, 225, 219, 0.3)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
             <div style={{ flex: 1 }}>
@@ -653,7 +654,8 @@ export default function EvenementsPage() {
                     padding: '1rem',
                     border: highlightedId === event.id
                       ? '2px solid var(--color-secondary-blue)'
-                      : '1px solid rgba(230, 225, 219, 0.5)',
+                      : '1px solid rgba(230, 225, 219, 0.3)',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                     transition: 'all 0.3s',
                   }}
                 >
@@ -737,37 +739,6 @@ export default function EvenementsPage() {
                           </div>
                         )}
                       </div>
-
-                      {/* Content URL button (only for Version and Hotfix) */}
-                      {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
-                        <div>
-                          <a
-                            href={event.contentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: 'inline-block',
-                              padding: '0.35rem 0.75rem',
-                              backgroundColor: 'var(--color-secondary-blue)',
-                              color: 'var(--color-white)',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: '600',
-                              textDecoration: 'none',
-                              transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#2f4fb5';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
-                            }}
-                          >
-                            Voir le contenu
-                          </a>
-                        </div>
-                      )}
                     </div>
 
                     {/* Right side container for badges and buttons */}
@@ -778,6 +749,35 @@ export default function EvenementsPage() {
                       gap: '0.75rem',
                       flexShrink: 0,
                     }}>
+                      {/* Content URL button (only for Version and Hotfix) */}
+                      {event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix') && (
+                        <a
+                          href={event.contentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.35rem 0.75rem',
+                            backgroundColor: 'var(--color-secondary-blue)',
+                            color: 'var(--color-white)',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            transition: 'background-color 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#2f4fb5';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+                          }}
+                        >
+                          Voir le contenu
+                        </a>
+                      )}
+
                       {/* Admin buttons */}
                       {isAuthenticated && (
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -2182,13 +2182,20 @@ export default function EvenementsPage() {
             maxWidth: '250px',
           }}
         >
-          <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{tooltip.event.title}</div>
-          <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>{tooltip.event.type}</div>
-          {tooltip.event.applications && tooltip.event.applications.length > 0 && (
-            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.8 }}>
-              {tooltip.event.applications.join(', ')}
-            </div>
-          )}
+          <div style={{ fontWeight: '600', marginBottom: '0.35rem' }}>
+            {tooltip.event.title} ({tooltip.event.type})
+          </div>
+          {tooltip.event.periods && tooltip.event.periods.map((period) => {
+            const times = [];
+            if (period.startTime) times.push(period.startTime);
+            if (period.endTime) times.push(period.endTime);
+            const timeStr = times.length > 0 ? times.join(' - ') : 'Heure non spécifiée';
+            return (
+              <div key={period.id} style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.15rem' }}>
+                {timeStr}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

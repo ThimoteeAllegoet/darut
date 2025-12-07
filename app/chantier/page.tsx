@@ -245,7 +245,8 @@ export default function ChantierPage() {
                   backgroundColor: 'var(--color-white)',
                   borderRadius: '8px',
                   padding: '1.25rem',
-                  border: '1px solid rgba(230, 225, 219, 0.5)',
+                  border: '1px solid rgba(230, 225, 219, 0.3)',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem',
@@ -255,7 +256,7 @@ export default function ChantierPage() {
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                 }}
               >
                 {/* Header with title and state badge */}

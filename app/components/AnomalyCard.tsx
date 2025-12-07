@@ -43,13 +43,12 @@ export default function AnomalyCard({
       ref={setNodeRef}
       style={{
         ...style,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        backdropFilter: 'blur(10px)',
+        backgroundColor: 'white',
         borderRadius: '8px',
         padding: '1rem',
         marginBottom: '0.75rem',
-        boxShadow: isDragging ? '0 4px 12px rgba(29, 30, 60, 0.2)' : '0 1px 3px rgba(29, 30, 60, 0.08)',
-        border: '1px solid rgba(230, 225, 219, 0.5)',
+        boxShadow: isDragging ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
+        border: '1px solid rgba(230, 225, 219, 0.3)',
         position: 'relative',
       }}
     >

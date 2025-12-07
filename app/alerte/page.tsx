@@ -191,7 +191,7 @@ export default function AlertePage() {
                 backgroundColor: 'var(--color-white)',
                 borderRadius: '8px',
                 padding: '1.5rem',
-                boxShadow: '0 2px 8px rgba(29, 30, 60, 0.08)',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
                 border: alert.isActive ? '2px solid var(--color-accent-red)' : '1px solid rgba(230, 225, 219, 0.3)',
               }}
             >
