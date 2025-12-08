@@ -23,7 +23,9 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
     { name: 'Clipboard', path: '/messages', icon: 'note_alt', adminOnly: true },
     { name: 'Médiathèque', path: '/mediatheque', icon: 'book_2', adminOnly: false },
     { name: 'MESI', path: '/mesi', icon: 'rocket_launch', adminOnly: false },
+    { name: 'Dictionnaire', path: '/dictionnaire', icon: 'menu_book', adminOnly: false },
     { name: 'Recherche CVM', path: '/recherche-cvm', icon: 'forum', adminOnly: true },
+    { name: 'Congés', path: '/conges', icon: 'event_available', adminOnly: true },
     { name: 'Alerte', path: '/alerte', icon: 'report', adminOnly: true, hasIndicator: true },
   ];
 
