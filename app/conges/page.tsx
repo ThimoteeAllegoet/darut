@@ -15,12 +15,6 @@ const leaveTypeColors: Record<LeaveType, string> = {
   'Absence': '#ef4444',
 };
 
-const periodLabels: Record<PeriodType, string> = {
-  'matin': 'M',
-  'après-midi': 'AM',
-  'journée': 'J',
-};
-
 export default function CongesPage() {
   const { isAuthenticated } = useAuth();
   const {
@@ -56,8 +50,9 @@ export default function CongesPage() {
   const [memberIsValidator, setMemberIsValidator] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
-  // Leave form
-  const [leaveDate, setLeaveDate] = useState('');
+  // Leave form - modified for period selection
+  const [leaveStartDate, setLeaveStartDate] = useState('');
+  const [leaveEndDate, setLeaveEndDate] = useState('');
   const [leaveType, setLeaveType] = useState<LeaveType>('Congés');
   const [leavePeriod, setLeavePeriod] = useState<PeriodType>('journée');
   const [leaveComment, setLeaveComment] = useState('');
@@ -84,6 +79,10 @@ export default function CongesPage() {
 
   const nextMonth = () => {
     setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
   };
 
   const handleAddMember = (e: React.FormEvent) => {
@@ -116,14 +115,24 @@ export default function CongesPage() {
 
   const handleAddLeave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMember || !leaveDate) {
-      alert('Veuillez sélectionner un membre et une date');
+    if (!selectedMember || !leaveStartDate) {
+      alert('Veuillez sélectionner un membre et une date de début');
       return;
     }
 
-    addLeave(selectedMember, leaveType, leaveDate, leavePeriod, leaveComment);
+    // Generate all dates in the range
+    const start = new Date(leaveStartDate);
+    const end = leaveEndDate ? new Date(leaveEndDate) : start;
 
-    setLeaveDate('');
+    const currentDateLoop = new Date(start);
+    while (currentDateLoop <= end) {
+      const dateStr = currentDateLoop.toISOString().split('T')[0];
+      addLeave(selectedMember, leaveType, dateStr, leavePeriod, leaveComment);
+      currentDateLoop.setDate(currentDateLoop.getDate() + 1);
+    }
+
+    setLeaveStartDate('');
+    setLeaveEndDate('');
     setLeaveType('Congés');
     setLeavePeriod('journée');
     setLeaveComment('');
@@ -289,6 +298,8 @@ export default function CongesPage() {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '1.5rem',
+            gap: '1rem',
+            flexWrap: 'wrap',
           }}
         >
           <button
@@ -317,21 +328,38 @@ export default function CongesPage() {
           >
             {monthName}
           </h2>
-          <button
-            onClick={nextMonth}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'var(--color-light-blue)',
-              color: 'var(--color-secondary-blue)',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-            }}
-          >
-            Suivant →
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={goToToday}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: 'var(--color-secondary-blue)',
+                color: 'var(--color-white)',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+              }}
+            >
+              Aujourd'hui
+            </button>
+            <button
+              onClick={nextMonth}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: 'var(--color-light-blue)',
+                color: 'var(--color-secondary-blue)',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+              }}
+            >
+              Suivant →
+            </button>
+          </div>
         </div>
 
         {/* Calendar grid */}
@@ -365,9 +393,12 @@ export default function CongesPage() {
             }
 
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dayLeaves = getLeavesByDate(dateStr).filter(
+            const allDayLeaves = getLeavesByDate(dateStr).filter(
               (leave) => !selectedMember || leave.memberId === selectedMember
             );
+
+            const morningLeaves = allDayLeaves.filter(l => l.period === 'matin' || l.period === 'journée');
+            const afternoonLeaves = allDayLeaves.filter(l => l.period === 'après-midi' || l.period === 'journée');
 
             const isToday =
               day === new Date().getDate() &&
@@ -378,26 +409,42 @@ export default function CongesPage() {
               <div
                 key={day}
                 style={{
-                  minHeight: '80px',
-                  padding: '0.5rem',
+                  minHeight: '100px',
                   backgroundColor: isToday ? 'rgba(64, 107, 222, 0.1)' : 'var(--color-off-white-1)',
                   borderRadius: '6px',
                   border: isToday ? '2px solid var(--color-secondary-blue)' : 'none',
-                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
+                {/* Day number */}
                 <div
                   style={{
                     fontSize: '0.85rem',
                     fontWeight: '600',
                     color: 'var(--color-primary-dark)',
-                    marginBottom: '0.25rem',
+                    padding: '0.4rem 0.5rem',
                   }}
                 >
                   {day}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  {dayLeaves.map((leave) => (
+
+                {/* Morning period */}
+                <div
+                  style={{
+                    flex: 1,
+                    borderBottom: '1px dashed rgba(230, 225, 219, 0.5)',
+                    padding: '0.3rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.2rem',
+                  }}
+                >
+                  <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
+                    Matin
+                  </div>
+                  {morningLeaves.map((leave) => (
                     <div
                       key={leave.id}
                       style={{
@@ -407,17 +454,53 @@ export default function CongesPage() {
                         color: 'white',
                         borderRadius: '3px',
                         fontWeight: '600',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '0.25rem',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        opacity: leave.status === 'pending' ? 0.5 : 1,
+                        border: leave.status === 'pending' ? '1px dashed white' : 'none',
                       }}
-                      title={`${leave.memberName} - ${leave.type}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                     >
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {leave.memberName.split(' ')[0]}
-                      </span>
-                      <span>{periodLabels[leave.period]}</span>
+                      {leave.memberName.split(' ')[0]}
+                      {leave.status === 'pending' && ' ⏳'}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Afternoon period */}
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '0.3rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.2rem',
+                  }}
+                >
+                  <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
+                    Après-midi
+                  </div>
+                  {afternoonLeaves.map((leave) => (
+                    <div
+                      key={leave.id}
+                      style={{
+                        fontSize: '0.65rem',
+                        padding: '0.2rem 0.4rem',
+                        backgroundColor: leaveTypeColors[leave.type],
+                        color: 'white',
+                        borderRadius: '3px',
+                        fontWeight: '600',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        opacity: leave.status === 'pending' ? 0.5 : 1,
+                        border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                      }}
+                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                    >
+                      {leave.memberName.split(' ')[0]}
+                      {leave.status === 'pending' && ' ⏳'}
                     </div>
                   ))}
                 </div>
@@ -447,7 +530,7 @@ export default function CongesPage() {
         >
           Légende
         </h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
           {leaveTypes.map((type) => (
             <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div
@@ -462,8 +545,9 @@ export default function CongesPage() {
             </div>
           ))}
         </div>
-        <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
-          <strong>Périodes :</strong> M = Matin, AM = Après-midi, J = Journée complète
+        <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
+          <div><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées en Matin (haut) et Après-midi (bas)</div>
         </div>
       </div>
 
@@ -836,13 +920,40 @@ export default function CongesPage() {
                     marginBottom: '0.5rem',
                   }}
                 >
-                  Date *
+                  Date de début *
                 </label>
                 <input
                   type="date"
-                  value={leaveDate}
-                  onChange={(e) => setLeaveDate(e.target.value)}
+                  value={leaveStartDate}
+                  onChange={(e) => setLeaveStartDate(e.target.value)}
                   required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Date de fin (optionnel, pour une période)
+                </label>
+                <input
+                  type="date"
+                  value={leaveEndDate}
+                  onChange={(e) => setLeaveEndDate(e.target.value)}
+                  min={leaveStartDate}
                   style={{
                     width: '100%',
                     padding: '0.75rem',
@@ -1019,7 +1130,7 @@ export default function CongesPage() {
                   <div style={{ marginBottom: '0.5rem' }}>
                     <strong style={{ color: 'var(--color-primary-dark)' }}>{leave.memberName}</strong>
                     <span style={{ marginLeft: '0.5rem', color: 'var(--color-primary-blue)', fontSize: '0.9rem' }}>
-                      {new Date(leave.date).toLocaleDateString('fr-FR')} - {periodLabels[leave.period]}
+                      {new Date(leave.date).toLocaleDateString('fr-FR')} - {leave.period === 'journée' ? 'Journée' : leave.period === 'matin' ? 'Matin' : 'Après-midi'}
                     </span>
                   </div>
                   {leave.comment && (
