@@ -242,6 +242,13 @@ export default function CongesPage() {
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: '500',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2f4fb5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
             + Ajouter une absence
@@ -427,10 +434,10 @@ export default function CongesPage() {
               (leave) => !calendarMemberFilter || leave.memberId === calendarMemberFilter
             );
 
-            // Separate leaves by period
-            const morningOnlyLeaves = allDayLeaves.filter(l => l.period === 'matin');
-            const afternoonOnlyLeaves = allDayLeaves.filter(l => l.period === 'après-midi');
-            const fullDayLeaves = allDayLeaves.filter(l => l.period === 'journée');
+            // Separate leaves by period and sort alphabetically by member name
+            const morningOnlyLeaves = allDayLeaves.filter(l => l.period === 'matin').sort((a, b) => a.memberName.localeCompare(b.memberName));
+            const afternoonOnlyLeaves = allDayLeaves.filter(l => l.period === 'après-midi').sort((a, b) => a.memberName.localeCompare(b.memberName));
+            const fullDayLeaves = allDayLeaves.filter(l => l.period === 'journée').sort((a, b) => a.memberName.localeCompare(b.memberName));
 
             const isToday =
               day === new Date().getDate() &&
@@ -499,14 +506,15 @@ export default function CongesPage() {
                             position: 'absolute',
                             bottom: '0',
                             right: '0',
-                            fontSize: '0.6rem',
-                            opacity: 0.8,
+                            width: '0',
+                            height: '0',
+                            borderLeft: '8px solid transparent',
+                            borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                            borderBottomRightRadius: '3px',
                             cursor: 'help',
                           }}
                           title={leave.comment}
-                        >
-                          💬
-                        </span>
+                        />
                       )}
                     </div>
                   ))}
@@ -519,7 +527,14 @@ export default function CongesPage() {
                       ...afternoonOnlyLeaves.map(l => l.memberId)
                     ]);
 
-                    return Array.from(memberIds).map(memberId => {
+                    // Sort member IDs alphabetically by member name
+                    const sortedMemberIds = Array.from(memberIds).sort((a, b) => {
+                      const memberA = members.find(m => m.id === a);
+                      const memberB = members.find(m => m.id === b);
+                      return (memberA?.name || '').localeCompare(memberB?.name || '');
+                    });
+
+                    return sortedMemberIds.map(memberId => {
                       const morning = morningOnlyLeaves.find(l => l.memberId === memberId);
                       const afternoon = afternoonOnlyLeaves.find(l => l.memberId === memberId);
 
@@ -565,14 +580,15 @@ export default function CongesPage() {
                                       position: 'absolute',
                                       bottom: '0',
                                       right: '0',
-                                      fontSize: '0.6rem',
-                                      opacity: 0.8,
+                                      width: '0',
+                                      height: '0',
+                                      borderLeft: '8px solid transparent',
+                                      borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                                      borderBottomRightRadius: '3px',
                                       cursor: 'help',
                                     }}
                                     title={morning.comment}
-                                  >
-                                    💬
-                                  </span>
+                                  />
                                 )}
                               </div>
                             )}
@@ -610,14 +626,15 @@ export default function CongesPage() {
                                       position: 'absolute',
                                       bottom: '0',
                                       right: '0',
-                                      fontSize: '0.6rem',
-                                      opacity: 0.8,
+                                      width: '0',
+                                      height: '0',
+                                      borderLeft: '8px solid transparent',
+                                      borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                                      borderBottomRightRadius: '3px',
                                       cursor: 'help',
                                     }}
                                     title={afternoon.comment}
-                                  >
-                                    💬
-                                  </span>
+                                  />
                                 )}
                               </div>
                             )}

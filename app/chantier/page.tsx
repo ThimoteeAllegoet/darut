@@ -199,7 +199,9 @@ export default function ChantierPage() {
             color: 'var(--color-primary-blue)',
           }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚚</div>
+          <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', color: 'rgba(40, 50, 118, 0.5)' }}>
+            front_loader
+          </span>
           <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
             Aucun chantier enregistré
           </p>

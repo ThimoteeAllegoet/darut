@@ -200,7 +200,7 @@ export default function MessagesPage() {
             onClick={() => setIsAddingNew(true)}
             style={{
               padding: '0.65rem 1.25rem',
-              backgroundColor: 'var(--color-secondary-blue)',
+              backgroundColor: 'var(--color-primary-dark)',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: '6px',
@@ -213,13 +213,13 @@ export default function MessagesPage() {
               gap: '0.5rem',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#2f4fb5';
-            }}
-            onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)';
+            }}
           >
-            <span style={{ fontSize: '1.2rem' }}>+</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>add</span>
             Nouveau message
           </button>
         )}
@@ -614,7 +614,9 @@ export default function MessagesPage() {
               color: 'var(--color-primary-blue)',
             }}
           >
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💬</div>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', color: 'rgba(40, 50, 118, 0.5)' }}>
+              note_alt
+            </span>
             <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
               {messages.length === 0 ? 'Aucun message prédéfini' : 'Aucun résultat'}
             </p>

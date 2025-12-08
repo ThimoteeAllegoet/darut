@@ -104,13 +104,21 @@ export default function MESIPage() {
         <div
           style={{
             textAlign: 'center',
-            padding: '3rem',
-            color: 'rgba(40, 50, 118, 0.5)',
-            fontSize: '0.95rem',
+            padding: '3rem 1rem',
+            color: 'var(--color-primary-blue)',
           }}
         >
-          Aucune rubrique disponible.
-          {isAuthenticated && ' Cliquez sur "Nouvelle rubrique" pour en ajouter une.'}
+          <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', color: 'rgba(40, 50, 118, 0.5)' }}>
+            rocket_launch
+          </span>
+          <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
+            Aucune rubrique disponible
+          </p>
+          {isAuthenticated && (
+            <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              Cliquez sur "Nouvelle rubrique" pour en ajouter une
+            </p>
+          )}
         </div>
       ) : (
         <div

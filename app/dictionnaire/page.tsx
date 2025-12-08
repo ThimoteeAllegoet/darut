@@ -166,7 +166,7 @@ export default function DictionnairePage() {
               }}
             />
           </div>
-          <div style={{ flex: '0 1 200px' }}>
+          <div style={{ flex: '0 1 280px' }}>
             <select
               value={selectedApp || ''}
               onChange={(e) => setSelectedApp(e.target.value as ApplicationName || undefined)}

@@ -584,7 +584,9 @@ export default function EvenementsPage() {
                 color: 'var(--color-primary-blue)',
               }}
             >
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
+              <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block', color: 'rgba(40, 50, 118, 0.5)' }}>
+                event
+              </span>
               <p style={{ fontSize: '1.1rem', fontWeight: '500' }}>
                 {events.length === 0 ? 'Aucun événement enregistré' : 'Aucun événement ne correspond aux filtres'}
               </p>
