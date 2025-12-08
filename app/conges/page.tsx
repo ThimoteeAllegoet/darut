@@ -121,33 +121,44 @@ export default function CongesPage() {
       return;
     }
 
+    // Helper function to add days to a date string (YYYY-MM-DD)
+    const addDaysToDateString = (dateStr: string, days: number): string => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      // Days in each month (non-leap year, will handle Feb separately)
+      const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      // Check for leap year
+      const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+      if (isLeapYear) daysInMonth[1] = 29;
+
+      let newDay = day + days;
+      let newMonth = month;
+      let newYear = year;
+
+      // Handle month/year overflow
+      while (newDay > daysInMonth[newMonth - 1]) {
+        newDay -= daysInMonth[newMonth - 1];
+        newMonth++;
+        if (newMonth > 12) {
+          newMonth = 1;
+          newYear++;
+        }
+      }
+
+      return `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
+    };
+
     // Generate all dates in the range
-    const startParts = leaveStartDate.split('-');
-    const endParts = leaveEndDate ? leaveEndDate.split('-') : leaveStartDate.split('-');
+    const endDate = leaveEndDate || leaveStartDate;
 
-    const startYear = Number(startParts[0]);
-    const startMonth = Number(startParts[1]) - 1;
-    const startDay = Number(startParts[2]);
-
-    const endYear = Number(endParts[0]);
-    const endMonth = Number(endParts[1]) - 1;
-    const endDay = Number(endParts[2]);
-
-    const start = new Date(startYear, startMonth, startDay);
-    const end = new Date(endYear, endMonth, endDay);
-
-    // Calculate the difference in days
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    // Calculate number of days between start and end
+    const startDate = new Date(leaveStartDate + 'T12:00:00');
+    const finalDate = new Date(endDate + 'T12:00:00');
+    const diffDays = Math.round((finalDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
     // Add leave for each day
     for (let i = 0; i <= diffDays; i++) {
-      const currentDate = new Date(startYear, startMonth, startDay + i);
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-
+      const dateStr = addDaysToDateString(leaveStartDate, i);
       addLeave(modalSelectedMember, leaveType, dateStr, leavePeriod, leaveComment);
     }
 
@@ -418,8 +429,14 @@ export default function CongesPage() {
               (leave) => !calendarMemberFilter || leave.memberId === calendarMemberFilter
             );
 
-            const morningLeaves = allDayLeaves.filter(l => l.period === 'matin' || l.period === 'journée');
-            const afternoonLeaves = allDayLeaves.filter(l => l.period === 'après-midi' || l.period === 'journée');
+            // Separate leaves by period
+            const morningOnlyLeaves = allDayLeaves.filter(l => l.period === 'matin');
+            const afternoonOnlyLeaves = allDayLeaves.filter(l => l.period === 'après-midi');
+            const fullDayLeaves = allDayLeaves.filter(l => l.period === 'journée');
+
+            // Combine for display: full day leaves span both periods
+            const morningLeaves = [...morningOnlyLeaves, ...fullDayLeaves];
+            const afternoonLeaves = [...afternoonOnlyLeaves, ...fullDayLeaves];
 
             const isToday =
               day === new Date().getDate() &&
@@ -457,40 +474,48 @@ export default function CongesPage() {
                     flex: 1,
                     display: 'flex',
                     gap: '0px',
+                    alignItems: 'stretch',
                   }}
                 >
                   {/* Morning period (left) */}
                   <div
                     style={{
                       flex: 1,
-                      borderRight: '2px solid rgba(40, 50, 118, 0.2)',
+                      borderRight: '2px solid rgba(40, 50, 118, 0.25)',
                       padding: '0.3rem',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '0.2rem',
                     }}
                   >
-                    {morningLeaves.map((leave) => (
-                      <div
-                        key={leave.id}
-                        style={{
-                          fontSize: '0.65rem',
-                          padding: '0.2rem 0.4rem',
-                          backgroundColor: leaveTypeColors[leave.type],
-                          color: 'white',
-                          borderRadius: '3px',
-                          fontWeight: '600',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          opacity: leave.status === 'pending' ? 0.5 : 1,
-                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                        }}
-                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
-                      >
-                        {leave.memberName.split(' ')[0]}
-                      </div>
-                    ))}
+                    {morningLeaves.map((leave) => {
+                      // Check if this is a full day leave
+                      const isFullDay = leave.period === 'journée';
+                      return (
+                        <div
+                          key={leave.id}
+                          style={{
+                            fontSize: '0.65rem',
+                            padding: '0.2rem 0.4rem',
+                            backgroundColor: leaveTypeColors[leave.type],
+                            color: 'white',
+                            borderRadius: isFullDay ? '3px 0 0 3px' : '3px',
+                            fontWeight: '600',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            opacity: leave.status === 'pending' ? 0.5 : 1,
+                            border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                            marginRight: isFullDay ? '-2px' : '0',
+                            position: 'relative',
+                            zIndex: isFullDay ? 2 : 1,
+                          }}
+                          title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                        >
+                          {leave.memberName.split(' ')[0]}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Afternoon period (right) */}
@@ -503,27 +528,34 @@ export default function CongesPage() {
                       gap: '0.2rem',
                     }}
                   >
-                    {afternoonLeaves.map((leave) => (
-                      <div
-                        key={leave.id}
-                        style={{
-                          fontSize: '0.65rem',
-                          padding: '0.2rem 0.4rem',
-                          backgroundColor: leaveTypeColors[leave.type],
-                          color: 'white',
-                          borderRadius: '3px',
-                          fontWeight: '600',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          opacity: leave.status === 'pending' ? 0.5 : 1,
-                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                        }}
-                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
-                      >
-                        {leave.memberName.split(' ')[0]}
-                      </div>
-                    ))}
+                    {afternoonLeaves.map((leave) => {
+                      // Check if this is a full day leave
+                      const isFullDay = leave.period === 'journée';
+                      return (
+                        <div
+                          key={`afternoon-${leave.id}`}
+                          style={{
+                            fontSize: '0.65rem',
+                            padding: '0.2rem 0.4rem',
+                            backgroundColor: leaveTypeColors[leave.type],
+                            color: 'white',
+                            borderRadius: isFullDay ? '0 3px 3px 0' : '3px',
+                            fontWeight: '600',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            opacity: leave.status === 'pending' ? 0.5 : 1,
+                            border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                            marginLeft: isFullDay ? '-2px' : '0',
+                            position: 'relative',
+                            zIndex: isFullDay ? 2 : 1,
+                          }}
+                          title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                        >
+                          {leave.memberName.split(' ')[0]}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
