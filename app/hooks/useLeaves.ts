@@ -54,7 +54,7 @@ export function useLeaves() {
     const status: LeaveStatus = type === 'Congés' ? 'pending' : 'approved';
 
     const newLeave: LeaveRequest = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       memberId,
       memberName: member.name,
       type,
@@ -112,7 +112,7 @@ export function useLeaves() {
   };
 
   const getLeavesByDate = (date: string) => {
-    return leaves.filter((leave) => leave.date === date && leave.status === 'approved');
+    return leaves.filter((leave) => leave.date === date && leave.status !== 'rejected');
   };
 
   const getLeavesByMember = (memberId: string) => {

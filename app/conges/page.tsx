@@ -122,12 +122,19 @@ export default function CongesPage() {
     }
 
     // Generate all dates in the range
-    const start = new Date(leaveStartDate + 'T00:00:00');
-    const end = leaveEndDate ? new Date(leaveEndDate + 'T00:00:00') : new Date(leaveStartDate + 'T00:00:00');
+    const startParts = leaveStartDate.split('-');
+    const endParts = leaveEndDate ? leaveEndDate.split('-') : leaveStartDate.split('-');
+
+    const start = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
+    const end = new Date(Number(endParts[0]), Number(endParts[1]) - 1, Number(endParts[2]));
 
     const currentDateLoop = new Date(start);
     while (currentDateLoop <= end) {
-      const dateStr = currentDateLoop.toISOString().split('T')[0];
+      const year = currentDateLoop.getFullYear();
+      const month = String(currentDateLoop.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDateLoop.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
       addLeave(modalSelectedMember, leaveType, dateStr, leavePeriod, leaveComment);
       currentDateLoop.setDate(currentDateLoop.getDate() + 1);
     }
@@ -451,9 +458,6 @@ export default function CongesPage() {
                       gap: '0.2rem',
                     }}
                   >
-                    <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
-                      Matin
-                    </div>
                     {morningLeaves.map((leave) => (
                       <div
                         key={leave.id}
@@ -488,9 +492,6 @@ export default function CongesPage() {
                       gap: '0.2rem',
                     }}
                   >
-                    <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
-                      Après-midi
-                    </div>
                     {afternoonLeaves.map((leave) => (
                       <div
                         key={leave.id}
@@ -558,7 +559,7 @@ export default function CongesPage() {
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
           <div><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
-          <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées en Matin (gauche) et Après-midi (droite)</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées verticalement (gauche = matin, droite = après-midi)</div>
         </div>
       </div>
 
