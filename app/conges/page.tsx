@@ -127,43 +127,29 @@ export default function CongesPage() {
       return;
     }
 
-    // Helper function to add days to a date string (YYYY-MM-DD)
-    const addDaysToDateString = (dateStr: string, days: number): string => {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      // Days in each month (non-leap year, will handle Feb separately)
-      const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-      // Check for leap year
-      const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-      if (isLeapYear) daysInMonth[1] = 29;
-
-      let newDay = day + days;
-      let newMonth = month;
-      let newYear = year;
-
-      // Handle month/year overflow
-      while (newDay > daysInMonth[newMonth - 1]) {
-        newDay -= daysInMonth[newMonth - 1];
-        newMonth++;
-        if (newMonth > 12) {
-          newMonth = 1;
-          newYear++;
-        }
-      }
-
-      return `${newYear}-${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
-    };
-
     // If periode mode, add multiple days
     if (leavePeriod === 'periode') {
       const endDate = leaveEndDate || leaveStartDate;
-      const startDate = new Date(leaveStartDate + 'T12:00:00');
-      const finalDate = new Date(endDate + 'T12:00:00');
-      const diffDays = Math.round((finalDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      for (let i = 0; i <= diffDays; i++) {
-        const dateStr = addDaysToDateString(leaveStartDate, i);
+      // Parse dates manually to avoid timezone issues
+      const [startYear, startMonth, startDay] = leaveStartDate.split('-').map(Number);
+      const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+
+      // Create Date objects at noon to avoid timezone issues
+      const currentDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+      const finalDate = new Date(endYear, endMonth - 1, endDay, 12, 0, 0);
+
+      // Generate leave for each day
+      while (currentDate <= finalDate) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
         addLeave(modalSelectedMember, leaveType, dateStr, 'journée', leaveComment);
+
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
       }
     } else {
       // Single day with specific period
@@ -466,14 +452,23 @@ export default function CongesPage() {
                     fontSize: '0.85rem',
                     fontWeight: '600',
                     color: 'var(--color-primary-dark)',
-                    padding: '0.4rem 0.5rem',
+                    padding: '0.4rem 0.5rem 0.3rem 0.5rem',
                   }}
                 >
                   {day}
                 </div>
 
-                {/* Full day leaves (spanning both periods) */}
-                <div style={{ padding: '0.3rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {/* Leaves container with alignment */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.2rem',
+                    padding: '0.3rem',
+                  }}
+                >
+                  {/* Full day leaves (spanning both periods) */}
                   {fullDayLeaves.map((leave) => (
                     <div
                       key={leave.id}
@@ -489,89 +484,135 @@ export default function CongesPage() {
                         whiteSpace: 'nowrap',
                         opacity: leave.status === 'pending' ? 0.5 : 1,
                         border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                        position: 'relative',
                       }}
                       title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                     >
                       {leave.memberName.split(' ')[0]}
+                      {leave.comment && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            right: '0',
+                            width: '0',
+                            height: '0',
+                            borderLeft: '6px solid transparent',
+                            borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
+                            borderBottomRightRadius: '3px',
+                          }}
+                        />
+                      )}
                     </div>
                   ))}
-                </div>
 
-                {/* Morning and Afternoon side by side (only for half-day leaves) */}
-                <div
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    gap: '0px',
-                    alignItems: 'stretch',
-                  }}
-                >
-                  {/* Morning period (left) */}
-                  <div
-                    style={{
-                      flex: 1,
-                      borderRight: '2px solid rgba(40, 50, 118, 0.25)',
-                      padding: '0.3rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.2rem',
-                    }}
-                  >
-                    {morningOnlyLeaves.map((leave) => (
+                  {/* Half-day leaves in a flex row */}
+                  {(morningOnlyLeaves.length > 0 || afternoonOnlyLeaves.length > 0) && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0px',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      {/* Morning period (left) */}
                       <div
-                        key={leave.id}
                         style={{
-                          fontSize: '0.65rem',
-                          padding: '0.2rem 0.4rem',
-                          backgroundColor: leaveTypeColors[leave.type],
-                          color: 'white',
-                          borderRadius: '3px',
-                          fontWeight: '600',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          opacity: leave.status === 'pending' ? 0.5 : 1,
-                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                          flex: 1,
+                          borderRight: '2px solid rgba(40, 50, 118, 0.25)',
+                          paddingRight: '0.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.2rem',
                         }}
-                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                       >
-                        {leave.memberName.split(' ')[0]}
+                        {morningOnlyLeaves.map((leave) => (
+                          <div
+                            key={leave.id}
+                            style={{
+                              fontSize: '0.65rem',
+                              padding: '0.2rem 0.4rem',
+                              backgroundColor: leaveTypeColors[leave.type],
+                              color: 'white',
+                              borderRadius: '3px',
+                              fontWeight: '600',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              opacity: leave.status === 'pending' ? 0.5 : 1,
+                              border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                              position: 'relative',
+                            }}
+                            title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                          >
+                            {leave.memberName.split(' ')[0]}
+                            {leave.comment && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '0',
+                                  right: '0',
+                                  width: '0',
+                                  height: '0',
+                                  borderLeft: '6px solid transparent',
+                                  borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
+                                  borderBottomRightRadius: '3px',
+                                }}
+                              />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
 
-                  {/* Afternoon period (right) */}
-                  <div
-                    style={{
-                      flex: 1,
-                      padding: '0.3rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.2rem',
-                    }}
-                  >
-                    {afternoonOnlyLeaves.map((leave) => (
+                      {/* Afternoon period (right) */}
                       <div
-                        key={leave.id}
                         style={{
-                          fontSize: '0.65rem',
-                          padding: '0.2rem 0.4rem',
-                          backgroundColor: leaveTypeColors[leave.type],
-                          color: 'white',
-                          borderRadius: '3px',
-                          fontWeight: '600',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          opacity: leave.status === 'pending' ? 0.5 : 1,
-                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                          flex: 1,
+                          paddingLeft: '0.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.2rem',
                         }}
-                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                       >
-                        {leave.memberName.split(' ')[0]}
+                        {afternoonOnlyLeaves.map((leave) => (
+                          <div
+                            key={leave.id}
+                            style={{
+                              fontSize: '0.65rem',
+                              padding: '0.2rem 0.4rem',
+                              backgroundColor: leaveTypeColors[leave.type],
+                              color: 'white',
+                              borderRadius: '3px',
+                              fontWeight: '600',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              opacity: leave.status === 'pending' ? 0.5 : 1,
+                              border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                              position: 'relative',
+                            }}
+                            title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                          >
+                            {leave.memberName.split(' ')[0]}
+                            {leave.comment && (
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '0',
+                                  right: '0',
+                                  width: '0',
+                                  height: '0',
+                                  borderLeft: '6px solid transparent',
+                                  borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
+                                  borderBottomRightRadius: '3px',
+                                }}
+                              />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
