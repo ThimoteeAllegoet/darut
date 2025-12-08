@@ -69,6 +69,34 @@ export function useLeaves() {
     saveLeaves([...leaves, newLeave]);
   };
 
+  const addMultipleLeaves = (
+    memberId: string,
+    type: LeaveType,
+    dates: string[],
+    period: PeriodType,
+    comment?: string
+  ) => {
+    const member = members.find((m) => m.id === memberId);
+    if (!member) return;
+
+    const status: LeaveStatus = type === 'Congés' ? 'pending' : 'approved';
+
+    const newLeaves: LeaveRequest[] = dates.map((date, index) => ({
+      id: `${Date.now() + index}-${Math.random().toString(36).substr(2, 9)}`,
+      memberId,
+      memberName: member.name,
+      type,
+      date,
+      period,
+      status,
+      comment,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    saveLeaves([...leaves, ...newLeaves]);
+  };
+
   const updateLeave = (id: string, updates: Partial<Omit<LeaveRequest, 'id' | 'createdAt'>>) => {
     const updated = leaves.map((leave) =>
       leave.id === id
@@ -127,6 +155,7 @@ export function useLeaves() {
     leaves,
     members,
     addLeave,
+    addMultipleLeaves,
     updateLeave,
     deleteLeave,
     approveLeave,

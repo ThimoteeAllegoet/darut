@@ -21,6 +21,7 @@ export default function CongesPage() {
     leaves,
     members,
     addLeave,
+    addMultipleLeaves,
     deleteLeave,
     approveLeave,
     rejectLeave,
@@ -139,18 +140,21 @@ export default function CongesPage() {
       const currentDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
       const finalDate = new Date(endYear, endMonth - 1, endDay, 12, 0, 0);
 
-      // Generate leave for each day
+      // Generate all dates in the range
+      const dates: string[] = [];
       while (currentDate <= finalDate) {
         const year = currentDate.getFullYear();
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         const day = String(currentDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
-
-        addLeave(modalSelectedMember, leaveType, dateStr, 'journée', leaveComment);
+        dates.push(dateStr);
 
         // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
       }
+
+      // Add all leaves at once
+      addMultipleLeaves(modalSelectedMember, leaveType, dates, 'journée', leaveComment);
     } else {
       // Single day with specific period
       addLeave(modalSelectedMember, leaveType, leaveStartDate, leavePeriod, leaveComment);
@@ -495,124 +499,133 @@ export default function CongesPage() {
                             position: 'absolute',
                             bottom: '0',
                             right: '0',
-                            width: '0',
-                            height: '0',
-                            borderLeft: '6px solid transparent',
-                            borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
-                            borderBottomRightRadius: '3px',
+                            fontSize: '0.6rem',
+                            opacity: 0.8,
+                            cursor: 'help',
                           }}
-                        />
+                          title={leave.comment}
+                        >
+                          💬
+                        </span>
                       )}
                     </div>
                   ))}
 
-                  {/* Half-day leaves in a flex row */}
-                  {(morningOnlyLeaves.length > 0 || afternoonOnlyLeaves.length > 0) && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '0px',
-                        alignItems: 'flex-start',
-                      }}
-                    >
-                      {/* Morning period (left) */}
-                      <div
-                        style={{
-                          flex: 1,
-                          borderRight: '2px solid rgba(40, 50, 118, 0.25)',
-                          paddingRight: '0.25rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.2rem',
-                        }}
-                      >
-                        {morningOnlyLeaves.map((leave) => (
-                          <div
-                            key={leave.id}
-                            style={{
-                              fontSize: '0.65rem',
-                              padding: '0.2rem 0.4rem',
-                              backgroundColor: leaveTypeColors[leave.type],
-                              color: 'white',
-                              borderRadius: '3px',
-                              fontWeight: '600',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              opacity: leave.status === 'pending' ? 0.5 : 1,
-                              border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                              position: 'relative',
-                            }}
-                            title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
-                          >
-                            {leave.memberName.split(' ')[0]}
-                            {leave.comment && (
-                              <span
-                                style={{
-                                  position: 'absolute',
-                                  bottom: '0',
-                                  right: '0',
-                                  width: '0',
-                                  height: '0',
-                                  borderLeft: '6px solid transparent',
-                                  borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
-                                  borderBottomRightRadius: '3px',
-                                }}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                  {/* Half-day leaves - one row per user */}
+                  {(() => {
+                    // Group half-day leaves by member
+                    const memberIds = new Set([
+                      ...morningOnlyLeaves.map(l => l.memberId),
+                      ...afternoonOnlyLeaves.map(l => l.memberId)
+                    ]);
 
-                      {/* Afternoon period (right) */}
-                      <div
-                        style={{
-                          flex: 1,
-                          paddingLeft: '0.25rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.2rem',
-                        }}
-                      >
-                        {afternoonOnlyLeaves.map((leave) => (
+                    return Array.from(memberIds).map(memberId => {
+                      const morning = morningOnlyLeaves.find(l => l.memberId === memberId);
+                      const afternoon = afternoonOnlyLeaves.find(l => l.memberId === memberId);
+
+                      return (
+                        <div
+                          key={memberId}
+                          style={{
+                            display: 'flex',
+                            gap: '0px',
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          {/* Morning period (left) */}
                           <div
-                            key={leave.id}
                             style={{
-                              fontSize: '0.65rem',
-                              padding: '0.2rem 0.4rem',
-                              backgroundColor: leaveTypeColors[leave.type],
-                              color: 'white',
-                              borderRadius: '3px',
-                              fontWeight: '600',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              opacity: leave.status === 'pending' ? 0.5 : 1,
-                              border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                              position: 'relative',
+                              flex: 1,
+                              borderRight: '2px solid rgba(40, 50, 118, 0.25)',
+                              paddingRight: '0.25rem',
                             }}
-                            title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                           >
-                            {leave.memberName.split(' ')[0]}
-                            {leave.comment && (
-                              <span
+                            {morning && (
+                              <div
                                 style={{
-                                  position: 'absolute',
-                                  bottom: '0',
-                                  right: '0',
-                                  width: '0',
-                                  height: '0',
-                                  borderLeft: '6px solid transparent',
-                                  borderBottom: `6px solid ${leave.status === 'pending' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}`,
-                                  borderBottomRightRadius: '3px',
+                                  fontSize: '0.65rem',
+                                  padding: '0.2rem 0.4rem',
+                                  backgroundColor: leaveTypeColors[morning.type],
+                                  color: 'white',
+                                  borderRadius: '3px',
+                                  fontWeight: '600',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  opacity: morning.status === 'pending' ? 0.5 : 1,
+                                  border: morning.status === 'pending' ? '1px dashed white' : 'none',
+                                  position: 'relative',
                                 }}
-                              />
+                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}${morning.comment ? ` - ${morning.comment}` : ''}`}
+                              >
+                                {morning.memberName.split(' ')[0]}
+                                {morning.comment && (
+                                  <span
+                                    style={{
+                                      position: 'absolute',
+                                      bottom: '0',
+                                      right: '0',
+                                      fontSize: '0.6rem',
+                                      opacity: 0.8,
+                                      cursor: 'help',
+                                    }}
+                                    title={morning.comment}
+                                  >
+                                    💬
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+
+                          {/* Afternoon period (right) */}
+                          <div
+                            style={{
+                              flex: 1,
+                              paddingLeft: '0.25rem',
+                            }}
+                          >
+                            {afternoon && (
+                              <div
+                                style={{
+                                  fontSize: '0.65rem',
+                                  padding: '0.2rem 0.4rem',
+                                  backgroundColor: leaveTypeColors[afternoon.type],
+                                  color: 'white',
+                                  borderRadius: '3px',
+                                  fontWeight: '600',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  opacity: afternoon.status === 'pending' ? 0.5 : 1,
+                                  border: afternoon.status === 'pending' ? '1px dashed white' : 'none',
+                                  position: 'relative',
+                                }}
+                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}${afternoon.comment ? ` - ${afternoon.comment}` : ''}`}
+                              >
+                                {afternoon.memberName.split(' ')[0]}
+                                {afternoon.comment && (
+                                  <span
+                                    style={{
+                                      position: 'absolute',
+                                      bottom: '0',
+                                      right: '0',
+                                      fontSize: '0.6rem',
+                                      opacity: 0.8,
+                                      cursor: 'help',
+                                    }}
+                                    title={afternoon.comment}
+                                  >
+                                    💬
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             );
