@@ -39,7 +39,7 @@ export default function CongesPage() {
   }, [isAuthenticated]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedMember, setSelectedMember] = useState<string>('');
+  const [calendarMemberFilter, setCalendarMemberFilter] = useState<string>('');
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -51,6 +51,7 @@ export default function CongesPage() {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
   // Leave form - modified for period selection
+  const [modalSelectedMember, setModalSelectedMember] = useState<string>('');
   const [leaveStartDate, setLeaveStartDate] = useState('');
   const [leaveEndDate, setLeaveEndDate] = useState('');
   const [leaveType, setLeaveType] = useState<LeaveType>('Congés');
@@ -115,22 +116,23 @@ export default function CongesPage() {
 
   const handleAddLeave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMember || !leaveStartDate) {
+    if (!modalSelectedMember || !leaveStartDate) {
       alert('Veuillez sélectionner un membre et une date de début');
       return;
     }
 
     // Generate all dates in the range
-    const start = new Date(leaveStartDate);
-    const end = leaveEndDate ? new Date(leaveEndDate) : start;
+    const start = new Date(leaveStartDate + 'T00:00:00');
+    const end = leaveEndDate ? new Date(leaveEndDate + 'T00:00:00') : new Date(leaveStartDate + 'T00:00:00');
 
     const currentDateLoop = new Date(start);
     while (currentDateLoop <= end) {
       const dateStr = currentDateLoop.toISOString().split('T')[0];
-      addLeave(selectedMember, leaveType, dateStr, leavePeriod, leaveComment);
+      addLeave(modalSelectedMember, leaveType, dateStr, leavePeriod, leaveComment);
       currentDateLoop.setDate(currentDateLoop.getDate() + 1);
     }
 
+    setModalSelectedMember('');
     setLeaveStartDate('');
     setLeaveEndDate('');
     setLeaveType('Congés');
@@ -260,8 +262,8 @@ export default function CongesPage() {
           Afficher :
         </label>
         <select
-          value={selectedMember}
-          onChange={(e) => setSelectedMember(e.target.value)}
+          value={calendarMemberFilter}
+          onChange={(e) => setCalendarMemberFilter(e.target.value)}
           style={{
             padding: '0.5rem 1rem',
             fontSize: '0.9rem',
@@ -394,7 +396,7 @@ export default function CongesPage() {
 
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const allDayLeaves = getLeavesByDate(dateStr).filter(
-              (leave) => !selectedMember || leave.memberId === selectedMember
+              (leave) => !calendarMemberFilter || leave.memberId === calendarMemberFilter
             );
 
             const morningLeaves = allDayLeaves.filter(l => l.period === 'matin' || l.period === 'journée');
@@ -430,79 +432,88 @@ export default function CongesPage() {
                   {day}
                 </div>
 
-                {/* Morning period */}
+                {/* Morning and Afternoon side by side */}
                 <div
                   style={{
                     flex: 1,
-                    borderBottom: '1px dashed rgba(230, 225, 219, 0.5)',
-                    padding: '0.3rem',
                     display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.2rem',
+                    gap: '1px',
                   }}
                 >
-                  <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
-                    Matin
-                  </div>
-                  {morningLeaves.map((leave) => (
-                    <div
-                      key={leave.id}
-                      style={{
-                        fontSize: '0.65rem',
-                        padding: '0.2rem 0.4rem',
-                        backgroundColor: leaveTypeColors[leave.type],
-                        color: 'white',
-                        borderRadius: '3px',
-                        fontWeight: '600',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        opacity: leave.status === 'pending' ? 0.5 : 1,
-                        border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                      }}
-                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
-                    >
-                      {leave.memberName.split(' ')[0]}
-                      {leave.status === 'pending' && ' ⏳'}
+                  {/* Morning period (left) */}
+                  <div
+                    style={{
+                      flex: 1,
+                      borderRight: '1px dashed rgba(230, 225, 219, 0.5)',
+                      padding: '0.3rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.2rem',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
+                      Matin
                     </div>
-                  ))}
-                </div>
+                    {morningLeaves.map((leave) => (
+                      <div
+                        key={leave.id}
+                        style={{
+                          fontSize: '0.65rem',
+                          padding: '0.2rem 0.4rem',
+                          backgroundColor: leaveTypeColors[leave.type],
+                          color: 'white',
+                          borderRadius: '3px',
+                          fontWeight: '600',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          opacity: leave.status === 'pending' ? 0.5 : 1,
+                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                        }}
+                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                      >
+                        {leave.memberName.split(' ')[0]}
+                        {leave.status === 'pending' && ' ⏳'}
+                      </div>
+                    ))}
+                  </div>
 
-                {/* Afternoon period */}
-                <div
-                  style={{
-                    flex: 1,
-                    padding: '0.3rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.2rem',
-                  }}
-                >
-                  <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
-                    Après-midi
-                  </div>
-                  {afternoonLeaves.map((leave) => (
-                    <div
-                      key={leave.id}
-                      style={{
-                        fontSize: '0.65rem',
-                        padding: '0.2rem 0.4rem',
-                        backgroundColor: leaveTypeColors[leave.type],
-                        color: 'white',
-                        borderRadius: '3px',
-                        fontWeight: '600',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        opacity: leave.status === 'pending' ? 0.5 : 1,
-                        border: leave.status === 'pending' ? '1px dashed white' : 'none',
-                      }}
-                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
-                    >
-                      {leave.memberName.split(' ')[0]}
-                      {leave.status === 'pending' && ' ⏳'}
+                  {/* Afternoon period (right) */}
+                  <div
+                    style={{
+                      flex: 1,
+                      padding: '0.3rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.2rem',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.6rem', color: 'var(--color-primary-blue)', fontWeight: '600', opacity: 0.7 }}>
+                      Après-midi
                     </div>
-                  ))}
+                    {afternoonLeaves.map((leave) => (
+                      <div
+                        key={leave.id}
+                        style={{
+                          fontSize: '0.65rem',
+                          padding: '0.2rem 0.4rem',
+                          backgroundColor: leaveTypeColors[leave.type],
+                          color: 'white',
+                          borderRadius: '3px',
+                          fontWeight: '600',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          opacity: leave.status === 'pending' ? 0.5 : 1,
+                          border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                        }}
+                        title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                      >
+                        {leave.memberName.split(' ')[0]}
+                        {leave.status === 'pending' && ' ⏳'}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             );
@@ -547,7 +558,7 @@ export default function CongesPage() {
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
           <div><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
-          <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées en Matin (haut) et Après-midi (bas)</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées en Matin (gauche) et Après-midi (droite)</div>
         </div>
       </div>
 
@@ -854,8 +865,8 @@ export default function CongesPage() {
                   Membre *
                 </label>
                 <select
-                  value={selectedMember}
-                  onChange={(e) => setSelectedMember(e.target.value)}
+                  value={modalSelectedMember}
+                  onChange={(e) => setModalSelectedMember(e.target.value)}
                   required
                   style={{
                     width: '100%',
