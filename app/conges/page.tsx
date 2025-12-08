@@ -125,18 +125,30 @@ export default function CongesPage() {
     const startParts = leaveStartDate.split('-');
     const endParts = leaveEndDate ? leaveEndDate.split('-') : leaveStartDate.split('-');
 
-    const start = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
-    const end = new Date(Number(endParts[0]), Number(endParts[1]) - 1, Number(endParts[2]));
+    const startYear = Number(startParts[0]);
+    const startMonth = Number(startParts[1]) - 1;
+    const startDay = Number(startParts[2]);
 
-    const currentDateLoop = new Date(start);
-    while (currentDateLoop <= end) {
-      const year = currentDateLoop.getFullYear();
-      const month = String(currentDateLoop.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDateLoop.getDate()).padStart(2, '0');
+    const endYear = Number(endParts[0]);
+    const endMonth = Number(endParts[1]) - 1;
+    const endDay = Number(endParts[2]);
+
+    const start = new Date(startYear, startMonth, startDay);
+    const end = new Date(endYear, endMonth, endDay);
+
+    // Calculate the difference in days
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Add leave for each day
+    for (let i = 0; i <= diffDays; i++) {
+      const currentDate = new Date(startYear, startMonth, startDay + i);
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
 
       addLeave(modalSelectedMember, leaveType, dateStr, leavePeriod, leaveComment);
-      currentDateLoop.setDate(currentDateLoop.getDate() + 1);
     }
 
     setModalSelectedMember('');
@@ -444,14 +456,14 @@ export default function CongesPage() {
                   style={{
                     flex: 1,
                     display: 'flex',
-                    gap: '1px',
+                    gap: '0px',
                   }}
                 >
                   {/* Morning period (left) */}
                   <div
                     style={{
                       flex: 1,
-                      borderRight: '1px dashed rgba(230, 225, 219, 0.5)',
+                      borderRight: '2px solid rgba(40, 50, 118, 0.2)',
                       padding: '0.3rem',
                       display: 'flex',
                       flexDirection: 'column',
@@ -477,7 +489,6 @@ export default function CongesPage() {
                         title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                       >
                         {leave.memberName.split(' ')[0]}
-                        {leave.status === 'pending' && ' ⏳'}
                       </div>
                     ))}
                   </div>
@@ -511,7 +522,6 @@ export default function CongesPage() {
                         title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
                       >
                         {leave.memberName.split(' ')[0]}
-                        {leave.status === 'pending' && ' ⏳'}
                       </div>
                     ))}
                   </div>
