@@ -1463,6 +1463,204 @@ export default function CongesPage() {
                   />
                 </div>
               )}
+
+              {/* Recurrence section - only for single day periods */}
+              {leavePeriod !== 'periode' && (
+                <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(64, 107, 222, 0.05)', borderRadius: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: 'var(--color-primary-dark)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Périodicité
+                  </label>
+                  <select
+                    value={leaveRecurrenceType}
+                    onChange={(e) => setLeaveRecurrenceType(e.target.value as RecurrenceType)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      outline: 'none',
+                      backgroundColor: 'var(--color-white)',
+                      cursor: 'pointer',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <option value="none">Aucune (une seule fois)</option>
+                    <option value="daily">Tous les jours</option>
+                    <option value="weekly">Hebdomadaire</option>
+                    <option value="biweekly">Bimensuel</option>
+                    <option value="monthly_day">Mensuel (jour fixe)</option>
+                    <option value="monthly_weekday">Mensuel (jour de semaine)</option>
+                  </select>
+
+                  {/* Weekly/Biweekly: Select days of week */}
+                  {(leaveRecurrenceType === 'weekly' || leaveRecurrenceType === 'biweekly') && (
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Jours de la semaine :
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {[
+                          { value: 1, label: 'Lun' },
+                          { value: 2, label: 'Mar' },
+                          { value: 3, label: 'Mer' },
+                          { value: 4, label: 'Jeu' },
+                          { value: 5, label: 'Ven' },
+                          { value: 6, label: 'Sam' },
+                          { value: 0, label: 'Dim' },
+                        ].map((day) => (
+                          <label
+                            key={day.value}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.4rem 0.6rem',
+                              backgroundColor: leaveRecurrenceDays.includes(day.value as DayOfWeek)
+                                ? 'var(--color-secondary-blue)'
+                                : 'var(--color-white)',
+                              color: leaveRecurrenceDays.includes(day.value as DayOfWeek)
+                                ? 'white'
+                                : 'var(--color-primary-dark)',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              border: '1px solid rgba(230, 225, 219, 0.5)',
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={leaveRecurrenceDays.includes(day.value as DayOfWeek)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setLeaveRecurrenceDays([...leaveRecurrenceDays, day.value as DayOfWeek]);
+                                } else {
+                                  setLeaveRecurrenceDays(leaveRecurrenceDays.filter((d) => d !== day.value));
+                                }
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            {day.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Monthly (day): Select day of month */}
+                  {leaveRecurrenceType === 'monthly_day' && (
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Jour du mois :
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={leaveRecurrenceDayOfMonth}
+                        onChange={(e) => setLeaveRecurrenceDayOfMonth(parseInt(e.target.value) || 1)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Monthly (weekday): Select week and day */}
+                  {leaveRecurrenceType === 'monthly_weekday' && (
+                    <>
+                      <div style={{ marginBottom: '0.75rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                          Semaine du mois :
+                        </label>
+                        <select
+                          value={leaveRecurrenceWeekOfMonth}
+                          onChange={(e) => setLeaveRecurrenceWeekOfMonth(parseInt(e.target.value) as WeekOfMonth)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            fontSize: '0.95rem',
+                            border: '1px solid rgba(230, 225, 219, 0.5)',
+                            borderRadius: '6px',
+                            outline: 'none',
+                            backgroundColor: 'var(--color-white)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <option value="1">Premier</option>
+                          <option value="2">Deuxième</option>
+                          <option value="3">Troisième</option>
+                          <option value="4">Quatrième</option>
+                          <option value="5">Cinquième</option>
+                        </select>
+                      </div>
+                      <div style={{ marginBottom: '0.75rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                          Jour de la semaine :
+                        </label>
+                        <select
+                          value={leaveRecurrenceDayOfWeek}
+                          onChange={(e) => setLeaveRecurrenceDayOfWeek(parseInt(e.target.value) as DayOfWeek)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            fontSize: '0.95rem',
+                            border: '1px solid rgba(230, 225, 219, 0.5)',
+                            borderRadius: '6px',
+                            outline: 'none',
+                            backgroundColor: 'var(--color-white)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <option value="1">Lundi</option>
+                          <option value="2">Mardi</option>
+                          <option value="3">Mercredi</option>
+                          <option value="4">Jeudi</option>
+                          <option value="5">Vendredi</option>
+                          <option value="6">Samedi</option>
+                          <option value="0">Dimanche</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* End date for recurrence */}
+                  {leaveRecurrenceType !== 'none' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Date de fin (optionnel, 12 mois max par défaut) :
+                      </label>
+                      <input
+                        type="date"
+                        value={leaveRecurrenceEndDate}
+                        onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div style={{ marginBottom: '1.5rem' }}>
                 <label
                   style={{
@@ -1959,6 +2157,204 @@ export default function CongesPage() {
                   }}
                 />
               </div>
+
+              {/* Recurrence section - only when adding new event */}
+              {!editingNotableEvent && (
+                <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderRadius: '6px' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: 'var(--color-primary-dark)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Périodicité
+                  </label>
+                  <select
+                    value={eventRecurrenceType}
+                    onChange={(e) => setEventRecurrenceType(e.target.value as RecurrenceType)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      outline: 'none',
+                      backgroundColor: 'var(--color-white)',
+                      cursor: 'pointer',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <option value="none">Aucune (une seule fois)</option>
+                    <option value="daily">Tous les jours</option>
+                    <option value="weekly">Hebdomadaire</option>
+                    <option value="biweekly">Bimensuel</option>
+                    <option value="monthly_day">Mensuel (jour fixe)</option>
+                    <option value="monthly_weekday">Mensuel (jour de semaine)</option>
+                  </select>
+
+                  {/* Weekly/Biweekly: Select days of week */}
+                  {(eventRecurrenceType === 'weekly' || eventRecurrenceType === 'biweekly') && (
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Jours de la semaine :
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {[
+                          { value: 1, label: 'Lun' },
+                          { value: 2, label: 'Mar' },
+                          { value: 3, label: 'Mer' },
+                          { value: 4, label: 'Jeu' },
+                          { value: 5, label: 'Ven' },
+                          { value: 6, label: 'Sam' },
+                          { value: 0, label: 'Dim' },
+                        ].map((day) => (
+                          <label
+                            key={day.value}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.4rem 0.6rem',
+                              backgroundColor: eventRecurrenceDays.includes(day.value as DayOfWeek)
+                                ? '#f59e0b'
+                                : 'var(--color-white)',
+                              color: eventRecurrenceDays.includes(day.value as DayOfWeek)
+                                ? 'white'
+                                : 'var(--color-primary-dark)',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              border: '1px solid rgba(230, 225, 219, 0.5)',
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={eventRecurrenceDays.includes(day.value as DayOfWeek)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEventRecurrenceDays([...eventRecurrenceDays, day.value as DayOfWeek]);
+                                } else {
+                                  setEventRecurrenceDays(eventRecurrenceDays.filter((d) => d !== day.value));
+                                }
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            {day.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Monthly (day): Select day of month */}
+                  {eventRecurrenceType === 'monthly_day' && (
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Jour du mois :
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={eventRecurrenceDayOfMonth}
+                        onChange={(e) => setEventRecurrenceDayOfMonth(parseInt(e.target.value) || 1)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Monthly (weekday): Select week and day */}
+                  {eventRecurrenceType === 'monthly_weekday' && (
+                    <>
+                      <div style={{ marginBottom: '0.75rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                          Semaine du mois :
+                        </label>
+                        <select
+                          value={eventRecurrenceWeekOfMonth}
+                          onChange={(e) => setEventRecurrenceWeekOfMonth(parseInt(e.target.value) as WeekOfMonth)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            fontSize: '0.95rem',
+                            border: '1px solid rgba(230, 225, 219, 0.5)',
+                            borderRadius: '6px',
+                            outline: 'none',
+                            backgroundColor: 'var(--color-white)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <option value="1">Premier</option>
+                          <option value="2">Deuxième</option>
+                          <option value="3">Troisième</option>
+                          <option value="4">Quatrième</option>
+                          <option value="5">Cinquième</option>
+                        </select>
+                      </div>
+                      <div style={{ marginBottom: '0.75rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                          Jour de la semaine :
+                        </label>
+                        <select
+                          value={eventRecurrenceDayOfWeek}
+                          onChange={(e) => setEventRecurrenceDayOfWeek(parseInt(e.target.value) as DayOfWeek)}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            fontSize: '0.95rem',
+                            border: '1px solid rgba(230, 225, 219, 0.5)',
+                            borderRadius: '6px',
+                            outline: 'none',
+                            backgroundColor: 'var(--color-white)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <option value="1">Lundi</option>
+                          <option value="2">Mardi</option>
+                          <option value="3">Mercredi</option>
+                          <option value="4">Jeudi</option>
+                          <option value="5">Vendredi</option>
+                          <option value="6">Samedi</option>
+                          <option value="0">Dimanche</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* End date for recurrence */}
+                  {eventRecurrenceType !== 'none' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                        Date de fin (optionnel, 12 mois max par défaut) :
+                      </label>
+                      <input
+                        type="date"
+                        value={eventRecurrenceEndDate}
+                        onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div style={{ marginBottom: '1.5rem' }}>
                 <label
                   style={{
