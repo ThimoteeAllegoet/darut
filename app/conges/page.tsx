@@ -45,9 +45,14 @@ export default function CongesPage() {
     deleteLeaveSeries,
     approveLeave,
     rejectLeave,
+    approveLeaves,
+    rejectLeaves,
+    deleteLeaves,
     requestDeletion,
     approveDeletion,
     rejectDeletion,
+    approveDeletions,
+    rejectDeletions,
     addMember,
     updateMember,
     deleteMember,
@@ -2044,8 +2049,9 @@ export default function CongesPage() {
                                 ? `Approuver la suppression de cette période (${group.leaves.length} jours) ?`
                                 : 'Approuver la suppression de ce congé ?'
                               )) {
-                                // Approuver tous les congés du groupe
-                                group.leaves.forEach(leave => approveDeletion(leave.id));
+                                // Approuver la suppression en une seule opération
+                                const leaveIds = group.leaves.map(leave => leave.id);
+                                approveDeletions(leaveIds);
                                 if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }
@@ -2070,8 +2076,9 @@ export default function CongesPage() {
                                 ? `Refuser la suppression de cette période (${group.leaves.length} jours) ? Les congés seront conservés.`
                                 : 'Refuser la suppression ? Le congé sera conservé.'
                               )) {
-                                // Refuser la suppression pour tous les congés du groupe
-                                group.leaves.forEach(leave => rejectDeletion(leave.id));
+                                // Refuser la suppression en une seule opération
+                                const leaveIds = group.leaves.map(leave => leave.id);
+                                rejectDeletions(leaveIds);
                                 if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }
@@ -2095,8 +2102,9 @@ export default function CongesPage() {
                         <>
                           <button
                             onClick={() => {
-                              // Approuver tous les congés du groupe
-                              group.leaves.forEach(leave => approveLeave(leave.id));
+                              // Approuver tous les congés du groupe en une seule opération
+                              const leaveIds = group.leaves.map(leave => leave.id);
+                              approveLeaves(leaveIds);
                               if (groupedPendingLeaves.length === 1) {
                                 setShowPendingModal(false);
                               }
@@ -2117,8 +2125,9 @@ export default function CongesPage() {
                           <button
                             onClick={() => {
                               const comment = prompt('Raison du refus (optionnel) :');
-                              // Refuser tous les congés du groupe avec le même commentaire
-                              group.leaves.forEach(leave => rejectLeave(leave.id, comment || undefined));
+                              // Refuser tous les congés du groupe en une seule opération
+                              const leaveIds = group.leaves.map(leave => leave.id);
+                              rejectLeaves(leaveIds, comment || undefined);
                               if (groupedPendingLeaves.length === 1) {
                                 setShowPendingModal(false);
                               }
@@ -2142,8 +2151,9 @@ export default function CongesPage() {
                                 ? `Supprimer cette période (${group.leaves.length} jours) ?`
                                 : 'Supprimer cette demande ?'
                               )) {
-                                // Supprimer tous les congés du groupe
-                                group.leaves.forEach(leave => deleteLeave(leave.id));
+                                // Supprimer tous les congés du groupe en une seule opération
+                                const leaveIds = group.leaves.map(leave => leave.id);
+                                deleteLeaves(leaveIds);
                                 if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }

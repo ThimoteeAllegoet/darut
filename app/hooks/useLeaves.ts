@@ -158,6 +158,28 @@ export function useLeaves() {
     updateLeave(id, { status: 'rejected', validatorComment });
   };
 
+  const approveLeaves = (ids: string[], validatorComment?: string) => {
+    const updated = leaves.map((leave) =>
+      ids.includes(leave.id)
+        ? { ...leave, status: 'approved' as LeaveStatus, validatorComment, updatedAt: new Date().toISOString() }
+        : leave
+    );
+    saveLeaves(updated);
+  };
+
+  const rejectLeaves = (ids: string[], validatorComment?: string) => {
+    const updated = leaves.map((leave) =>
+      ids.includes(leave.id)
+        ? { ...leave, status: 'rejected' as LeaveStatus, validatorComment, updatedAt: new Date().toISOString() }
+        : leave
+    );
+    saveLeaves(updated);
+  };
+
+  const deleteLeaves = (ids: string[]) => {
+    saveLeaves(leaves.filter((leave) => !ids.includes(leave.id)));
+  };
+
   const addMember = (memberData: Omit<TeamMember, 'id'>) => {
     const newMember: TeamMember = {
       id: Date.now().toString(),
@@ -212,6 +234,19 @@ export function useLeaves() {
     updateLeave(id, { status: 'approved' });
   };
 
+  const approveDeletions = (ids: string[]) => {
+    saveLeaves(leaves.filter((leave) => !ids.includes(leave.id)));
+  };
+
+  const rejectDeletions = (ids: string[]) => {
+    const updated = leaves.map((leave) =>
+      ids.includes(leave.id)
+        ? { ...leave, status: 'approved' as LeaveStatus, updatedAt: new Date().toISOString() }
+        : leave
+    );
+    saveLeaves(updated);
+  };
+
   return {
     leaves,
     members,
@@ -223,9 +258,14 @@ export function useLeaves() {
     deleteLeaveSeries,
     approveLeave,
     rejectLeave,
+    approveLeaves,
+    rejectLeaves,
+    deleteLeaves,
     requestDeletion,
     approveDeletion,
     rejectDeletion,
+    approveDeletions,
+    rejectDeletions,
     addMember,
     updateMember,
     deleteMember,
