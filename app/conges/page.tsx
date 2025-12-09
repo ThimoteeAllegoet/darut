@@ -120,6 +120,11 @@ export default function CongesPage() {
   const [eventRecurrenceDayOfWeek, setEventRecurrenceDayOfWeek] = useState<DayOfWeek>(1);
   const [eventRecurrenceEndDate, setEventRecurrenceEndDate] = useState('');
 
+  // Delete recurrence confirmation modal
+  const [showDeleteRecurrenceModal, setShowDeleteRecurrenceModal] = useState(false);
+  const [deleteRecurrenceItem, setDeleteRecurrenceItem] = useState<any | null>(null);
+  const [deleteRecurrenceType, setDeleteRecurrenceType] = useState<'leave' | 'event'>('leave');
+
   if (!isAuthenticated) {
     return null;
   }
@@ -779,7 +784,23 @@ export default function CongesPage() {
                         setShowEditLeaveModal(true);
                       }}
                     >
-                      {leave.memberName.split(' ')[0]}
+                      {leave.recurrenceGroupId && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '0',
+                            left: '2px',
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                          }}
+                          title="Absence récurrente"
+                        >
+                          ⟳
+                        </span>
+                      )}
+                      <span style={{ marginLeft: leave.recurrenceGroupId ? '12px' : '0' }}>
+                        {leave.memberName.split(' ')[0]}
+                      </span>
                       {leave.comment && (
                         <span
                           style={{
@@ -2084,14 +2105,21 @@ export default function CongesPage() {
               </button>
               <button
                 onClick={() => {
-                  const message = editingLeave.type === 'Congés' && editingLeave.status === 'approved'
-                    ? `Demander la suppression de ce congé validé ?\n\nLa demande devra être approuvée par un validateur.`
-                    : `Supprimer cette absence ?`;
+                  // Check if this is part of a recurrence
+                  if (editingLeave.recurrenceGroupId) {
+                    setDeleteRecurrenceItem(editingLeave);
+                    setDeleteRecurrenceType('leave');
+                    setShowDeleteRecurrenceModal(true);
+                  } else {
+                    const message = editingLeave.type === 'Congés' && editingLeave.status === 'approved'
+                      ? `Demander la suppression de ce congé validé ?\n\nLa demande devra être approuvée par un validateur.`
+                      : `Supprimer cette absence ?`;
 
-                  if (confirm(message)) {
-                    requestDeletion(editingLeave.id);
-                    setShowEditLeaveModal(false);
-                    setEditingLeave(null);
+                    if (confirm(message)) {
+                      requestDeletion(editingLeave.id);
+                      setShowEditLeaveModal(false);
+                      setEditingLeave(null);
+                    }
                   }
                 }}
                 style={{
@@ -2474,13 +2502,20 @@ export default function CongesPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm(`Supprimer "${editingNotableEvent.title}" ?`)) {
-                        deleteNotableEvent(editingNotableEvent.id);
-                        setNotableEventTitle('');
-                        setNotableEventDate('');
-                        setNotableEventDescription('');
-                        setEditingNotableEvent(null);
-                        setShowNotableEventModal(false);
+                      // Check if this is part of a recurrence
+                      if (editingNotableEvent.recurrenceGroupId) {
+                        setDeleteRecurrenceItem(editingNotableEvent);
+                        setDeleteRecurrenceType('event');
+                        setShowDeleteRecurrenceModal(true);
+                      } else {
+                        if (confirm(`Supprimer "${editingNotableEvent.title}" ?`)) {
+                          deleteNotableEvent(editingNotableEvent.id);
+                          setNotableEventTitle('');
+                          setNotableEventDate('');
+                          setNotableEventDescription('');
+                          setEditingNotableEvent(null);
+                          setShowNotableEventModal(false);
+                        }
                       }
                     }}
                     style={{
@@ -2538,6 +2573,174 @@ export default function CongesPage() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Recurrence Confirmation Modal */}
+      {showDeleteRecurrenceModal && deleteRecurrenceItem && (
+        <div
+          onClick={() => setShowDeleteRecurrenceModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '500px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            <h2
+              style={{
+                margin: '0 0 1.5rem 0',
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                color: 'var(--color-primary-dark)',
+              }}
+            >
+              Supprimer un élément récurrent
+            </h2>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p style={{ marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>
+                Cet élément fait partie d'une série récurrente. Que souhaitez-vous supprimer ?
+              </p>
+
+              {deleteRecurrenceItem.recurrence && (
+                <div
+                  style={{
+                    padding: '1rem',
+                    backgroundColor: 'rgba(64, 107, 222, 0.05)',
+                    borderRadius: '6px',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)' }}>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong>Configuration de la périodicité :</strong>
+                    </div>
+                    <div style={{ marginLeft: '1rem' }}>
+                      <div>• Type : {(() => {
+                        const labels: Record<string, string> = {
+                          'daily': 'Tous les jours',
+                          'weekly': 'Hebdomadaire',
+                          'biweekly': 'Bimensuel',
+                          'monthly_day': 'Mensuel (jour fixe)',
+                          'monthly_weekday': 'Mensuel (jour de semaine)',
+                        };
+                        return labels[deleteRecurrenceItem.recurrence.type] || deleteRecurrenceItem.recurrence.type;
+                      })()}</div>
+                      {deleteRecurrenceItem.recurrence.endDate && (
+                        <div>• Date de fin : {deleteRecurrenceItem.recurrence.endDate}</div>
+                      )}
+                      {!deleteRecurrenceItem.recurrence.endDate && (
+                        <div>• Date de fin : Non spécifiée (2 ans par défaut)</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowDeleteRecurrenceModal(false)}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: '#e5e7eb',
+                  color: 'var(--color-primary-dark)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteRecurrenceType === 'leave') {
+                    deleteLeaveOccurrence(deleteRecurrenceItem.id);
+                    setShowEditLeaveModal(false);
+                    setEditingLeave(null);
+                  } else {
+                    deleteEventOccurrence(deleteRecurrenceItem.id);
+                    setNotableEventTitle('');
+                    setNotableEventDate('');
+                    setNotableEventDescription('');
+                    setEditingNotableEvent(null);
+                    setShowNotableEventModal(false);
+                  }
+                  setShowDeleteRecurrenceModal(false);
+                  setDeleteRecurrenceItem(null);
+                }}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: '#f59e0b',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                }}
+              >
+                Cette occurrence uniquement
+              </button>
+              <button
+                onClick={() => {
+                  const confirmMessage = deleteRecurrenceType === 'leave'
+                    ? 'Supprimer toute la série d\'absences récurrentes ?'
+                    : 'Supprimer toute la série d\'événements récurrents ?';
+
+                  if (confirm(confirmMessage)) {
+                    if (deleteRecurrenceType === 'leave') {
+                      deleteLeaveSeries(deleteRecurrenceItem.recurrenceGroupId);
+                      setShowEditLeaveModal(false);
+                      setEditingLeave(null);
+                    } else {
+                      deleteEventSeries(deleteRecurrenceItem.recurrenceGroupId);
+                      setNotableEventTitle('');
+                      setNotableEventDate('');
+                      setNotableEventDescription('');
+                      setEditingNotableEvent(null);
+                      setShowNotableEventModal(false);
+                    }
+                    setShowDeleteRecurrenceModal(false);
+                    setDeleteRecurrenceItem(null);
+                  }
+                }}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: 'var(--color-accent-red)',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                }}
+              >
+                Toute la série
+              </button>
+            </div>
           </div>
         </div>
       )}
