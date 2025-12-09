@@ -74,6 +74,16 @@ export function useNotableEvents() {
     saveEvents(notableEvents.filter((event) => event.id !== id));
   };
 
+  const deleteEventOccurrence = (id: string) => {
+    // Supprime uniquement cette occurrence
+    saveEvents(notableEvents.filter((event) => event.id !== id));
+  };
+
+  const deleteEventSeries = (recurrenceGroupId: string) => {
+    // Supprime toutes les occurrences de la série
+    saveEvents(notableEvents.filter((event) => event.recurrenceGroupId !== recurrenceGroupId));
+  };
+
   const getEventsByDate = (date: string) => {
     return notableEvents.filter((event) => event.date === date);
   };
@@ -83,6 +93,8 @@ export function useNotableEvents() {
     addEvent,
     updateEvent,
     deleteEvent,
+    deleteEventOccurrence,
+    deleteEventSeries,
     getEventsByDate,
   };
 }

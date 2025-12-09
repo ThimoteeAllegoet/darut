@@ -1,16 +1,34 @@
 import { RecurrenceConfig, DayOfWeek, WeekOfMonth } from '../types/recurrence';
 
+// French holidays 2024-2027
+const frenchHolidays: Set<string> = new Set([
+  // 2024
+  '2024-01-01', '2024-04-01', '2024-05-01', '2024-05-08', '2024-05-09',
+  '2024-05-20', '2024-07-14', '2024-08-15', '2024-11-01', '2024-11-11', '2024-12-25',
+  // 2025
+  '2025-01-01', '2025-04-21', '2025-05-01', '2025-05-08', '2025-05-29',
+  '2025-06-09', '2025-07-14', '2025-08-15', '2025-11-01', '2025-11-11', '2025-12-25',
+  // 2026
+  '2026-01-01', '2026-04-06', '2026-05-01', '2026-05-08', '2026-05-14',
+  '2026-05-25', '2026-07-14', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25',
+  // 2027
+  '2027-01-01', '2027-03-29', '2027-05-01', '2027-05-08', '2027-05-06',
+  '2027-05-17', '2027-07-14', '2027-08-15', '2027-11-01', '2027-11-11', '2027-12-25',
+]);
+
 /**
  * Génère toutes les dates récurrentes basées sur une configuration
  * @param startDate Date de début au format YYYY-MM-DD
  * @param config Configuration de récurrence
  * @param maxMonths Nombre maximum de mois à générer si pas de date de fin (par défaut 24 mois = 2 ans)
+ * @param excludeHolidays Si true, exclut les jours fériés français (par défaut false)
  * @returns Array de dates au format YYYY-MM-DD
  */
 export function generateRecurrentDates(
   startDate: string,
   config: RecurrenceConfig,
-  maxMonths: number = 24
+  maxMonths: number = 24,
+  excludeHolidays: boolean = false
 ): string[] {
   if (config.type === 'none') {
     return [startDate];
@@ -56,6 +74,11 @@ export function generateRecurrentDates(
         generateMonthlyWeekdayDates(start, finalDate, config.weekOfMonth, config.dayOfWeek, dates);
       }
       break;
+  }
+
+  // Exclure les jours fériés si demandé
+  if (excludeHolidays) {
+    return dates.filter(date => !frenchHolidays.has(date));
   }
 
   return dates;

@@ -7,15 +7,16 @@ import { useNotableEvents } from '../hooks/useNotableEvents';
 import { LeaveType, PeriodType, TeamMember } from '../types/leaves';
 import { RecurrenceConfig, RecurrenceType, DayOfWeek, WeekOfMonth } from '../types/recurrence';
 
-const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence', 'Temps partiel'];
+const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence (Autres)', 'Temps partiel', 'Astreinte'];
 
 const leaveTypeColors: Record<LeaveType, string> = {
-  'Télétravail': '#6b7280',
+  'Télétravail': '#9ca3af', // Gris plus clair
   'Congés': '#22c55e',
   'Formation': '#8b5cf6',
-  'Déplacement': '#a855f7',
-  'Absence': '#ef4444',
+  'Déplacement': '#3b82f6', // Bleu pour différencier de Formation
+  'Absence (Autres)': '#ef4444',
   'Temps partiel': '#06b6d4',
+  'Astreinte': '#f59e0b', // Orange
 };
 
 // Function to darken a color for comment indicator
@@ -40,6 +41,8 @@ export default function CongesPage() {
     addLeave,
     addMultipleLeaves,
     deleteLeave,
+    deleteLeaveOccurrence,
+    deleteLeaveSeries,
     approveLeave,
     rejectLeave,
     requestDeletion,
@@ -57,6 +60,8 @@ export default function CongesPage() {
     addEvent: addNotableEvent,
     updateEvent: updateNotableEvent,
     deleteEvent: deleteNotableEvent,
+    deleteEventOccurrence,
+    deleteEventSeries,
     getEventsByDate,
   } = useNotableEvents();
 
@@ -98,6 +103,7 @@ export default function CongesPage() {
   const [leaveComment, setLeaveComment] = useState('');
 
   // Recurrence states for leaves
+  const [leaveHasRecurrence, setLeaveHasRecurrence] = useState(false);
   const [leaveRecurrenceType, setLeaveRecurrenceType] = useState<RecurrenceType>('none');
   const [leaveRecurrenceDays, setLeaveRecurrenceDays] = useState<DayOfWeek[]>([]);
   const [leaveRecurrenceDayOfMonth, setLeaveRecurrenceDayOfMonth] = useState<number>(1);
@@ -106,6 +112,7 @@ export default function CongesPage() {
   const [leaveRecurrenceEndDate, setLeaveRecurrenceEndDate] = useState('');
 
   // Recurrence states for notable events
+  const [eventHasRecurrence, setEventHasRecurrence] = useState(false);
   const [eventRecurrenceType, setEventRecurrenceType] = useState<RecurrenceType>('none');
   const [eventRecurrenceDays, setEventRecurrenceDays] = useState<DayOfWeek[]>([]);
   const [eventRecurrenceDayOfMonth, setEventRecurrenceDayOfMonth] = useState<number>(1);
@@ -596,7 +603,7 @@ export default function CongesPage() {
                 textAlign: 'center',
                 fontSize: '0.8rem',
                 fontWeight: '700',
-                color: index >= 5 ? 'rgba(40, 50, 118, 0.4)' : 'var(--color-primary-blue)',
+                color: 'var(--color-primary-blue)',
               }}
             >
               {day}
@@ -1413,40 +1420,72 @@ export default function CongesPage() {
 
               {/* Recurrence section - only for single day periods */}
               {leavePeriod !== 'periode' && (
-                <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(64, 107, 222, 0.05)', borderRadius: '6px' }}>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      color: 'var(--color-primary-dark)',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    Périodicité
-                  </label>
-                  <select
-                    value={leaveRecurrenceType}
-                    onChange={(e) => setLeaveRecurrenceType(e.target.value as RecurrenceType)}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      fontSize: '0.95rem',
-                      border: '1px solid rgba(230, 225, 219, 0.5)',
-                      borderRadius: '6px',
-                      outline: 'none',
-                      backgroundColor: 'var(--color-white)',
-                      cursor: 'pointer',
-                      marginBottom: '0.75rem',
-                    }}
-                  >
-                    <option value="none">Aucune (une seule fois)</option>
-                    <option value="daily">Tous les jours</option>
-                    <option value="weekly">Hebdomadaire</option>
-                    <option value="biweekly">Bimensuel</option>
-                    <option value="monthly_day">Mensuel (jour fixe)</option>
-                    <option value="monthly_weekday">Mensuel (jour de semaine)</option>
-                  </select>
+                <>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        color: 'var(--color-primary-dark)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={leaveHasRecurrence}
+                        onChange={(e) => {
+                          setLeaveHasRecurrence(e.target.checked);
+                          if (!e.target.checked) {
+                            setLeaveRecurrenceType('none');
+                            setLeaveRecurrenceDays([]);
+                            setLeaveRecurrenceEndDate('');
+                          } else {
+                            setLeaveRecurrenceType('weekly');
+                          }
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      Ajouter une périodicité
+                    </label>
+                  </div>
+
+                  {leaveHasRecurrence && (
+                    <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(64, 107, 222, 0.05)', borderRadius: '6px' }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          color: 'var(--color-primary-dark)',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        Type de périodicité
+                      </label>
+                      <select
+                        value={leaveRecurrenceType}
+                        onChange={(e) => setLeaveRecurrenceType(e.target.value as RecurrenceType)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                          backgroundColor: 'var(--color-white)',
+                          cursor: 'pointer',
+                          marginBottom: '0.75rem',
+                        }}
+                      >
+                        <option value="daily">Tous les jours</option>
+                        <option value="weekly">Hebdomadaire</option>
+                        <option value="biweekly">Bimensuel</option>
+                        <option value="monthly_day">Mensuel (jour fixe)</option>
+                        <option value="monthly_weekday">Mensuel (jour de semaine)</option>
+                      </select>
 
                   {/* Weekly/Biweekly: Select days of week */}
                   {(leaveRecurrenceType === 'weekly' || leaveRecurrenceType === 'biweekly') && (
@@ -1585,28 +1624,28 @@ export default function CongesPage() {
                   )}
 
                   {/* End date for recurrence */}
-                  {leaveRecurrenceType !== 'none' && (
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin de la récurrence (optionnel, 2 ans par défaut) :
-                      </label>
-                      <input
-                        type="date"
-                        value={leaveRecurrenceEndDate}
-                        onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
-                        min={leaveStartDate}
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          fontSize: '0.95rem',
-                          border: '1px solid rgba(230, 225, 219, 0.5)',
-                          borderRadius: '6px',
-                          outline: 'none',
-                        }}
-                      />
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                      Date de fin de la récurrence (optionnel, 2 ans par défaut) :
+                    </label>
+                    <input
+                      type="date"
+                      value={leaveRecurrenceEndDate}
+                      onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
+                      min={leaveStartDate}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        fontSize: '0.95rem',
+                        border: '1px solid rgba(230, 225, 219, 0.5)',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
                     </div>
                   )}
-                </div>
+                </>
               )}
 
               <div style={{ marginBottom: '1rem' }}>
@@ -1621,7 +1660,7 @@ export default function CongesPage() {
                 >
                   {leavePeriod === 'periode'
                     ? 'Date de début *'
-                    : leaveRecurrenceType !== 'none'
+                    : leaveHasRecurrence
                       ? 'Date de début de la récurrence *'
                       : 'Date *'}
                 </label>
@@ -2142,70 +2181,75 @@ export default function CongesPage() {
                   }}
                 />
               </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    color: 'var(--color-primary-dark)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Date *
-                </label>
-                <input
-                  type="date"
-                  value={notableEventDate}
-                  onChange={(e) => setNotableEventDate(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    fontSize: '0.95rem',
-                    border: '1px solid rgba(230, 225, 219, 0.5)',
-                    borderRadius: '6px',
-                    outline: 'none',
-                  }}
-                />
-              </div>
 
               {/* Recurrence section - only when adding new event */}
               {!editingNotableEvent && (
-                <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderRadius: '6px' }}>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      color: 'var(--color-primary-dark)',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    Périodicité
-                  </label>
-                  <select
-                    value={eventRecurrenceType}
-                    onChange={(e) => setEventRecurrenceType(e.target.value as RecurrenceType)}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      fontSize: '0.95rem',
-                      border: '1px solid rgba(230, 225, 219, 0.5)',
-                      borderRadius: '6px',
-                      outline: 'none',
-                      backgroundColor: 'var(--color-white)',
-                      cursor: 'pointer',
-                      marginBottom: '0.75rem',
-                    }}
-                  >
-                    <option value="none">Aucune (une seule fois)</option>
-                    <option value="daily">Tous les jours</option>
-                    <option value="weekly">Hebdomadaire</option>
-                    <option value="biweekly">Bimensuel</option>
-                    <option value="monthly_day">Mensuel (jour fixe)</option>
-                    <option value="monthly_weekday">Mensuel (jour de semaine)</option>
-                  </select>
+                <>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        color: 'var(--color-primary-dark)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={eventHasRecurrence}
+                        onChange={(e) => {
+                          setEventHasRecurrence(e.target.checked);
+                          if (!e.target.checked) {
+                            setEventRecurrenceType('none');
+                            setEventRecurrenceDays([]);
+                            setEventRecurrenceEndDate('');
+                          } else {
+                            setEventRecurrenceType('weekly');
+                          }
+                        }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      Ajouter une périodicité
+                    </label>
+                  </div>
+
+                  {eventHasRecurrence && (
+                    <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderRadius: '6px' }}>
+                      <label
+                        style={{
+                          display: 'block',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          color: 'var(--color-primary-dark)',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        Type de périodicité
+                      </label>
+                      <select
+                        value={eventRecurrenceType}
+                        onChange={(e) => setEventRecurrenceType(e.target.value as RecurrenceType)}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          fontSize: '0.95rem',
+                          border: '1px solid rgba(230, 225, 219, 0.5)',
+                          borderRadius: '6px',
+                          outline: 'none',
+                          backgroundColor: 'var(--color-white)',
+                          cursor: 'pointer',
+                          marginBottom: '0.75rem',
+                        }}
+                      >
+                        <option value="daily">Tous les jours</option>
+                        <option value="weekly">Hebdomadaire</option>
+                        <option value="biweekly">Bimensuel</option>
+                        <option value="monthly_day">Mensuel (jour fixe)</option>
+                        <option value="monthly_weekday">Mensuel (jour de semaine)</option>
+                      </select>
 
                   {/* Weekly/Biweekly: Select days of week */}
                   {(eventRecurrenceType === 'weekly' || eventRecurrenceType === 'biweekly') && (
@@ -2344,29 +2388,57 @@ export default function CongesPage() {
                   )}
 
                   {/* End date for recurrence */}
-                  {eventRecurrenceType !== 'none' && (
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin de la récurrence (optionnel, 2 ans par défaut) :
-                      </label>
-                      <input
-                        type="date"
-                        value={eventRecurrenceEndDate}
-                        onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
-                        min={notableEventDate}
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          fontSize: '0.95rem',
-                          border: '1px solid rgba(230, 225, 219, 0.5)',
-                          borderRadius: '6px',
-                          outline: 'none',
-                        }}
-                      />
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                      Date de fin de la récurrence (optionnel, 2 ans par défaut) :
+                    </label>
+                    <input
+                      type="date"
+                      value={eventRecurrenceEndDate}
+                      onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
+                      min={notableEventDate}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        fontSize: '0.95rem',
+                        border: '1px solid rgba(230, 225, 219, 0.5)',
+                        borderRadius: '6px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
                     </div>
                   )}
-                </div>
+                </>
               )}
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  {eventHasRecurrence ? 'Date de début de la récurrence *' : 'Date *'}
+                </label>
+                <input
+                  type="date"
+                  value={notableEventDate}
+                  onChange={(e) => setNotableEventDate(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label
