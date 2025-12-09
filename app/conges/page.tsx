@@ -40,6 +40,9 @@ export default function CongesPage() {
     deleteLeave,
     approveLeave,
     rejectLeave,
+    requestDeletion,
+    approveDeletion,
+    rejectDeletion,
     addMember,
     updateMember,
     deleteMember,
@@ -568,12 +571,12 @@ export default function CongesPage() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        opacity: leave.status === 'pending' ? 0.5 : 1,
-                        border: leave.status === 'pending' ? '1px dashed white' : 'none',
+                        opacity: leave.status === 'pending' || leave.status === 'deletion_pending' ? 0.5 : 1,
+                        border: leave.status === 'pending' || leave.status === 'deletion_pending' ? '1px dashed white' : 'none',
                         position: 'relative',
                         cursor: 'pointer',
                       }}
-                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}`}
+                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : leave.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                       onClick={() => {
                         setEditingLeave(leave);
                         setShowEditLeaveModal(true);
@@ -658,12 +661,12 @@ export default function CongesPage() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  opacity: morning.status === 'pending' ? 0.5 : 1,
-                                  border: morning.status === 'pending' ? '1px dashed white' : 'none',
+                                  opacity: morning.status === 'pending' || morning.status === 'deletion_pending' ? 0.5 : 1,
+                                  border: morning.status === 'pending' || morning.status === 'deletion_pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}`}
+                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : morning.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(morning);
                                   setShowEditLeaveModal(true);
@@ -721,12 +724,12 @@ export default function CongesPage() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  opacity: afternoon.status === 'pending' ? 0.5 : 1,
-                                  border: afternoon.status === 'pending' ? '1px dashed white' : 'none',
+                                  opacity: afternoon.status === 'pending' || afternoon.status === 'deletion_pending' ? 0.5 : 1,
+                                  border: afternoon.status === 'pending' || afternoon.status === 'deletion_pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}`}
+                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : afternoon.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(afternoon);
                                   setShowEditLeaveModal(true);
@@ -811,6 +814,7 @@ export default function CongesPage() {
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
           <div><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>🗑️ Suppression en attente</strong> : Demande de suppression d'un congé validé (affichée avec opacité réduite et bordure pointillée)</div>
           <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées verticalement (gauche = matin, droite = après-midi)</div>
         </div>
       </div>
@@ -1391,94 +1395,162 @@ export default function CongesPage() {
               Demandes en attente ({pendingLeaves.length})
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {pendingLeaves.map((leave) => (
-                <div
-                  key={leave.id}
-                  style={{
-                    padding: '1rem',
-                    backgroundColor: 'var(--color-off-white-1)',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(230, 225, 219, 0.5)',
-                  }}
-                >
-                  <div style={{ marginBottom: '0.5rem' }}>
-                    <strong style={{ color: 'var(--color-primary-dark)' }}>{leave.memberName}</strong>
-                    <span style={{ marginLeft: '0.5rem', color: 'var(--color-primary-blue)', fontSize: '0.9rem' }}>
-                      {new Date(leave.date).toLocaleDateString('fr-FR')} - {leave.period === 'journée' ? 'Journée' : leave.period === 'matin' ? 'Matin' : 'Après-midi'}
-                    </span>
-                  </div>
-                  {leave.comment && (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)', marginBottom: '0.75rem' }}>
-                      {leave.comment}
+              {pendingLeaves.map((leave) => {
+                const isDeletionRequest = leave.status === 'deletion_pending';
+                return (
+                  <div
+                    key={leave.id}
+                    style={{
+                      padding: '1rem',
+                      backgroundColor: isDeletionRequest ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-off-white-1)',
+                      borderRadius: '6px',
+                      border: isDeletionRequest ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(230, 225, 219, 0.5)',
+                    }}
+                  >
+                    <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {isDeletionRequest && (
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.2rem 0.5rem',
+                            backgroundColor: 'var(--color-accent-red)',
+                            color: 'white',
+                            borderRadius: '3px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          SUPPRESSION
+                        </span>
+                      )}
+                      <strong style={{ color: 'var(--color-primary-dark)' }}>{leave.memberName}</strong>
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--color-primary-blue)', fontSize: '0.9rem' }}>
+                        {new Date(leave.date).toLocaleDateString('fr-FR')} - {leave.period === 'journée' ? 'Journée' : leave.period === 'matin' ? 'Matin' : 'Après-midi'}
+                      </span>
                     </div>
-                  )}
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => {
-                        approveLeave(leave.id);
-                        if (pendingLeaves.length === 1) {
-                          setShowPendingModal(false);
-                        }
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: '#22c55e',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        fontWeight: '500',
-                      }}
-                    >
-                      Approuver
-                    </button>
-                    <button
-                      onClick={() => {
-                        const comment = prompt('Raison du refus (optionnel) :');
-                        rejectLeave(leave.id, comment || undefined);
-                        if (pendingLeaves.length === 1) {
-                          setShowPendingModal(false);
-                        }
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: 'var(--color-accent-red)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        fontWeight: '500',
-                      }}
-                    >
-                      Refuser
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm('Supprimer cette demande ?')) {
-                          deleteLeave(leave.id);
-                          if (pendingLeaves.length === 1) {
-                            setShowPendingModal(false);
-                          }
-                        }
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: 'var(--color-primary-blue)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        fontWeight: '500',
-                      }}
-                    >
-                      Supprimer
-                    </button>
+                    {leave.comment && (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)', marginBottom: '0.75rem' }}>
+                        {leave.comment}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {isDeletionRequest ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              if (confirm('Approuver la suppression de ce congé ?')) {
+                                approveDeletion(leave.id);
+                                if (pendingLeaves.length === 1) {
+                                  setShowPendingModal(false);
+                                }
+                              }
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: '#22c55e',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Approuver la suppression
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Refuser la suppression ? Le congé sera conservé.')) {
+                                rejectDeletion(leave.id);
+                                if (pendingLeaves.length === 1) {
+                                  setShowPendingModal(false);
+                                }
+                              }
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: 'var(--color-accent-red)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Refuser la suppression
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              approveLeave(leave.id);
+                              if (pendingLeaves.length === 1) {
+                                setShowPendingModal(false);
+                              }
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: '#22c55e',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Approuver
+                          </button>
+                          <button
+                            onClick={() => {
+                              const comment = prompt('Raison du refus (optionnel) :');
+                              rejectLeave(leave.id, comment || undefined);
+                              if (pendingLeaves.length === 1) {
+                                setShowPendingModal(false);
+                              }
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: 'var(--color-accent-red)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Refuser
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Supprimer cette demande ?')) {
+                                deleteLeave(leave.id);
+                                if (pendingLeaves.length === 1) {
+                                  setShowPendingModal(false);
+                                }
+                              }
+                            }}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: 'var(--color-primary-blue)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                            }}
+                          >
+                            Supprimer
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
               <button
@@ -1576,8 +1648,12 @@ export default function CongesPage() {
               </button>
               <button
                 onClick={() => {
-                  if (confirm(`Supprimer cette absence ?`)) {
-                    deleteLeave(editingLeave.id);
+                  const message = editingLeave.type === 'Congés' && editingLeave.status === 'approved'
+                    ? `Demander la suppression de ce congé validé ?\n\nLa demande devra être approuvée par un validateur.`
+                    : `Supprimer cette absence ?`;
+
+                  if (confirm(message)) {
+                    requestDeletion(editingLeave.id);
                     setShowEditLeaveModal(false);
                     setEditingLeave(null);
                   }

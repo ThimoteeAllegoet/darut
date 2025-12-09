@@ -8,7 +8,7 @@ export type LeaveType =
 
 export type PeriodType = 'matin' | 'après-midi' | 'journée';
 
-export type LeaveStatus = 'pending' | 'approved' | 'rejected';
+export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'deletion_pending';
 
 export interface TeamMember {
   id: string;

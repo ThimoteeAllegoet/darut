@@ -148,7 +148,28 @@ export function useLeaves() {
   };
 
   const getPendingLeaves = () => {
-    return leaves.filter((leave) => leave.status === 'pending');
+    return leaves.filter((leave) => leave.status === 'pending' || leave.status === 'deletion_pending');
+  };
+
+  const requestDeletion = (id: string) => {
+    const leave = leaves.find((l) => l.id === id);
+    if (!leave) return;
+
+    // If leave is type 'Congés' and status is 'approved', mark as deletion_pending
+    if (leave.type === 'Congés' && leave.status === 'approved') {
+      updateLeave(id, { status: 'deletion_pending' });
+    } else {
+      // For other types or non-approved leaves, delete immediately
+      deleteLeave(id);
+    }
+  };
+
+  const approveDeletion = (id: string) => {
+    deleteLeave(id);
+  };
+
+  const rejectDeletion = (id: string) => {
+    updateLeave(id, { status: 'approved' });
   };
 
   return {
@@ -160,6 +181,9 @@ export function useLeaves() {
     deleteLeave,
     approveLeave,
     rejectLeave,
+    requestDeletion,
+    approveDeletion,
+    rejectDeletion,
     addMember,
     updateMember,
     deleteMember,
