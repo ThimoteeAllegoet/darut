@@ -1,3 +1,5 @@
+import { RecurrenceConfig } from './recurrence';
+
 export interface NotableEvent {
   id: string;
   title: string;
@@ -6,4 +8,6 @@ export interface NotableEvent {
   createdBy: string; // User who created it
   createdAt: string;
   updatedAt: string;
+  recurrence?: RecurrenceConfig;
+  recurrenceGroupId?: string; // Pour lier toutes les instances d'une récurrence
 }

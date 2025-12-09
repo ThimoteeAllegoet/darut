@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { LeaveRequest, TeamMember, LeaveType, PeriodType, LeaveStatus } from '../types/leaves';
+import { RecurrenceConfig } from '../types/recurrence';
+import { generateRecurrentDates } from '../utils/recurrence';
 
 const LEAVES_STORAGE_KEY = 'darut_leaves';
 const MEMBERS_STORAGE_KEY = 'darut_team_members';
@@ -46,27 +48,53 @@ export function useLeaves() {
     type: LeaveType,
     date: string,
     period: PeriodType,
-    comment?: string
+    comment?: string,
+    recurrence?: RecurrenceConfig
   ) => {
     const member = members.find((m) => m.id === memberId);
     if (!member) return;
 
     const status: LeaveStatus = type === 'Congés' ? 'pending' : 'approved';
 
-    const newLeave: LeaveRequest = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      memberId,
-      memberName: member.name,
-      type,
-      date,
-      period,
-      status,
-      comment,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    // Si récurrence, créer plusieurs instances
+    if (recurrence && recurrence.type !== 'none') {
+      const recurrenceGroupId = `recur-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const dates = generateRecurrentDates(date, recurrence);
 
-    saveLeaves([...leaves, newLeave]);
+      const newLeaves: LeaveRequest[] = dates.map((recurrentDate, index) => ({
+        id: `${Date.now() + index}-${Math.random().toString(36).substr(2, 9)}`,
+        memberId,
+        memberName: member.name,
+        type,
+        date: recurrentDate,
+        period,
+        status,
+        comment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        recurrence,
+        recurrenceGroupId,
+      }));
+
+      saveLeaves([...leaves, ...newLeaves]);
+    } else {
+      // Pas de récurrence, créer une seule instance
+      const newLeave: LeaveRequest = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        memberId,
+        memberName: member.name,
+        type,
+        date,
+        period,
+        status,
+        comment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        recurrence,
+      };
+
+      saveLeaves([...leaves, newLeave]);
+    }
   };
 
   const addMultipleLeaves = (

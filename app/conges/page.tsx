@@ -5,11 +5,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLeaves } from '../hooks/useLeaves';
 import { useNotableEvents } from '../hooks/useNotableEvents';
 import { LeaveType, PeriodType, TeamMember } from '../types/leaves';
+import { RecurrenceConfig, RecurrenceType, DayOfWeek, WeekOfMonth } from '../types/recurrence';
 
 const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence', 'Temps partiel'];
 
 const leaveTypeColors: Record<LeaveType, string> = {
-  'Télétravail': '#3b82f6',
+  'Télétravail': '#6b7280',
   'Congés': '#22c55e',
   'Formation': '#8b5cf6',
   'Déplacement': '#a855f7',
@@ -96,24 +97,67 @@ export default function CongesPage() {
   const [leavePeriod, setLeavePeriod] = useState<PeriodType | 'periode'>('journée');
   const [leaveComment, setLeaveComment] = useState('');
 
+  // Recurrence states for leaves
+  const [leaveRecurrenceType, setLeaveRecurrenceType] = useState<RecurrenceType>('none');
+  const [leaveRecurrenceDays, setLeaveRecurrenceDays] = useState<DayOfWeek[]>([]);
+  const [leaveRecurrenceDayOfMonth, setLeaveRecurrenceDayOfMonth] = useState<number>(1);
+  const [leaveRecurrenceWeekOfMonth, setLeaveRecurrenceWeekOfMonth] = useState<WeekOfMonth>(1);
+  const [leaveRecurrenceDayOfWeek, setLeaveRecurrenceDayOfWeek] = useState<DayOfWeek>(1);
+  const [leaveRecurrenceEndDate, setLeaveRecurrenceEndDate] = useState('');
+
+  // Recurrence states for notable events
+  const [eventRecurrenceType, setEventRecurrenceType] = useState<RecurrenceType>('none');
+  const [eventRecurrenceDays, setEventRecurrenceDays] = useState<DayOfWeek[]>([]);
+  const [eventRecurrenceDayOfMonth, setEventRecurrenceDayOfMonth] = useState<number>(1);
+  const [eventRecurrenceWeekOfMonth, setEventRecurrenceWeekOfMonth] = useState<WeekOfMonth>(1);
+  const [eventRecurrenceDayOfWeek, setEventRecurrenceDayOfWeek] = useState<DayOfWeek>(1);
+  const [eventRecurrenceEndDate, setEventRecurrenceEndDate] = useState('');
+
   if (!isAuthenticated) {
     return null;
   }
 
   const pendingLeaves = getPendingLeaves();
 
-  // French holidays 2024-2026
-  const frenchHolidays = [
+  // French holidays 2024-2026 with names
+  const frenchHolidays: Record<string, string> = {
     // 2024
-    '2024-01-01', '2024-04-01', '2024-05-01', '2024-05-08', '2024-05-09', '2024-05-20',
-    '2024-07-14', '2024-08-15', '2024-11-01', '2024-11-11', '2024-12-25',
+    '2024-01-01': 'Jour de l\'an',
+    '2024-04-01': 'Lundi de Pâques',
+    '2024-05-01': 'Fête du Travail',
+    '2024-05-08': 'Victoire 1945',
+    '2024-05-09': 'Ascension',
+    '2024-05-20': 'Lundi de Pentecôte',
+    '2024-07-14': 'Fête nationale',
+    '2024-08-15': 'Assomption',
+    '2024-11-01': 'Toussaint',
+    '2024-11-11': 'Armistice 1918',
+    '2024-12-25': 'Noël',
     // 2025
-    '2025-01-01', '2025-04-21', '2025-05-01', '2025-05-08', '2025-05-29', '2025-06-09',
-    '2025-07-14', '2025-08-15', '2025-11-01', '2025-11-11', '2025-12-25',
+    '2025-01-01': 'Jour de l\'an',
+    '2025-04-21': 'Lundi de Pâques',
+    '2025-05-01': 'Fête du Travail',
+    '2025-05-08': 'Victoire 1945',
+    '2025-05-29': 'Ascension',
+    '2025-06-09': 'Lundi de Pentecôte',
+    '2025-07-14': 'Fête nationale',
+    '2025-08-15': 'Assomption',
+    '2025-11-01': 'Toussaint',
+    '2025-11-11': 'Armistice 1918',
+    '2025-12-25': 'Noël',
     // 2026
-    '2026-01-01', '2026-04-06', '2026-05-01', '2026-05-08', '2026-05-14', '2026-05-25',
-    '2026-07-14', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25',
-  ];
+    '2026-01-01': 'Jour de l\'an',
+    '2026-04-06': 'Lundi de Pâques',
+    '2026-05-01': 'Fête du Travail',
+    '2026-05-08': 'Victoire 1945',
+    '2026-05-14': 'Ascension',
+    '2026-05-25': 'Lundi de Pentecôte',
+    '2026-07-14': 'Fête nationale',
+    '2026-08-15': 'Assomption',
+    '2026-11-01': 'Toussaint',
+    '2026-11-11': 'Armistice 1918',
+    '2026-12-25': 'Noël',
+  };
 
   // Calendar helpers
   const year = currentDate.getFullYear();
@@ -153,12 +197,31 @@ export default function CongesPage() {
         description: notableEventDescription,
       });
     } else {
-      addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription);
+      // Build recurrence config
+      let recurrence: RecurrenceConfig | undefined;
+      if (eventRecurrenceType !== 'none') {
+        recurrence = {
+          type: eventRecurrenceType,
+          daysOfWeek: eventRecurrenceType === 'weekly' || eventRecurrenceType === 'biweekly' ? eventRecurrenceDays : undefined,
+          dayOfMonth: eventRecurrenceType === 'monthly_day' ? eventRecurrenceDayOfMonth : undefined,
+          weekOfMonth: eventRecurrenceType === 'monthly_weekday' ? eventRecurrenceWeekOfMonth : undefined,
+          dayOfWeek: eventRecurrenceType === 'monthly_weekday' ? eventRecurrenceDayOfWeek : undefined,
+          endDate: eventRecurrenceEndDate || undefined,
+        };
+      }
+
+      addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription, undefined, recurrence);
     }
 
     setNotableEventTitle('');
     setNotableEventDate('');
     setNotableEventDescription('');
+    setEventRecurrenceType('none');
+    setEventRecurrenceDays([]);
+    setEventRecurrenceDayOfMonth(1);
+    setEventRecurrenceWeekOfMonth(1);
+    setEventRecurrenceDayOfWeek(1);
+    setEventRecurrenceEndDate('');
     setEditingNotableEvent(null);
     setShowNotableEventModal(false);
   };
@@ -204,6 +267,19 @@ export default function CongesPage() {
       return;
     }
 
+    // Build recurrence config
+    let recurrence: RecurrenceConfig | undefined;
+    if (leaveRecurrenceType !== 'none') {
+      recurrence = {
+        type: leaveRecurrenceType,
+        daysOfWeek: leaveRecurrenceType === 'weekly' || leaveRecurrenceType === 'biweekly' ? leaveRecurrenceDays : undefined,
+        dayOfMonth: leaveRecurrenceType === 'monthly_day' ? leaveRecurrenceDayOfMonth : undefined,
+        weekOfMonth: leaveRecurrenceType === 'monthly_weekday' ? leaveRecurrenceWeekOfMonth : undefined,
+        dayOfWeek: leaveRecurrenceType === 'monthly_weekday' ? leaveRecurrenceDayOfWeek : undefined,
+        endDate: leaveRecurrenceEndDate || undefined,
+      };
+    }
+
     // If periode mode, add multiple days
     if (leavePeriod === 'periode') {
       const endDate = leaveEndDate || leaveStartDate;
@@ -233,7 +309,7 @@ export default function CongesPage() {
       addMultipleLeaves(modalSelectedMember, leaveType, dates, 'journée', leaveComment);
     } else {
       // Single day with specific period
-      addLeave(modalSelectedMember, leaveType, leaveStartDate, leavePeriod, leaveComment);
+      addLeave(modalSelectedMember, leaveType, leaveStartDate, leavePeriod, leaveComment, recurrence);
     }
 
     setModalSelectedMember('');
@@ -242,6 +318,12 @@ export default function CongesPage() {
     setLeaveType('Congés');
     setLeavePeriod('journée');
     setLeaveComment('');
+    setLeaveRecurrenceType('none');
+    setLeaveRecurrenceDays([]);
+    setLeaveRecurrenceDayOfMonth(1);
+    setLeaveRecurrenceWeekOfMonth(1);
+    setLeaveRecurrenceDayOfWeek(1);
+    setLeaveRecurrenceEndDate('');
     setShowLeaveModal(false);
   };
 
@@ -532,7 +614,8 @@ export default function CongesPage() {
             // Check if weekend or holiday
             const currentDayOfWeek = new Date(year, month, day).getDay();
             const isWeekend = currentDayOfWeek === 0 || currentDayOfWeek === 6; // Saturday or Sunday
-            const isHoliday = frenchHolidays.includes(dateStr);
+            const holidayName = frenchHolidays[dateStr];
+            const isHoliday = !!holidayName;
             const isGrayedOut = isWeekend || isHoliday;
 
             const allDayLeaves = getLeavesByDate(dateStr).filter(
@@ -604,9 +687,18 @@ export default function CongesPage() {
                     fontWeight: '600',
                     color: 'var(--color-primary-dark)',
                     padding: '0.4rem 0.5rem 0.3rem 0.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '0.3rem',
                   }}
                 >
-                  {day}
+                  <span>{day}</span>
+                  {holidayName && (
+                    <span style={{ fontSize: '0.65rem', fontWeight: '500', color: 'rgba(40, 50, 118, 0.7)' }}>
+                      {holidayName}
+                    </span>
+                  )}
                 </div>
 
                 {/* Notable events */}
@@ -628,8 +720,11 @@ export default function CongesPage() {
                       marginLeft: '0.3rem',
                       marginRight: '0.3rem',
                       border: '1px solid #fbbf24',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.3rem',
                     }}
-                    title={event.description || event.title}
                     onClick={() => {
                       setEditingNotableEvent(event);
                       setNotableEventTitle(event.title);
@@ -638,8 +733,8 @@ export default function CongesPage() {
                       setShowNotableEventModal(true);
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '0.75rem', marginRight: '0.2rem' }}>info</span>
-                    {event.title}
+                    <span className="material-symbols-outlined" style={{ fontSize: '0.75rem' }}>info</span>
+                    <span>{event.title}</span>
                   </div>
                 ))}
 
@@ -672,7 +767,6 @@ export default function CongesPage() {
                         position: 'relative',
                         cursor: 'pointer',
                       }}
-                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : leave.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                       onClick={() => {
                         setEditingLeave(leave);
                         setShowEditLeaveModal(true);
@@ -762,7 +856,6 @@ export default function CongesPage() {
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : morning.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(morning);
                                   setShowEditLeaveModal(true);
@@ -825,7 +918,6 @@ export default function CongesPage() {
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : afternoon.status === 'deletion_pending' ? ' (Suppression en attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(afternoon);
                                   setShowEditLeaveModal(true);

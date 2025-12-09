@@ -17,6 +17,8 @@ export interface TeamMember {
   isValidator: boolean;
 }
 
+import { RecurrenceConfig } from './recurrence';
+
 export interface LeaveRequest {
   id: string;
   memberId: string;
@@ -29,4 +31,6 @@ export interface LeaveRequest {
   validatorComment?: string;
   createdAt: string;
   updatedAt: string;
+  recurrence?: RecurrenceConfig;
+  recurrenceGroupId?: string; // Pour lier toutes les instances d'une récurrence
 }
