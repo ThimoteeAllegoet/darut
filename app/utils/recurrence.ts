@@ -4,13 +4,13 @@ import { RecurrenceConfig, DayOfWeek, WeekOfMonth } from '../types/recurrence';
  * Génère toutes les dates récurrentes basées sur une configuration
  * @param startDate Date de début au format YYYY-MM-DD
  * @param config Configuration de récurrence
- * @param maxMonths Nombre maximum de mois à générer (optionnel, pas de limite par défaut)
+ * @param maxMonths Nombre maximum de mois à générer si pas de date de fin (par défaut 24 mois = 2 ans)
  * @returns Array de dates au format YYYY-MM-DD
  */
 export function generateRecurrentDates(
   startDate: string,
   config: RecurrenceConfig,
-  maxMonths?: number
+  maxMonths: number = 24
 ): string[] {
   if (config.type === 'none') {
     return [startDate];
@@ -19,12 +19,14 @@ export function generateRecurrentDates(
   const dates: string[] = [];
   const start = new Date(startDate + 'T12:00:00'); // Midi pour éviter problèmes timezone
 
-  // Si pas de date de fin spécifiée, erreur - l'utilisateur DOIT fournir une date de fin
-  if (!config.endDate) {
-    throw new Error('Une date de fin est requise pour les récurrences');
+  // Si pas de date de fin spécifiée, générer sur maxMonths mois
+  let finalDate: Date;
+  if (config.endDate) {
+    finalDate = new Date(config.endDate + 'T12:00:00');
+  } else {
+    finalDate = new Date(start);
+    finalDate.setMonth(finalDate.getMonth() + maxMonths);
   }
-
-  const finalDate = new Date(config.endDate + 'T12:00:00');
 
   switch (config.type) {
     case 'daily':

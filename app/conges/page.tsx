@@ -1588,13 +1588,12 @@ export default function CongesPage() {
                   {leaveRecurrenceType !== 'none' && (
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin de la récurrence * :
+                        Date de fin de la récurrence (optionnel, 2 ans par défaut) :
                       </label>
                       <input
                         type="date"
                         value={leaveRecurrenceEndDate}
                         onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
-                        required
                         min={leaveStartDate}
                         style={{
                           width: '100%',
@@ -2348,13 +2347,12 @@ export default function CongesPage() {
                   {eventRecurrenceType !== 'none' && (
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin de la récurrence * :
+                        Date de fin de la récurrence (optionnel, 2 ans par défaut) :
                       </label>
                       <input
                         type="date"
                         value={eventRecurrenceEndDate}
                         onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
-                        required
                         min={notableEventDate}
                         style={{
                           width: '100%',

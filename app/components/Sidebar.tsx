@@ -75,7 +75,31 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
         </div>
       </div>
 
-      <nav style={{ flex: 1, padding: '1rem 0', overflowY: 'auto' }}>
+      <nav
+        style={{
+          flex: 1,
+          padding: '1rem 0',
+          overflowY: 'auto',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+        }}
+        className="sidebar-nav"
+      >
+        <style jsx>{`
+          .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+          }
+          .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+          }
+          .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        `}</style>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           const showIndicator = item.hasIndicator && activeAlert;
