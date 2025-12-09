@@ -1130,6 +1130,8 @@ export default function CongesPage() {
               padding: '2rem',
               width: '100%',
               maxWidth: '500px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1284,6 +1286,8 @@ export default function CongesPage() {
               padding: '2rem',
               width: '100%',
               maxWidth: '500px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1406,63 +1410,6 @@ export default function CongesPage() {
                   <option value="periode">Période (plusieurs jours)</option>
                 </select>
               </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    color: 'var(--color-primary-dark)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {leavePeriod === 'periode' ? 'Date de début *' : 'Date *'}
-                </label>
-                <input
-                  type="date"
-                  value={leaveStartDate}
-                  onChange={(e) => setLeaveStartDate(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    fontSize: '0.95rem',
-                    border: '1px solid rgba(230, 225, 219, 0.5)',
-                    borderRadius: '6px',
-                    outline: 'none',
-                  }}
-                />
-              </div>
-              {leavePeriod === 'periode' && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      color: 'var(--color-primary-dark)',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    Date de fin *
-                  </label>
-                  <input
-                    type="date"
-                    value={leaveEndDate}
-                    onChange={(e) => setLeaveEndDate(e.target.value)}
-                    min={leaveStartDate}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      fontSize: '0.95rem',
-                      border: '1px solid rgba(230, 225, 219, 0.5)',
-                      borderRadius: '6px',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-              )}
 
               {/* Recurrence section - only for single day periods */}
               {leavePeriod !== 'periode' && (
@@ -1641,12 +1588,14 @@ export default function CongesPage() {
                   {leaveRecurrenceType !== 'none' && (
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin (optionnel, 12 mois max par défaut) :
+                        Date de fin de la récurrence * :
                       </label>
                       <input
                         type="date"
                         value={leaveRecurrenceEndDate}
                         onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
+                        required
+                        min={leaveStartDate}
                         style={{
                           width: '100%',
                           padding: '0.75rem',
@@ -1658,6 +1607,68 @@ export default function CongesPage() {
                       />
                     </div>
                   )}
+                </div>
+              )}
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  {leavePeriod === 'periode'
+                    ? 'Date de début *'
+                    : leaveRecurrenceType !== 'none'
+                      ? 'Date de début de la récurrence *'
+                      : 'Date *'}
+                </label>
+                <input
+                  type="date"
+                  value={leaveStartDate}
+                  onChange={(e) => setLeaveStartDate(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              {leavePeriod === 'periode' && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: 'var(--color-primary-dark)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Date de fin *
+                  </label>
+                  <input
+                    type="date"
+                    value={leaveEndDate}
+                    onChange={(e) => setLeaveEndDate(e.target.value)}
+                    min={leaveStartDate}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      outline: 'none',
+                    }}
+                  />
                 </div>
               )}
 
@@ -2088,6 +2099,8 @@ export default function CongesPage() {
               padding: '2rem',
               width: '100%',
               maxWidth: '500px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -2335,12 +2348,14 @@ export default function CongesPage() {
                   {eventRecurrenceType !== 'none' && (
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                        Date de fin (optionnel, 12 mois max par défaut) :
+                        Date de fin de la récurrence * :
                       </label>
                       <input
                         type="date"
                         value={eventRecurrenceEndDate}
                         onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
+                        required
+                        min={notableEventDate}
                         style={{
                           width: '100%',
                           padding: '0.75rem',

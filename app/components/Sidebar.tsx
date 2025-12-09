@@ -75,7 +75,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
         </div>
       </div>
 
-      <nav style={{ flex: 1, padding: '1rem 0' }}>
+      <nav style={{ flex: 1, padding: '1rem 0', overflowY: 'auto' }}>
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
           const showIndicator = item.hasIndicator && activeAlert;
