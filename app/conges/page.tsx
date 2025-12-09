@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLeaves } from '../hooks/useLeaves';
+import { useNotableEvents } from '../hooks/useNotableEvents';
 import { LeaveType, PeriodType, TeamMember } from '../types/leaves';
 
 const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence', 'Temps partiel'];
@@ -50,6 +51,14 @@ export default function CongesPage() {
     getLeavesByDate,
   } = useLeaves();
 
+  const {
+    notableEvents,
+    addEvent: addNotableEvent,
+    updateEvent: updateNotableEvent,
+    deleteEvent: deleteNotableEvent,
+    getEventsByDate,
+  } = useNotableEvents();
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
@@ -65,6 +74,12 @@ export default function CongesPage() {
   const [tooltip, setTooltip] = useState<{ x: number; y: number; comment: string | null }>({ x: 0, y: 0, comment: null });
   const [showEditLeaveModal, setShowEditLeaveModal] = useState(false);
   const [editingLeave, setEditingLeave] = useState<any | null>(null);
+
+  // Notable event modal state
+  const [showNotableEventModal, setShowNotableEventModal] = useState(false);
+  const [notableEventTitle, setNotableEventTitle] = useState('');
+  const [notableEventDate, setNotableEventDate] = useState('');
+  const [notableEventDescription, setNotableEventDescription] = useState('');
 
   // Member form
   const [memberName, setMemberName] = useState('');
@@ -121,6 +136,20 @@ export default function CongesPage() {
 
   const goToToday = () => {
     setCurrentDate(new Date());
+  };
+
+  const handleAddNotableEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notableEventTitle || !notableEventDate) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription);
+    setNotableEventTitle('');
+    setNotableEventDate('');
+    setNotableEventDescription('');
+    setShowNotableEventModal(false);
   };
 
   const handleAddMember = (e: React.FormEvent) => {
@@ -288,6 +317,28 @@ export default function CongesPage() {
             }}
           >
             + Ajouter une absence
+          </button>
+          <button
+            onClick={() => setShowNotableEventModal(true)}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#9CA3AF',
+              color: 'var(--color-white)',
+              border: 'none',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#6B7280';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#9CA3AF';
+            }}
+          >
+            + Événement notable
           </button>
           {pendingLeaves.length > 0 && (
             <button
@@ -546,6 +597,34 @@ export default function CongesPage() {
                 >
                   {day}
                 </div>
+
+                {/* Notable events */}
+                {getEventsByDate(dateStr).map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      fontSize: '0.65rem',
+                      padding: '0.2rem 0.4rem',
+                      backgroundColor: '#9CA3AF',
+                      color: 'white',
+                      borderRadius: '3px',
+                      fontWeight: '600',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      cursor: 'pointer',
+                      marginBottom: '0.2rem',
+                    }}
+                    title={event.description || event.title}
+                    onClick={() => {
+                      if (confirm(`Supprimer "${event.title}" ?\n\n${event.description || ''}`)) {
+                        deleteNotableEvent(event.id);
+                      }
+                    }}
+                  >
+                    📌 {event.title}
+                  </div>
+                ))}
 
                 {/* Leaves container with alignment */}
                 <div
@@ -813,7 +892,8 @@ export default function CongesPage() {
           ))}
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
-          <div><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
+          <div><strong>📌 Événements notables</strong> : Événements partagés (repas, réunions, etc.) - Cliquer pour supprimer</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
           <div style={{ marginTop: '0.25rem' }}><strong>🗑️ Suppression en attente</strong> : Demande de suppression d'un congé validé (affichée avec opacité réduite et bordure pointillée)</div>
           <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées verticalement (gauche = matin, droite = après-midi)</div>
         </div>
@@ -1672,6 +1752,167 @@ export default function CongesPage() {
                 Supprimer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notable Event Modal */}
+      {showNotableEventModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+          }}
+          onClick={() => setShowNotableEventModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '500px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: 'var(--color-primary-dark)',
+                marginBottom: '1.5rem',
+              }}
+            >
+              Ajouter un événement notable
+            </h2>
+            <form onSubmit={handleAddNotableEvent}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Titre *
+                </label>
+                <input
+                  type="text"
+                  value={notableEventTitle}
+                  onChange={(e) => setNotableEventTitle(e.target.value)}
+                  placeholder="Ex: Repas de service"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  value={notableEventDate}
+                  onChange={(e) => setNotableEventDate(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-primary-dark)',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Description (optionnel)
+                </label>
+                <textarea
+                  value={notableEventDescription}
+                  onChange={(e) => setNotableEventDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Informations supplémentaires..."
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    fontSize: '0.95rem',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowNotableEventModal(false)}
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    backgroundColor: 'var(--color-white)',
+                    color: 'var(--color-primary-blue)',
+                    border: '1px solid rgba(230, 225, 219, 0.5)',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: '500',
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    backgroundColor: '#9CA3AF',
+                    color: 'var(--color-white)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: '500',
+                  }}
+                >
+                  Ajouter
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
