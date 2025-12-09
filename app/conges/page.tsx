@@ -11,7 +11,7 @@ const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Dépl
 const leaveTypeColors: Record<LeaveType, string> = {
   'Télétravail': '#3b82f6',
   'Congés': '#22c55e',
-  'Formation': '#f59e0b',
+  'Formation': '#8b5cf6',
   'Déplacement': '#a855f7',
   'Absence': '#ef4444',
   'Temps partiel': '#06b6d4',
@@ -586,7 +586,7 @@ export default function CongesPage() {
                 style={{
                   minHeight: '100px',
                   backgroundColor: isGrayedOut
-                    ? 'rgba(200, 200, 200, 0.4)'
+                    ? '#dadada'
                     : isToday
                       ? 'rgba(64, 107, 222, 0.1)'
                       : 'var(--color-off-white-1)',
@@ -595,7 +595,6 @@ export default function CongesPage() {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  opacity: isGrayedOut ? 0.5 : 1,
                 }}
               >
                 {/* Day number */}
@@ -639,7 +638,8 @@ export default function CongesPage() {
                       setShowNotableEventModal(true);
                     }}
                   >
-                    ⚡ {event.title}
+                    <span className="material-symbols-outlined" style={{ fontSize: '0.75rem', marginRight: '0.2rem' }}>info</span>
+                    {event.title}
                   </div>
                 ))}
 
@@ -667,7 +667,7 @@ export default function CongesPage() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        opacity: leave.status === 'pending' || leave.status === 'deletion_pending' ? 0.5 : 1,
+                        opacity: isGrayedOut ? 0.5 : (leave.status === 'pending' || leave.status === 'deletion_pending' ? 0.5 : 1),
                         border: leave.status === 'pending' || leave.status === 'deletion_pending' ? '1px dashed white' : 'none',
                         position: 'relative',
                         cursor: 'pointer',
@@ -757,7 +757,7 @@ export default function CongesPage() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  opacity: morning.status === 'pending' || morning.status === 'deletion_pending' ? 0.5 : 1,
+                                  opacity: isGrayedOut ? 0.5 : (morning.status === 'pending' || morning.status === 'deletion_pending' ? 0.5 : 1),
                                   border: morning.status === 'pending' || morning.status === 'deletion_pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
                                   cursor: 'pointer',
@@ -820,7 +820,7 @@ export default function CongesPage() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
-                                  opacity: afternoon.status === 'pending' || afternoon.status === 'deletion_pending' ? 0.5 : 1,
+                                  opacity: isGrayedOut ? 0.5 : (afternoon.status === 'pending' || afternoon.status === 'deletion_pending' ? 0.5 : 1),
                                   border: afternoon.status === 'pending' || afternoon.status === 'deletion_pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
                                   cursor: 'pointer',
