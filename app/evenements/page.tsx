@@ -1503,7 +1503,7 @@ export default function EvenementsPage() {
                     fontWeight: '500',
                   }}
                 >
-                  {type === 'Version' || type === 'Hotfix' ? 'Date de livraison *' : 'Occurence *'}
+                  {type === 'Version' || type === 'Hotfix' ? 'Date de livraison *' : 'Occurrences *'}
                 </label>
                 {type !== 'Version' && type !== 'Hotfix' && (
                   <button
@@ -1586,17 +1586,6 @@ export default function EvenementsPage() {
                   {type === 'Version' || type === 'Hotfix' ? (
                     // Single date for Version/Hotfix
                     <div style={{ marginBottom: '0.5rem' }}>
-                      <label
-                        style={{
-                          display: 'block',
-                          marginBottom: '0.25rem',
-                          fontSize: '0.7rem',
-                          color: 'var(--color-primary-dark)',
-                          fontWeight: '500',
-                        }}
-                      >
-                        Date de livraison *
-                      </label>
                       <input
                         type="date"
                         value={period.startDate}
@@ -1604,6 +1593,7 @@ export default function EvenementsPage() {
                           updatePeriod(period.id, 'startDate', e.target.value);
                           updatePeriod(period.id, 'endDate', e.target.value); // Auto-fill endDate with same value
                         }}
+                        required
                         style={{
                           width: '100%',
                           padding: '0.4rem',
