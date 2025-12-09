@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLeaves } from '../hooks/useLeaves';
 import { LeaveType, PeriodType, TeamMember } from '../types/leaves';
 
-const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence'];
+const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence', 'Temps partiel'];
 
 const leaveTypeColors: Record<LeaveType, string> = {
   'Télétravail': '#3b82f6',
@@ -13,6 +13,21 @@ const leaveTypeColors: Record<LeaveType, string> = {
   'Formation': '#f59e0b',
   'Déplacement': '#a855f7',
   'Absence': '#ef4444',
+  'Temps partiel': '#06b6d4',
+};
+
+// Function to darken a color for comment indicator
+const darkenColor = (hex: string): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  const darkenFactor = 0.6; // Darken by 40%
+  const newR = Math.floor(r * darkenFactor);
+  const newG = Math.floor(g * darkenFactor);
+  const newB = Math.floor(b * darkenFactor);
+
+  return `rgb(${newR}, ${newG}, ${newB})`;
 };
 
 export default function CongesPage() {
@@ -44,6 +59,9 @@ export default function CongesPage() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; comment: string | null }>({ x: 0, y: 0, comment: null });
+  const [showEditLeaveModal, setShowEditLeaveModal] = useState(false);
+  const [editingLeave, setEditingLeave] = useState<any | null>(null);
 
   // Member form
   const [memberName, setMemberName] = useState('');
@@ -213,7 +231,7 @@ export default function CongesPage() {
             margin: 0,
           }}
         >
-          Gestion des Congés
+          Gestion des absences
         </h1>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
@@ -435,9 +453,39 @@ export default function CongesPage() {
             );
 
             // Separate leaves by period and sort alphabetically by member name
-            const morningOnlyLeaves = allDayLeaves.filter(l => l.period === 'matin').sort((a, b) => a.memberName.localeCompare(b.memberName));
-            const afternoonOnlyLeaves = allDayLeaves.filter(l => l.period === 'après-midi').sort((a, b) => a.memberName.localeCompare(b.memberName));
-            const fullDayLeaves = allDayLeaves.filter(l => l.period === 'journée').sort((a, b) => a.memberName.localeCompare(b.memberName));
+            const morningLeaves = allDayLeaves.filter(l => l.period === 'matin').sort((a, b) => a.memberName.localeCompare(b.memberName));
+            const afternoonLeaves = allDayLeaves.filter(l => l.period === 'après-midi').sort((a, b) => a.memberName.localeCompare(b.memberName));
+            let fullDayLeaves = allDayLeaves.filter(l => l.period === 'journée').sort((a, b) => a.memberName.localeCompare(b.memberName));
+
+            // Detect agents with both morning AND afternoon - treat as full day
+            const mergedFullDays: typeof fullDayLeaves = [];
+            const morningOnlyLeaves: typeof morningLeaves = [];
+            const afternoonOnlyLeaves: typeof afternoonLeaves = [];
+
+            morningLeaves.forEach(morning => {
+              const afternoon = afternoonLeaves.find(a => a.memberId === morning.memberId);
+              if (afternoon && morning.type === afternoon.type) {
+                // Same agent has both periods with same type - merge into full day
+                mergedFullDays.push({
+                  ...morning,
+                  period: 'journée' as PeriodType,
+                  comment: morning.comment || afternoon.comment, // Keep any comment from either
+                });
+              } else {
+                morningOnlyLeaves.push(morning);
+              }
+            });
+
+            afternoonLeaves.forEach(afternoon => {
+              const morning = morningLeaves.find(m => m.memberId === afternoon.memberId);
+              // Only add if NOT already merged (i.e., no matching morning or different type)
+              if (!morning || morning.type !== afternoon.type) {
+                afternoonOnlyLeaves.push(afternoon);
+              }
+            });
+
+            // Combine original full days with merged ones and sort
+            fullDayLeaves = [...fullDayLeaves, ...mergedFullDays].sort((a, b) => a.memberName.localeCompare(b.memberName));
 
             const isToday =
               day === new Date().getDate() &&
@@ -496,8 +544,28 @@ export default function CongesPage() {
                         opacity: leave.status === 'pending' ? 0.5 : 1,
                         border: leave.status === 'pending' ? '1px dashed white' : 'none',
                         position: 'relative',
+                        cursor: 'pointer',
                       }}
-                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}${leave.comment ? ` - ${leave.comment}` : ''}`}
+                      title={!leave.comment ? `${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                      onClick={() => {
+                        setEditingLeave(leave);
+                        setShowEditLeaveModal(true);
+                      }}
+                      onMouseEnter={(e) => {
+                        if (leave.comment) {
+                          setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment });
+                        }
+                      }}
+                      onMouseMove={(e) => {
+                        if (leave.comment) {
+                          setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment });
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        if (leave.comment) {
+                          setTooltip({ x: 0, y: 0, comment: null });
+                        }
+                      }}
                     >
                       {leave.memberName.split(' ')[0]}
                       {leave.comment && (
@@ -508,12 +576,11 @@ export default function CongesPage() {
                             right: '0',
                             width: '0',
                             height: '0',
-                            borderLeft: '8px solid transparent',
-                            borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                            borderLeft: '12px solid transparent',
+                            borderBottom: `12px solid ${darkenColor(leaveTypeColors[leave.type])}`,
                             borderBottomRightRadius: '3px',
                             cursor: 'help',
                           }}
-                          title={leave.comment}
                         />
                       )}
                     </div>
@@ -570,8 +637,28 @@ export default function CongesPage() {
                                   opacity: morning.status === 'pending' ? 0.5 : 1,
                                   border: morning.status === 'pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
+                                  cursor: 'pointer',
                                 }}
-                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}${morning.comment ? ` - ${morning.comment}` : ''}`}
+                                title={!morning.comment ? `${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                                onClick={() => {
+                                  setEditingLeave(morning);
+                                  setShowEditLeaveModal(true);
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (morning.comment) {
+                                    setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment });
+                                  }
+                                }}
+                                onMouseMove={(e) => {
+                                  if (morning.comment) {
+                                    setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment });
+                                  }
+                                }}
+                                onMouseLeave={() => {
+                                  if (morning.comment) {
+                                    setTooltip({ x: 0, y: 0, comment: null });
+                                  }
+                                }}
                               >
                                 {morning.memberName.split(' ')[0]}
                                 {morning.comment && (
@@ -582,12 +669,11 @@ export default function CongesPage() {
                                       right: '0',
                                       width: '0',
                                       height: '0',
-                                      borderLeft: '8px solid transparent',
-                                      borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                                      borderLeft: '12px solid transparent',
+                                      borderBottom: `12px solid ${darkenColor(leaveTypeColors[morning.type])}`,
                                       borderBottomRightRadius: '3px',
                                       cursor: 'help',
                                     }}
-                                    title={morning.comment}
                                   />
                                 )}
                               </div>
@@ -599,6 +685,7 @@ export default function CongesPage() {
                             style={{
                               flex: 1,
                               paddingLeft: '0.25rem',
+                              borderLeft: !morning ? '2px solid rgba(40, 50, 118, 0.25)' : 'none',
                             }}
                           >
                             {afternoon && (
@@ -616,8 +703,28 @@ export default function CongesPage() {
                                   opacity: afternoon.status === 'pending' ? 0.5 : 1,
                                   border: afternoon.status === 'pending' ? '1px dashed white' : 'none',
                                   position: 'relative',
+                                  cursor: 'pointer',
                                 }}
-                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}${afternoon.comment ? ` - ${afternoon.comment}` : ''}`}
+                                title={!afternoon.comment ? `${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                                onClick={() => {
+                                  setEditingLeave(afternoon);
+                                  setShowEditLeaveModal(true);
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (afternoon.comment) {
+                                    setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment });
+                                  }
+                                }}
+                                onMouseMove={(e) => {
+                                  if (afternoon.comment) {
+                                    setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment });
+                                  }
+                                }}
+                                onMouseLeave={() => {
+                                  if (afternoon.comment) {
+                                    setTooltip({ x: 0, y: 0, comment: null });
+                                  }
+                                }}
                               >
                                 {afternoon.memberName.split(' ')[0]}
                                 {afternoon.comment && (
@@ -628,12 +735,11 @@ export default function CongesPage() {
                                       right: '0',
                                       width: '0',
                                       height: '0',
-                                      borderLeft: '8px solid transparent',
-                                      borderBottom: '8px solid rgba(255, 255, 255, 0.9)',
+                                      borderLeft: '12px solid transparent',
+                                      borderBottom: `12px solid ${darkenColor(leaveTypeColors[afternoon.type])}`,
                                       borderBottomRightRadius: '3px',
                                       cursor: 'help',
                                     }}
-                                    title={afternoon.comment}
                                   />
                                 )}
                               </div>
@@ -1373,6 +1479,132 @@ export default function CongesPage() {
                 Fermer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Delete Leave Modal */}
+      {showEditLeaveModal && editingLeave && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+          }}
+          onClick={() => {
+            setShowEditLeaveModal(false);
+            setEditingLeave(null);
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '2rem',
+              width: '100%',
+              maxWidth: '400px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: 'var(--color-primary-dark)',
+                marginBottom: '1rem',
+              }}
+            >
+              Gérer l'absence
+            </h2>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--color-primary-blue)', marginBottom: '0.5rem' }}>
+                <strong>{editingLeave.memberName}</strong> - {editingLeave.type}
+              </p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)' }}>
+                {new Date(editingLeave.date).toLocaleDateString('fr-FR')} - {editingLeave.period === 'journée' ? 'Journée' : editingLeave.period === 'matin' ? 'Matin' : 'Après-midi'}
+              </p>
+              {editingLeave.comment && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                  Commentaire : {editingLeave.comment}
+                </p>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowEditLeaveModal(false);
+                  setEditingLeave(null);
+                }}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: 'var(--color-white)',
+                  color: 'var(--color-primary-blue)',
+                  border: '1px solid rgba(230, 225, 219, 0.5)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  if (confirm(`Supprimer cette absence ?`)) {
+                    deleteLeave(editingLeave.id);
+                    setShowEditLeaveModal(false);
+                    setEditingLeave(null);
+                  }
+                }}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  backgroundColor: 'var(--color-accent-red)',
+                  color: 'var(--color-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                }}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tooltip suivant la souris */}
+      {tooltip.comment && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${tooltip.x + 15}px`,
+            top: `${tooltip.y + 15}px`,
+            backgroundColor: 'rgba(40, 50, 118, 0.95)',
+            color: 'var(--color-white)',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
+            pointerEvents: 'none',
+            zIndex: 10000,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            maxWidth: '250px',
+          }}
+        >
+          <div style={{ fontWeight: '600', marginBottom: '0.35rem' }}>
+            Commentaire
+          </div>
+          <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>
+            {tooltip.comment}
           </div>
         </div>
       )}

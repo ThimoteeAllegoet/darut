@@ -3,7 +3,8 @@ export type LeaveType =
   | 'Congés'
   | 'Formation'
   | 'Déplacement'
-  | 'Absence';
+  | 'Absence'
+  | 'Temps partiel';
 
 export type PeriodType = 'matin' | 'après-midi' | 'journée';
 
