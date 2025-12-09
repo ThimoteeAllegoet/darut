@@ -276,6 +276,21 @@ export default function CongesPage() {
     setCurrentDate(new Date());
   };
 
+  const resetNotableEventModal = () => {
+    setNotableEventTitle('');
+    setNotableEventDate('');
+    setNotableEventDescription('');
+    setEventHasRecurrence(false);
+    setEventRecurrenceType('none');
+    setEventRecurrenceDays([]);
+    setEventRecurrenceDayOfMonth(1);
+    setEventRecurrenceWeekOfMonth(1);
+    setEventRecurrenceDayOfWeek(1);
+    setEventRecurrenceEndDate('');
+    setEditingNotableEvent(null);
+    setShowNotableEventModal(false);
+  };
+
   const handleAddNotableEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!notableEventTitle || !notableEventDate) {
@@ -306,17 +321,7 @@ export default function CongesPage() {
       addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription, undefined, recurrence);
     }
 
-    setNotableEventTitle('');
-    setNotableEventDate('');
-    setNotableEventDescription('');
-    setEventRecurrenceType('none');
-    setEventRecurrenceDays([]);
-    setEventRecurrenceDayOfMonth(1);
-    setEventRecurrenceWeekOfMonth(1);
-    setEventRecurrenceDayOfWeek(1);
-    setEventRecurrenceEndDate('');
-    setEditingNotableEvent(null);
-    setShowNotableEventModal(false);
+    resetNotableEventModal();
   };
 
   const handleAddMember = (e: React.FormEvent) => {
@@ -345,6 +350,23 @@ export default function CongesPage() {
     setMemberIsValidator(false);
     setEditingMember(null);
     setShowMemberModal(false);
+  };
+
+  const resetLeaveModal = () => {
+    setModalSelectedMember('');
+    setLeaveStartDate('');
+    setLeaveEndDate('');
+    setLeaveType('Congés');
+    setLeavePeriod('journée');
+    setLeaveComment('');
+    setLeaveHasRecurrence(false);
+    setLeaveRecurrenceType('none');
+    setLeaveRecurrenceDays([]);
+    setLeaveRecurrenceDayOfMonth(1);
+    setLeaveRecurrenceWeekOfMonth(1);
+    setLeaveRecurrenceDayOfWeek(1);
+    setLeaveRecurrenceEndDate('');
+    setShowLeaveModal(false);
   };
 
   const handleAddLeave = (e: React.FormEvent) => {
@@ -419,19 +441,7 @@ export default function CongesPage() {
       addLeave(modalSelectedMember, leaveType, leaveStartDate, leavePeriod, leaveComment, recurrence);
     }
 
-    setModalSelectedMember('');
-    setLeaveStartDate('');
-    setLeaveEndDate('');
-    setLeaveType('Congés');
-    setLeavePeriod('journée');
-    setLeaveComment('');
-    setLeaveRecurrenceType('none');
-    setLeaveRecurrenceDays([]);
-    setLeaveRecurrenceDayOfMonth(1);
-    setLeaveRecurrenceWeekOfMonth(1);
-    setLeaveRecurrenceDayOfWeek(1);
-    setLeaveRecurrenceEndDate('');
-    setShowLeaveModal(false);
+    resetLeaveModal();
   };
 
   const openMemberModal = (member?: TeamMember) => {
@@ -540,7 +550,7 @@ export default function CongesPage() {
           >
             + Événement notable
           </button>
-          {pendingLeaves.length > 0 && (
+          {groupedPendingLeaves.length > 0 && (
             <button
               onClick={() => setShowPendingModal(true)}
               style={{
@@ -560,7 +570,7 @@ export default function CongesPage() {
               <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
                 notifications
               </span>
-              {pendingLeaves.length} en attente
+              {groupedPendingLeaves.length} en attente
             </button>
           )}
         </div>
@@ -1432,7 +1442,7 @@ export default function CongesPage() {
             zIndex: 1000,
             padding: '1rem',
           }}
-          onClick={() => setShowLeaveModal(false)}
+          onClick={resetLeaveModal}
         >
           <div
             style={{
@@ -1902,7 +1912,7 @@ export default function CongesPage() {
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
-                  onClick={() => setShowLeaveModal(false)}
+                  onClick={resetLeaveModal}
                   style={{
                     padding: '0.65rem 1.25rem',
                     backgroundColor: 'var(--color-white)',
@@ -1975,7 +1985,7 @@ export default function CongesPage() {
                 marginBottom: '1.5rem',
               }}
             >
-              Demandes en attente ({pendingLeaves.length})
+              Demandes en attente ({groupedPendingLeaves.length})
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {groupedPendingLeaves.map((group, groupIndex) => {
@@ -2036,7 +2046,7 @@ export default function CongesPage() {
                               )) {
                                 // Approuver tous les congés du groupe
                                 group.leaves.forEach(leave => approveDeletion(leave.id));
-                                if (pendingLeaves.length === group.leaves.length) {
+                                if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -2062,7 +2072,7 @@ export default function CongesPage() {
                               )) {
                                 // Refuser la suppression pour tous les congés du groupe
                                 group.leaves.forEach(leave => rejectDeletion(leave.id));
-                                if (pendingLeaves.length === group.leaves.length) {
+                                if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -2087,7 +2097,7 @@ export default function CongesPage() {
                             onClick={() => {
                               // Approuver tous les congés du groupe
                               group.leaves.forEach(leave => approveLeave(leave.id));
-                              if (pendingLeaves.length === group.leaves.length) {
+                              if (groupedPendingLeaves.length === 1) {
                                 setShowPendingModal(false);
                               }
                             }}
@@ -2109,7 +2119,7 @@ export default function CongesPage() {
                               const comment = prompt('Raison du refus (optionnel) :');
                               // Refuser tous les congés du groupe avec le même commentaire
                               group.leaves.forEach(leave => rejectLeave(leave.id, comment || undefined));
-                              if (pendingLeaves.length === group.leaves.length) {
+                              if (groupedPendingLeaves.length === 1) {
                                 setShowPendingModal(false);
                               }
                             }}
@@ -2134,7 +2144,7 @@ export default function CongesPage() {
                               )) {
                                 // Supprimer tous les congés du groupe
                                 group.leaves.forEach(leave => deleteLeave(leave.id));
-                                if (pendingLeaves.length === group.leaves.length) {
+                                if (groupedPendingLeaves.length === 1) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -2306,7 +2316,7 @@ export default function CongesPage() {
             zIndex: 1000,
             padding: '1rem',
           }}
-          onClick={() => setShowNotableEventModal(false)}
+          onClick={resetNotableEventModal}
         >
           <div
             style={{
@@ -2684,13 +2694,7 @@ export default function CongesPage() {
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowNotableEventModal(false);
-                      setNotableEventTitle('');
-                      setNotableEventDate('');
-                      setNotableEventDescription('');
-                      setEditingNotableEvent(null);
-                    }}
+                    onClick={resetNotableEventModal}
                     style={{
                       padding: '0.65rem 1.25rem',
                       backgroundColor: 'var(--color-white)',
