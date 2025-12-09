@@ -80,6 +80,7 @@ export default function CongesPage() {
   const [notableEventTitle, setNotableEventTitle] = useState('');
   const [notableEventDate, setNotableEventDate] = useState('');
   const [notableEventDescription, setNotableEventDescription] = useState('');
+  const [editingNotableEvent, setEditingNotableEvent] = useState<any | null>(null);
 
   // Member form
   const [memberName, setMemberName] = useState('');
@@ -145,10 +146,20 @@ export default function CongesPage() {
       return;
     }
 
-    addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription);
+    if (editingNotableEvent) {
+      updateNotableEvent(editingNotableEvent.id, {
+        title: notableEventTitle,
+        date: notableEventDate,
+        description: notableEventDescription,
+      });
+    } else {
+      addNotableEvent(notableEventTitle, notableEventDate, notableEventDescription);
+    }
+
     setNotableEventTitle('');
     setNotableEventDate('');
     setNotableEventDescription('');
+    setEditingNotableEvent(null);
     setShowNotableEventModal(false);
   };
 
@@ -322,7 +333,7 @@ export default function CongesPage() {
             onClick={() => setShowNotableEventModal(true)}
             style={{
               padding: '0.5rem 1rem',
-              backgroundColor: '#9CA3AF',
+              backgroundColor: '#f59e0b',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: '50px',
@@ -332,10 +343,10 @@ export default function CongesPage() {
               transition: 'background-color 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#6B7280';
+              e.currentTarget.style.backgroundColor = '#d97706';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#9CA3AF';
+              e.currentTarget.style.backgroundColor = '#f59e0b';
             }}
           >
             + Événement notable
@@ -540,8 +551,9 @@ export default function CongesPage() {
 
             morningLeaves.forEach(morning => {
               const afternoon = afternoonLeaves.find(a => a.memberId === morning.memberId);
-              if (afternoon && morning.type === afternoon.type) {
-                // Same agent has both periods with same type - merge into full day
+              // Merge only if same type AND same status
+              if (afternoon && morning.type === afternoon.type && morning.status === afternoon.status) {
+                // Same agent has both periods with same type and status - merge into full day
                 mergedFullDays.push({
                   ...morning,
                   period: 'journée' as PeriodType,
@@ -554,8 +566,8 @@ export default function CongesPage() {
 
             afternoonLeaves.forEach(afternoon => {
               const morning = morningLeaves.find(m => m.memberId === afternoon.memberId);
-              // Only add if NOT already merged (i.e., no matching morning or different type)
-              if (!morning || morning.type !== afternoon.type) {
+              // Only add if NOT already merged (i.e., no matching morning, different type, or different status)
+              if (!morning || morning.type !== afternoon.type || morning.status !== afternoon.status) {
                 afternoonOnlyLeaves.push(afternoon);
               }
             });
@@ -574,7 +586,7 @@ export default function CongesPage() {
                 style={{
                   minHeight: '100px',
                   backgroundColor: isGrayedOut
-                    ? 'rgba(230, 225, 219, 0.3)'
+                    ? 'rgba(200, 200, 200, 0.4)'
                     : isToday
                       ? 'rgba(64, 107, 222, 0.1)'
                       : 'var(--color-off-white-1)',
@@ -583,7 +595,7 @@ export default function CongesPage() {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
-                  opacity: isGrayedOut ? 0.6 : 1,
+                  opacity: isGrayedOut ? 0.5 : 1,
                 }}
               >
                 {/* Day number */}
@@ -604,9 +616,9 @@ export default function CongesPage() {
                     key={event.id}
                     style={{
                       fontSize: '0.65rem',
-                      padding: '0.2rem 0.4rem',
-                      backgroundColor: '#9CA3AF',
-                      color: 'white',
+                      padding: '0.3rem 0.5rem',
+                      backgroundColor: '#fef3c7',
+                      color: '#92400e',
                       borderRadius: '3px',
                       fontWeight: '600',
                       overflow: 'hidden',
@@ -614,15 +626,20 @@ export default function CongesPage() {
                       whiteSpace: 'nowrap',
                       cursor: 'pointer',
                       marginBottom: '0.2rem',
+                      marginLeft: '0.3rem',
+                      marginRight: '0.3rem',
+                      border: '1px solid #fbbf24',
                     }}
                     title={event.description || event.title}
                     onClick={() => {
-                      if (confirm(`Supprimer "${event.title}" ?\n\n${event.description || ''}`)) {
-                        deleteNotableEvent(event.id);
-                      }
+                      setEditingNotableEvent(event);
+                      setNotableEventTitle(event.title);
+                      setNotableEventDate(event.date);
+                      setNotableEventDescription(event.description || '');
+                      setShowNotableEventModal(true);
                     }}
                   >
-                    📌 {event.title}
+                    ⚡ {event.title}
                   </div>
                 ))}
 
@@ -892,9 +909,9 @@ export default function CongesPage() {
           ))}
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--color-primary-blue)' }}>
-          <div><strong>📌 Événements notables</strong> : Événements partagés (repas, réunions, etc.) - Cliquer pour supprimer</div>
-          <div style={{ marginTop: '0.25rem' }}><strong>⏳ En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
-          <div style={{ marginTop: '0.25rem' }}><strong>🗑️ Suppression en attente</strong> : Demande de suppression d'un congé validé (affichée avec opacité réduite et bordure pointillée)</div>
+          <div><strong>Événements notables</strong> : Événements partagés (repas, réunions, etc.) affichés en jaune - Cliquer pour modifier ou supprimer</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>En attente</strong> : Demande de congés non encore validée (affichée avec opacité réduite et bordure pointillée)</div>
+          <div style={{ marginTop: '0.25rem' }}><strong>Suppression en attente</strong> : Demande de suppression d'un congé validé (affichée avec opacité réduite et bordure pointillée)</div>
           <div style={{ marginTop: '0.25rem' }}><strong>Périodes</strong> : Les cases sont divisées verticalement (gauche = matin, droite = après-midi)</div>
         </div>
       </div>
@@ -1792,7 +1809,7 @@ export default function CongesPage() {
                 marginBottom: '1.5rem',
               }}
             >
-              Ajouter un événement notable
+              {editingNotableEvent ? 'Modifier l\'événement' : 'Ajouter un événement notable'}
             </h2>
             <form onSubmit={handleAddNotableEvent}>
               <div style={{ marginBottom: '1rem' }}>
@@ -1879,38 +1896,73 @@ export default function CongesPage() {
                   }}
                 />
               </div>
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowNotableEventModal(false)}
-                  style={{
-                    padding: '0.65rem 1.25rem',
-                    backgroundColor: 'var(--color-white)',
-                    color: 'var(--color-primary-blue)',
-                    border: '1px solid rgba(230, 225, 219, 0.5)',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '0.95rem',
-                    fontWeight: '500',
-                  }}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    padding: '0.65rem 1.25rem',
-                    backgroundColor: '#9CA3AF',
-                    color: 'var(--color-white)',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '0.95rem',
-                    fontWeight: '500',
-                  }}
-                >
-                  Ajouter
-                </button>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: editingNotableEvent ? 'space-between' : 'flex-end' }}>
+                {editingNotableEvent && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Supprimer "${editingNotableEvent.title}" ?`)) {
+                        deleteNotableEvent(editingNotableEvent.id);
+                        setNotableEventTitle('');
+                        setNotableEventDate('');
+                        setNotableEventDescription('');
+                        setEditingNotableEvent(null);
+                        setShowNotableEventModal(false);
+                      }
+                    }}
+                    style={{
+                      padding: '0.65rem 1.25rem',
+                      backgroundColor: 'var(--color-accent-red)',
+                      color: 'var(--color-white)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Supprimer
+                  </button>
+                )}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNotableEventModal(false);
+                      setNotableEventTitle('');
+                      setNotableEventDate('');
+                      setNotableEventDescription('');
+                      setEditingNotableEvent(null);
+                    }}
+                    style={{
+                      padding: '0.65rem 1.25rem',
+                      backgroundColor: 'var(--color-white)',
+                      color: 'var(--color-primary-blue)',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '0.65rem 1.25rem',
+                      backgroundColor: '#f59e0b',
+                      color: 'var(--color-white)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {editingNotableEvent ? 'Modifier' : 'Ajouter'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

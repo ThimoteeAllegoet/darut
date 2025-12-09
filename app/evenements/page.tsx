@@ -1017,11 +1017,11 @@ export default function EvenementsPage() {
                   textAlign: 'center',
                   fontSize: '0.7rem',
                   fontWeight: '600',
-                  color: 'var(--color-primary-dark)',
+                  backgroundColor: 'rgba(230, 225, 219, 0.3)',
+                  borderRadius: '4px',
                   padding: '0.25rem',
                 }}
               >
-                S
               </div>
               {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
                 <div
@@ -1061,7 +1061,25 @@ export default function EvenementsPage() {
 
                 // Add week number at the beginning of each week (Monday = index % 7 === 0)
                 const isStartOfWeek = index % 7 === 0;
-                const weekNumber = day ? getWeekNumber(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)) : null;
+
+                // Calculate week number for the first day of the row
+                let weekNumber = null;
+                if (isStartOfWeek) {
+                  // Find the first actual day in this row
+                  let firstDayInRow = day;
+                  if (!firstDayInRow) {
+                    // If this is an empty cell, find the first day in this row
+                    for (let i = index; i < calendarDays.length && i < index + 7; i++) {
+                      if (calendarDays[i]) {
+                        firstDayInRow = calendarDays[i];
+                        break;
+                      }
+                    }
+                  }
+                  if (firstDayInRow) {
+                    weekNumber = getWeekNumber(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), firstDayInRow));
+                  }
+                }
 
                 return (
                   <React.Fragment key={index}>
@@ -1069,15 +1087,15 @@ export default function EvenementsPage() {
                       <div
                         style={{
                           minHeight: '60px',
-                          backgroundColor: 'rgba(230, 225, 219, 0.3)',
-                          border: '1.5px solid rgba(230, 225, 219, 0.8)',
+                          backgroundColor: 'rgba(230, 225, 219, 0.5)',
+                          border: '2px solid rgba(230, 225, 219, 0.9)',
                           borderRadius: '4px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.7rem',
-                          fontWeight: '600',
-                          color: 'var(--color-primary-blue)',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          color: 'var(--color-primary-dark)',
                         }}
                       >
                         {weekNumber || ''}

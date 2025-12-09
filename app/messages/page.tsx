@@ -199,28 +199,24 @@ export default function MessagesPage() {
           <button
             onClick={() => setIsAddingNew(true)}
             style={{
-              padding: '0.65rem 1.25rem',
-              backgroundColor: 'var(--color-primary-dark)',
+              padding: '0.5rem 1rem',
+              backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: '50px',
               cursor: 'pointer',
               fontSize: '0.9rem',
-              fontWeight: '600',
+              fontWeight: '500',
               transition: 'background-color 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+              e.currentTarget.style.backgroundColor = '#2f4fb5';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)';
+              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>add</span>
-            Nouveau message
+            + Nouveau message
           </button>
         )}
       </div>
