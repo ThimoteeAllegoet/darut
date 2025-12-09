@@ -231,7 +231,7 @@ export default function CongesPage() {
             margin: 0,
           }}
         >
-          Gestion des absences
+          Calendrier interne
         </h1>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
@@ -546,25 +546,10 @@ export default function CongesPage() {
                         position: 'relative',
                         cursor: 'pointer',
                       }}
-                      title={!leave.comment ? `${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                      title={`${leave.memberName} - ${leave.type}${leave.status === 'pending' ? ' (En attente)' : ''}`}
                       onClick={() => {
                         setEditingLeave(leave);
                         setShowEditLeaveModal(true);
-                      }}
-                      onMouseEnter={(e) => {
-                        if (leave.comment) {
-                          setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment });
-                        }
-                      }}
-                      onMouseMove={(e) => {
-                        if (leave.comment) {
-                          setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment });
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        if (leave.comment) {
-                          setTooltip({ x: 0, y: 0, comment: null });
-                        }
                       }}
                     >
                       {leave.memberName.split(' ')[0]}
@@ -580,6 +565,18 @@ export default function CongesPage() {
                             borderBottom: `12px solid ${darkenColor(leaveTypeColors[leave.type])}`,
                             borderBottomRightRadius: '3px',
                             cursor: 'help',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.stopPropagation();
+                            setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment || '' });
+                          }}
+                          onMouseMove={(e) => {
+                            e.stopPropagation();
+                            setTooltip({ x: e.clientX, y: e.clientY, comment: leave.comment || '' });
+                          }}
+                          onMouseLeave={(e) => {
+                            e.stopPropagation();
+                            setTooltip({ x: 0, y: 0, comment: null });
                           }}
                         />
                       )}
@@ -639,25 +636,10 @@ export default function CongesPage() {
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={!morning.comment ? `${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                                title={`${morning.memberName} - ${morning.type}${morning.status === 'pending' ? ' (En attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(morning);
                                   setShowEditLeaveModal(true);
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (morning.comment) {
-                                    setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment });
-                                  }
-                                }}
-                                onMouseMove={(e) => {
-                                  if (morning.comment) {
-                                    setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment });
-                                  }
-                                }}
-                                onMouseLeave={() => {
-                                  if (morning.comment) {
-                                    setTooltip({ x: 0, y: 0, comment: null });
-                                  }
                                 }}
                               >
                                 {morning.memberName.split(' ')[0]}
@@ -673,6 +655,18 @@ export default function CongesPage() {
                                       borderBottom: `12px solid ${darkenColor(leaveTypeColors[morning.type])}`,
                                       borderBottomRightRadius: '3px',
                                       cursor: 'help',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment || '' });
+                                    }}
+                                    onMouseMove={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: e.clientX, y: e.clientY, comment: morning.comment || '' });
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: 0, y: 0, comment: null });
                                     }}
                                   />
                                 )}
@@ -705,25 +699,10 @@ export default function CongesPage() {
                                   position: 'relative',
                                   cursor: 'pointer',
                                 }}
-                                title={!afternoon.comment ? `${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}` : undefined}
+                                title={`${afternoon.memberName} - ${afternoon.type}${afternoon.status === 'pending' ? ' (En attente)' : ''}`}
                                 onClick={() => {
                                   setEditingLeave(afternoon);
                                   setShowEditLeaveModal(true);
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (afternoon.comment) {
-                                    setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment });
-                                  }
-                                }}
-                                onMouseMove={(e) => {
-                                  if (afternoon.comment) {
-                                    setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment });
-                                  }
-                                }}
-                                onMouseLeave={() => {
-                                  if (afternoon.comment) {
-                                    setTooltip({ x: 0, y: 0, comment: null });
-                                  }
                                 }}
                               >
                                 {afternoon.memberName.split(' ')[0]}
@@ -739,6 +718,18 @@ export default function CongesPage() {
                                       borderBottom: `12px solid ${darkenColor(leaveTypeColors[afternoon.type])}`,
                                       borderBottomRightRadius: '3px',
                                       cursor: 'help',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment || '' });
+                                    }}
+                                    onMouseMove={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: e.clientX, y: e.clientY, comment: afternoon.comment || '' });
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.stopPropagation();
+                                      setTooltip({ x: 0, y: 0, comment: null });
                                     }}
                                   />
                                 )}

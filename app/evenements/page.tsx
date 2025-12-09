@@ -281,6 +281,16 @@ export default function EvenementsPage() {
     const firstDay = new Date(year, month, 1).getDay();
     return firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday=0 to Monday=0
   };
+
+  // Get ISO week number
+  const getWeekNumber = (date: Date): number => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
   const getEventsForDay = (day: number): Event[] => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
