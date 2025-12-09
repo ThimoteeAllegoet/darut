@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLeaves } from '../hooks/useLeaves';
 import { useNotableEvents } from '../hooks/useNotableEvents';
-import { LeaveType, PeriodType, TeamMember } from '../types/leaves';
+import { LeaveType, PeriodType, TeamMember, LeaveRequest } from '../types/leaves';
 import { RecurrenceConfig, RecurrenceType, DayOfWeek, WeekOfMonth } from '../types/recurrence';
 
 const leaveTypes: LeaveType[] = ['Télétravail', 'Congés', 'Formation', 'Déplacement', 'Absence (Autres)', 'Temps partiel', 'Astreinte'];
@@ -130,6 +130,87 @@ export default function CongesPage() {
   }
 
   const pendingLeaves = getPendingLeaves();
+
+  // Fonction pour grouper les congés consécutifs en périodes
+  const groupLeavesByPeriod = (leaves: LeaveRequest[]) => {
+    const groups: Array<{
+      leaves: LeaveRequest[];
+      isGroup: boolean;
+      startDate: string;
+      endDate: string;
+    }> = [];
+
+    // Trier par memberId, type, puis date
+    const sortedLeaves = [...leaves].sort((a, b) => {
+      if (a.memberId !== b.memberId) return a.memberId.localeCompare(b.memberId);
+      if (a.type !== b.type) return a.type.localeCompare(b.type);
+      if (a.period !== b.period) return a.period.localeCompare(b.period);
+      if ((a.comment || '') !== (b.comment || '')) return (a.comment || '').localeCompare(b.comment || '');
+      return a.date.localeCompare(b.date);
+    });
+
+    let i = 0;
+    while (i < sortedLeaves.length) {
+      const currentLeave = sortedLeaves[i];
+      const groupLeaves: LeaveRequest[] = [currentLeave];
+
+      // Vérifier si les congés suivants sont consécutifs et similaires
+      let j = i + 1;
+      while (j < sortedLeaves.length) {
+        const nextLeave = sortedLeaves[j];
+
+        // Vérifier si c'est le même membre, type, période et commentaire
+        if (
+          nextLeave.memberId === currentLeave.memberId &&
+          nextLeave.type === currentLeave.type &&
+          nextLeave.period === currentLeave.period &&
+          (nextLeave.comment || '') === (currentLeave.comment || '') &&
+          nextLeave.status === currentLeave.status
+        ) {
+          // Vérifier si les dates sont consécutives (en excluant weekends)
+          const lastDate = new Date(groupLeaves[groupLeaves.length - 1].date);
+          const nextDate = new Date(nextLeave.date);
+
+          // Calculer le nombre de jours entre les deux dates
+          const diffTime = nextDate.getTime() - lastDate.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          // Accepter si c'est le jour suivant, ou jusqu'à 3 jours (pour inclure weekends)
+          if (diffDays >= 1 && diffDays <= 3) {
+            groupLeaves.push(nextLeave);
+            j++;
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+
+      // Ajouter le groupe (ou l'élément seul)
+      if (groupLeaves.length > 1) {
+        groups.push({
+          leaves: groupLeaves,
+          isGroup: true,
+          startDate: groupLeaves[0].date,
+          endDate: groupLeaves[groupLeaves.length - 1].date,
+        });
+      } else {
+        groups.push({
+          leaves: groupLeaves,
+          isGroup: false,
+          startDate: groupLeaves[0].date,
+          endDate: groupLeaves[0].date,
+        });
+      }
+
+      i = j;
+    }
+
+    return groups;
+  };
+
+  const groupedPendingLeaves = groupLeavesByPeriod(pendingLeaves);
 
   // French holidays 2024-2026 with names
   const frenchHolidays: Record<string, string> = {
@@ -798,24 +879,22 @@ export default function CongesPage() {
                         setShowEditLeaveModal(true);
                       }}
                     >
-                      {leave.recurrenceGroupId && (
-                        <span
-                          className="material-symbols-outlined"
-                          style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            fontSize: '1rem',
-                            opacity: 0.7,
-                          }}
-                          title="Absence récurrente"
-                        >
-                          autorenew
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        {leave.recurrenceGroupId && (
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: '0.9rem',
+                              flexShrink: 0,
+                            }}
+                            title="Absence récurrente"
+                          >
+                            autorenew
+                          </span>
+                        )}
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {leave.memberName.split(' ')[0]}
                         </span>
-                      )}
-                      <span style={{ opacity: leave.recurrenceGroupId ? 0.3 : 1 }}>
-                        {leave.memberName.split(' ')[0]}
                       </span>
                       {leave.comment && (
                         <span
@@ -905,24 +984,22 @@ export default function CongesPage() {
                                   setShowEditLeaveModal(true);
                                 }}
                               >
-                                {morning.recurrenceGroupId && (
-                                  <span
-                                    className="material-symbols-outlined"
-                                    style={{
-                                      position: 'absolute',
-                                      top: '50%',
-                                      left: '50%',
-                                      transform: 'translate(-50%, -50%)',
-                                      fontSize: '1rem',
-                                      opacity: 0.7,
-                                    }}
-                                    title="Absence récurrente"
-                                  >
-                                    autorenew
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                                  {morning.recurrenceGroupId && (
+                                    <span
+                                      className="material-symbols-outlined"
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        flexShrink: 0,
+                                      }}
+                                      title="Absence récurrente"
+                                    >
+                                      autorenew
+                                    </span>
+                                  )}
+                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', fontSize: morning.recurrenceGroupId ? '0.6rem' : '0.65rem' }}>
+                                    {morning.memberName.split(' ')[0]}
                                   </span>
-                                )}
-                                <span style={{ opacity: morning.recurrenceGroupId ? 0.3 : 1 }}>
-                                  {morning.memberName.split(' ')[0]}
                                 </span>
                                 {morning.comment && (
                                   <span
@@ -985,24 +1062,22 @@ export default function CongesPage() {
                                   setShowEditLeaveModal(true);
                                 }}
                               >
-                                {afternoon.recurrenceGroupId && (
-                                  <span
-                                    className="material-symbols-outlined"
-                                    style={{
-                                      position: 'absolute',
-                                      top: '50%',
-                                      left: '50%',
-                                      transform: 'translate(-50%, -50%)',
-                                      fontSize: '1rem',
-                                      opacity: 0.7,
-                                    }}
-                                    title="Absence récurrente"
-                                  >
-                                    autorenew
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                                  {afternoon.recurrenceGroupId && (
+                                    <span
+                                      className="material-symbols-outlined"
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        flexShrink: 0,
+                                      }}
+                                      title="Absence récurrente"
+                                    >
+                                      autorenew
+                                    </span>
+                                  )}
+                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', fontSize: afternoon.recurrenceGroupId ? '0.6rem' : '0.65rem' }}>
+                                    {afternoon.memberName.split(' ')[0]}
                                   </span>
-                                )}
-                                <span style={{ opacity: afternoon.recurrenceGroupId ? 0.3 : 1 }}>
-                                  {afternoon.memberName.split(' ')[0]}
                                 </span>
                                 {afternoon.comment && (
                                   <span
@@ -1553,7 +1628,6 @@ export default function CongesPage() {
                           marginBottom: '0.75rem',
                         }}
                       >
-                        <option value="daily">Tous les jours</option>
                         <option value="weekly">Hebdomadaire</option>
                         <option value="biweekly">Bimensuel</option>
                         <option value="monthly_day">Mensuel (jour fixe)</option>
@@ -1904,11 +1978,13 @@ export default function CongesPage() {
               Demandes en attente ({pendingLeaves.length})
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {pendingLeaves.map((leave) => {
-                const isDeletionRequest = leave.status === 'deletion_pending';
+              {groupedPendingLeaves.map((group, groupIndex) => {
+                const firstLeave = group.leaves[0];
+                const isDeletionRequest = firstLeave.status === 'deletion_pending';
+
                 return (
                   <div
-                    key={leave.id}
+                    key={`group-${groupIndex}`}
                     style={{
                       padding: '1rem',
                       backgroundColor: isDeletionRequest ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-off-white-1)',
@@ -1931,24 +2007,36 @@ export default function CongesPage() {
                           SUPPRESSION
                         </span>
                       )}
-                      <strong style={{ color: 'var(--color-primary-dark)' }}>{leave.memberName}</strong>
+                      <strong style={{ color: 'var(--color-primary-dark)' }}>{firstLeave.memberName}</strong>
                       <span style={{ marginLeft: '0.5rem', color: 'var(--color-primary-blue)', fontSize: '0.9rem' }}>
-                        {new Date(leave.date).toLocaleDateString('fr-FR')} - {leave.period === 'journée' ? 'Journée' : leave.period === 'matin' ? 'Matin' : 'Après-midi'}
+                        {group.isGroup ? (
+                          <>
+                            Période : {new Date(group.startDate).toLocaleDateString('fr-FR')} - {new Date(group.endDate).toLocaleDateString('fr-FR')} ({firstLeave.period === 'journée' ? 'Journée' : firstLeave.period === 'matin' ? 'Matin' : 'Après-midi'})
+                          </>
+                        ) : (
+                          <>
+                            {new Date(firstLeave.date).toLocaleDateString('fr-FR')} - {firstLeave.period === 'journée' ? 'Journée' : firstLeave.period === 'matin' ? 'Matin' : 'Après-midi'}
+                          </>
+                        )}
                       </span>
                     </div>
-                    {leave.comment && (
+                    {firstLeave.comment && (
                       <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)', marginBottom: '0.75rem' }}>
-                        {leave.comment}
+                        {firstLeave.comment}
                       </div>
                     )}
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       {isDeletionRequest ? (
                         <>
                           <button
                             onClick={() => {
-                              if (confirm('Approuver la suppression de ce congé ?')) {
-                                approveDeletion(leave.id);
-                                if (pendingLeaves.length === 1) {
+                              if (confirm(group.isGroup
+                                ? `Approuver la suppression de cette période (${group.leaves.length} jours) ?`
+                                : 'Approuver la suppression de ce congé ?'
+                              )) {
+                                // Approuver tous les congés du groupe
+                                group.leaves.forEach(leave => approveDeletion(leave.id));
+                                if (pendingLeaves.length === group.leaves.length) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -1968,9 +2056,13 @@ export default function CongesPage() {
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm('Refuser la suppression ? Le congé sera conservé.')) {
-                                rejectDeletion(leave.id);
-                                if (pendingLeaves.length === 1) {
+                              if (confirm(group.isGroup
+                                ? `Refuser la suppression de cette période (${group.leaves.length} jours) ? Les congés seront conservés.`
+                                : 'Refuser la suppression ? Le congé sera conservé.'
+                              )) {
+                                // Refuser la suppression pour tous les congés du groupe
+                                group.leaves.forEach(leave => rejectDeletion(leave.id));
+                                if (pendingLeaves.length === group.leaves.length) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -1993,8 +2085,9 @@ export default function CongesPage() {
                         <>
                           <button
                             onClick={() => {
-                              approveLeave(leave.id);
-                              if (pendingLeaves.length === 1) {
+                              // Approuver tous les congés du groupe
+                              group.leaves.forEach(leave => approveLeave(leave.id));
+                              if (pendingLeaves.length === group.leaves.length) {
                                 setShowPendingModal(false);
                               }
                             }}
@@ -2009,13 +2102,14 @@ export default function CongesPage() {
                               fontWeight: '500',
                             }}
                           >
-                            Approuver
+                            Approuver {group.isGroup ? `(${group.leaves.length}j)` : ''}
                           </button>
                           <button
                             onClick={() => {
                               const comment = prompt('Raison du refus (optionnel) :');
-                              rejectLeave(leave.id, comment || undefined);
-                              if (pendingLeaves.length === 1) {
+                              // Refuser tous les congés du groupe avec le même commentaire
+                              group.leaves.forEach(leave => rejectLeave(leave.id, comment || undefined));
+                              if (pendingLeaves.length === group.leaves.length) {
                                 setShowPendingModal(false);
                               }
                             }}
@@ -2030,13 +2124,17 @@ export default function CongesPage() {
                               fontWeight: '500',
                             }}
                           >
-                            Refuser
+                            Refuser {group.isGroup ? `(${group.leaves.length}j)` : ''}
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm('Supprimer cette demande ?')) {
-                                deleteLeave(leave.id);
-                                if (pendingLeaves.length === 1) {
+                              if (confirm(group.isGroup
+                                ? `Supprimer cette période (${group.leaves.length} jours) ?`
+                                : 'Supprimer cette demande ?'
+                              )) {
+                                // Supprimer tous les congés du groupe
+                                group.leaves.forEach(leave => deleteLeave(leave.id));
+                                if (pendingLeaves.length === group.leaves.length) {
                                   setShowPendingModal(false);
                                 }
                               }
@@ -2324,7 +2422,6 @@ export default function CongesPage() {
                           marginBottom: '0.75rem',
                         }}
                       >
-                        <option value="daily">Tous les jours</option>
                         <option value="weekly">Hebdomadaire</option>
                         <option value="biweekly">Bimensuel</option>
                         <option value="monthly_day">Mensuel (jour fixe)</option>
@@ -2690,7 +2787,6 @@ export default function CongesPage() {
                     <div style={{ marginLeft: '1rem' }}>
                       <div>• Type : {(() => {
                         const labels: Record<string, string> = {
-                          'daily': 'Tous les jours',
                           'weekly': 'Hebdomadaire',
                           'biweekly': 'Bimensuel',
                           'monthly_day': 'Mensuel (jour fixe)',
