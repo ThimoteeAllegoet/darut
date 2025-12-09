@@ -83,6 +83,19 @@ export default function CongesPage() {
 
   const pendingLeaves = getPendingLeaves();
 
+  // French holidays 2024-2026
+  const frenchHolidays = [
+    // 2024
+    '2024-01-01', '2024-04-01', '2024-05-01', '2024-05-08', '2024-05-09', '2024-05-20',
+    '2024-07-14', '2024-08-15', '2024-11-01', '2024-11-11', '2024-12-25',
+    // 2025
+    '2025-01-01', '2025-04-21', '2025-05-01', '2025-05-08', '2025-05-29', '2025-06-09',
+    '2025-07-14', '2025-08-15', '2025-11-01', '2025-11-11', '2025-12-25',
+    // 2026
+    '2026-01-01', '2026-04-06', '2026-05-01', '2026-05-08', '2026-05-14', '2026-05-25',
+    '2026-07-14', '2026-08-15', '2026-11-01', '2026-11-11', '2026-12-25',
+  ];
+
   // Calendar helpers
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -90,6 +103,8 @@ export default function CongesPage() {
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
+  // Adjust to Monday-based week (0 = Sunday becomes 6, 1 = Monday becomes 0)
+  const startingDayOfWeekMonday = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
 
   const monthName = currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
@@ -202,9 +217,9 @@ export default function CongesPage() {
     setShowMemberModal(true);
   };
 
-  // Generate calendar days
+  // Generate calendar days (Monday-based)
   const calendarDays = [];
-  for (let i = 0; i < startingDayOfWeek; i++) {
+  for (let i = 0; i < startingDayOfWeekMonday; i++) {
     calendarDays.push(null);
   }
   for (let day = 1; day <= daysInMonth; day++) {
@@ -425,8 +440,8 @@ export default function CongesPage() {
             gap: '0.5rem',
           }}
         >
-          {/* Day headers */}
-          {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map((day) => (
+          {/* Day headers (Monday-Sunday) */}
+          {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, index) => (
             <div
               key={day}
               style={{
@@ -434,7 +449,7 @@ export default function CongesPage() {
                 textAlign: 'center',
                 fontSize: '0.8rem',
                 fontWeight: '700',
-                color: 'var(--color-primary-blue)',
+                color: index >= 5 ? 'rgba(40, 50, 118, 0.4)' : 'var(--color-primary-blue)',
               }}
             >
               {day}
@@ -448,6 +463,13 @@ export default function CongesPage() {
             }
 
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            // Check if weekend or holiday
+            const currentDayOfWeek = new Date(year, month, day).getDay();
+            const isWeekend = currentDayOfWeek === 0 || currentDayOfWeek === 6; // Saturday or Sunday
+            const isHoliday = frenchHolidays.includes(dateStr);
+            const isGrayedOut = isWeekend || isHoliday;
+
             const allDayLeaves = getLeavesByDate(dateStr).filter(
               (leave) => !calendarMemberFilter || leave.memberId === calendarMemberFilter
             );
@@ -497,12 +519,17 @@ export default function CongesPage() {
                 key={day}
                 style={{
                   minHeight: '100px',
-                  backgroundColor: isToday ? 'rgba(64, 107, 222, 0.1)' : 'var(--color-off-white-1)',
+                  backgroundColor: isGrayedOut
+                    ? 'rgba(230, 225, 219, 0.3)'
+                    : isToday
+                      ? 'rgba(64, 107, 222, 0.1)'
+                      : 'var(--color-off-white-1)',
                   borderRadius: '6px',
                   border: isToday ? '2px solid var(--color-secondary-blue)' : 'none',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
+                  opacity: isGrayedOut ? 0.6 : 1,
                 }}
               >
                 {/* Day number */}

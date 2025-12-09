@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useEvents } from '../hooks/useEvents';
 import { useLongPeriods } from '../hooks/useLongPeriods';
@@ -1010,7 +1010,19 @@ export default function EvenementsPage() {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '30px repeat(7, 1fr)', gap: '4px' }}>
+              {/* Week number header */}
+              <div
+                style={{
+                  textAlign: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  color: 'var(--color-primary-dark)',
+                  padding: '0.25rem',
+                }}
+              >
+                S
+              </div>
               {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
                 <div
                   key={i}
@@ -1046,7 +1058,31 @@ export default function EvenementsPage() {
                   return { width: '24%', height: '100%' };
                 };
                 const eventSize = getEventSize(dayEvents.length);
+
+                // Add week number at the beginning of each week (Monday = index % 7 === 0)
+                const isStartOfWeek = index % 7 === 0;
+                const weekNumber = day ? getWeekNumber(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)) : null;
+
                 return (
+                  <React.Fragment key={index}>
+                    {isStartOfWeek && (
+                      <div
+                        style={{
+                          minHeight: '60px',
+                          backgroundColor: 'rgba(230, 225, 219, 0.3)',
+                          border: '1.5px solid rgba(230, 225, 219, 0.8)',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.7rem',
+                          fontWeight: '600',
+                          color: 'var(--color-primary-blue)',
+                        }}
+                      >
+                        {weekNumber || ''}
+                      </div>
+                    )}
                   <div
                     key={index}
                     style={{
@@ -1116,6 +1152,7 @@ export default function EvenementsPage() {
                       </>
                     )}
                   </div>
+                  </React.Fragment>
                 );
               })}
             </div>
