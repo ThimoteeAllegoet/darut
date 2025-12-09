@@ -22,13 +22,15 @@ const frenchHolidays: Set<string> = new Set([
  * @param config Configuration de récurrence
  * @param maxMonths Nombre maximum de mois à générer si pas de date de fin (par défaut 24 mois = 2 ans)
  * @param excludeHolidays Si true, exclut les jours fériés français (par défaut false)
+ * @param excludeWeekends Si true, exclut les weekends (par défaut false)
  * @returns Array de dates au format YYYY-MM-DD
  */
 export function generateRecurrentDates(
   startDate: string,
   config: RecurrenceConfig,
   maxMonths: number = 24,
-  excludeHolidays: boolean = false
+  excludeHolidays: boolean = false,
+  excludeWeekends: boolean = false
 ): string[] {
   if (config.type === 'none') {
     return [startDate];
@@ -76,12 +78,24 @@ export function generateRecurrentDates(
       break;
   }
 
-  // Exclure les jours fériés si demandé
-  if (excludeHolidays) {
-    return dates.filter(date => !frenchHolidays.has(date));
-  }
+  // Filtrer les dates selon les exclusions demandées
+  return dates.filter(dateStr => {
+    // Exclure les jours fériés si demandé
+    if (excludeHolidays && frenchHolidays.has(dateStr)) {
+      return false;
+    }
 
-  return dates;
+    // Exclure les weekends si demandé
+    if (excludeWeekends) {
+      const date = new Date(dateStr + 'T12:00:00');
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 }
 
 function generateDailyDates(start: Date, end: Date, dates: string[]): void {

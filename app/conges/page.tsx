@@ -13,10 +13,10 @@ const leaveTypeColors: Record<LeaveType, string> = {
   'Télétravail': '#9ca3af', // Gris plus clair
   'Congés': '#22c55e',
   'Formation': '#8b5cf6',
-  'Déplacement': '#3b82f6', // Bleu pour différencier de Formation
+  'Déplacement': '#E894C2', // Rose (--color-secondary-pink)
   'Absence (Autres)': '#ef4444',
   'Temps partiel': '#06b6d4',
-  'Astreinte': '#f59e0b', // Orange
+  'Astreinte': '#c3c5cb', // Gris clair
 };
 
 // Function to darken a color for comment indicator
@@ -304,6 +304,9 @@ export default function CongesPage() {
       const currentDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
       const finalDate = new Date(endYear, endMonth - 1, endDay, 12, 0, 0);
 
+      // Check if we should exclude weekends and holidays (only Astreinte type is allowed on holidays/weekends)
+      const shouldExcludeWeekendsAndHolidays = leaveType !== 'Astreinte';
+
       // Generate all dates in the range
       const dates: string[] = [];
       while (currentDate <= finalDate) {
@@ -311,7 +314,18 @@ export default function CongesPage() {
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         const day = String(currentDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
-        dates.push(dateStr);
+
+        // Check if weekend (0 = Sunday, 6 = Saturday)
+        const dayOfWeek = currentDate.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        // Check if holiday
+        const isHoliday = frenchHolidays.hasOwnProperty(dateStr);
+
+        // Only add date if it's not a weekend/holiday, OR if it's Astreinte type
+        if (!shouldExcludeWeekendsAndHolidays || (!isWeekend && !isHoliday)) {
+          dates.push(dateStr);
+        }
 
         // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
@@ -786,19 +800,21 @@ export default function CongesPage() {
                     >
                       {leave.recurrenceGroupId && (
                         <span
+                          className="material-symbols-outlined"
                           style={{
                             position: 'absolute',
-                            top: '0',
-                            left: '2px',
-                            fontSize: '0.7rem',
-                            fontWeight: 'bold',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: '1rem',
+                            opacity: 0.7,
                           }}
                           title="Absence récurrente"
                         >
-                          ⟳
+                          autorenew
                         </span>
                       )}
-                      <span style={{ marginLeft: leave.recurrenceGroupId ? '12px' : '0' }}>
+                      <span style={{ opacity: leave.recurrenceGroupId ? 0.3 : 1 }}>
                         {leave.memberName.split(' ')[0]}
                       </span>
                       {leave.comment && (
@@ -889,7 +905,25 @@ export default function CongesPage() {
                                   setShowEditLeaveModal(true);
                                 }}
                               >
-                                {morning.memberName.split(' ')[0]}
+                                {morning.recurrenceGroupId && (
+                                  <span
+                                    className="material-symbols-outlined"
+                                    style={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      fontSize: '1rem',
+                                      opacity: 0.7,
+                                    }}
+                                    title="Absence récurrente"
+                                  >
+                                    autorenew
+                                  </span>
+                                )}
+                                <span style={{ opacity: morning.recurrenceGroupId ? 0.3 : 1 }}>
+                                  {morning.memberName.split(' ')[0]}
+                                </span>
                                 {morning.comment && (
                                   <span
                                     style={{
@@ -951,7 +985,25 @@ export default function CongesPage() {
                                   setShowEditLeaveModal(true);
                                 }}
                               >
-                                {afternoon.memberName.split(' ')[0]}
+                                {afternoon.recurrenceGroupId && (
+                                  <span
+                                    className="material-symbols-outlined"
+                                    style={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      fontSize: '1rem',
+                                      opacity: 0.7,
+                                    }}
+                                    title="Absence récurrente"
+                                  >
+                                    autorenew
+                                  </span>
+                                )}
+                                <span style={{ opacity: afternoon.recurrenceGroupId ? 0.3 : 1 }}>
+                                  {afternoon.memberName.split(' ')[0]}
+                                </span>
                                 {afternoon.comment && (
                                   <span
                                     style={{

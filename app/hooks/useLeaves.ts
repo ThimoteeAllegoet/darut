@@ -59,7 +59,9 @@ export function useLeaves() {
     // Si récurrence, créer plusieurs instances
     if (recurrence && recurrence.type !== 'none') {
       const recurrenceGroupId = `recur-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const dates = generateRecurrentDates(date, recurrence, 24, true); // excludeHolidays = true pour les absences
+      // Exclure weekends et jours fériés sauf pour les astreintes
+      const shouldExclude = type !== 'Astreinte';
+      const dates = generateRecurrentDates(date, recurrence, 24, shouldExclude, shouldExclude);
 
       const newLeaves: LeaveRequest[] = dates.map((recurrentDate, index) => ({
         id: `${Date.now() + index}-${Math.random().toString(36).substr(2, 9)}`,
