@@ -14,6 +14,9 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "DARUT - Outils de suivi",
   description: "Application de centralisation d'outils pour le suivi quotidien",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({

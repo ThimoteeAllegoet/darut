@@ -52,17 +52,32 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div style={{ textAlign: 'center', width: '100%' }}>
-          <h1
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              margin: '0 0 0.25rem 0',
-              color: 'var(--color-white)',
-            }}
-          >
-            DARUT
-          </h1>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+            <img
+              src="/logo.png"
+              alt="Logo DARUT"
+              style={{
+                width: '40px',
+                height: '40px',
+                objectFit: 'contain',
+              }}
+              onError={(e) => {
+                // Hide image if logo.png doesn't exist yet
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <h1
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                margin: 0,
+                color: 'var(--color-white)',
+              }}
+            >
+              DARUT
+            </h1>
+          </div>
           <p
             style={{
               fontSize: '0.75rem',
