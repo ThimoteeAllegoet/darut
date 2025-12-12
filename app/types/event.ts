@@ -36,6 +36,7 @@ export interface Event {
   parentIncident?: string;
   parentIncidentUrl?: string;
   contentUrl?: string;
+  disiReference?: string;
   applications: ApplicationName[];
   createdAt: string;
   updatedAt: string;

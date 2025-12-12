@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Anomaly, ApplicationName, AnomalyStatus, HistoryEntry } from '../types/anomaly';
+import { Anomaly, ApplicationName, AnomalyStatus, HistoryEntry, SupportEntity } from '../types/anomaly';
 import HistoryManager from './HistoryManager';
 
 interface AnomalyModalProps {
@@ -31,6 +31,7 @@ export default function AnomalyModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<AnomalyStatus[]>([]);
+  const [supportEntity, setSupportEntity] = useState<SupportEntity | undefined>(undefined);
 
   // Dates
   const [appearanceDate, setAppearanceDate] = useState('');
@@ -59,6 +60,7 @@ export default function AnomalyModal({
       setTitle(anomaly.title);
       setDescription(anomaly.description);
       setStatus(anomaly.status || []);
+      setSupportEntity(anomaly.supportEntity);
       setAppearanceDate(anomaly.appearanceDate || '');
       setCorrectionDate(anomaly.correctionDate || '');
       setDeliveryDate(anomaly.deliveryDate || '');
@@ -81,6 +83,7 @@ export default function AnomalyModal({
     setTitle('');
     setDescription('');
     setStatus([]);
+    setSupportEntity(undefined);
     setAppearanceDate('');
     setCorrectionDate('');
     setDeliveryDate('');
@@ -105,6 +108,7 @@ export default function AnomalyModal({
       title,
       description,
       status,
+      supportEntity,
       appearanceDate,
       correctionDate,
       deliveryDate,
@@ -246,6 +250,53 @@ export default function AnomalyModal({
               ))}
             </div>
           </div>
+
+          {/* Support entity (for Bandeau only) */}
+          {applicationName === 'Bandeau' && (
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={labelStyle}>Prise en charge</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setSupportEntity('France Travail')}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    backgroundColor: supportEntity === 'France Travail'
+                      ? 'var(--color-secondary-blue)'
+                      : 'var(--color-light-blue)',
+                    color: supportEntity === 'France Travail' ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  France Travail
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSupportEntity('ODIGO')}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    backgroundColor: supportEntity === 'ODIGO'
+                      ? 'var(--color-secondary-blue)'
+                      : 'var(--color-light-blue)',
+                    color: supportEntity === 'ODIGO' ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  ODIGO
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Dates en ligne */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>

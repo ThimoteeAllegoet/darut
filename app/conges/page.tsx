@@ -16,7 +16,7 @@ const leaveTypeColors: Record<LeaveType, string> = {
   'Déplacement': '#E894C2', // Rose (--color-secondary-pink)
   'Absence (Autres)': '#ef4444',
   'Temps partiel': '#06b6d4',
-  'Astreinte': '#c3c5cb', // Gris clair
+  'Astreinte': '#f59e0b', // Jaune/Ocre
 };
 
 // Function to darken a color for comment indicator
@@ -79,6 +79,7 @@ export default function CongesPage() {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarMemberFilter, setCalendarMemberFilter] = useState<string>('');
+  const [calendarTypeFilter, setCalendarTypeFilter] = useState<string>('');
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -581,7 +582,7 @@ export default function CongesPage() {
         </div>
       </div>
 
-      {/* Member filter */}
+      {/* Filters */}
       <div
         style={{
           backgroundColor: 'var(--color-white)',
@@ -616,6 +617,27 @@ export default function CongesPage() {
           {members.map((member) => (
             <option key={member.id} value={member.id}>
               {member.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={calendarTypeFilter}
+          onChange={(e) => setCalendarTypeFilter(e.target.value)}
+          style={{
+            padding: '0.5rem 1rem',
+            fontSize: '0.9rem',
+            border: '1px solid rgba(230, 225, 219, 0.5)',
+            borderRadius: '6px',
+            outline: 'none',
+            backgroundColor: 'var(--color-white)',
+            cursor: 'pointer',
+            flex: '1 1 200px',
+          }}
+        >
+          <option value="">Tous les types</option>
+          {leaveTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
             </option>
           ))}
         </select>
@@ -741,7 +763,9 @@ export default function CongesPage() {
             const isGrayedOut = isWeekend || isHoliday;
 
             const allDayLeaves = getLeavesByDate(dateStr).filter(
-              (leave) => !calendarMemberFilter || leave.memberId === calendarMemberFilter
+              (leave) =>
+                (!calendarMemberFilter || leave.memberId === calendarMemberFilter) &&
+                (!calendarTypeFilter || leave.type === calendarTypeFilter)
             );
 
             // Separate leaves by period and sort alphabetically by member name
@@ -835,8 +859,6 @@ export default function CongesPage() {
                       borderRadius: '3px',
                       fontWeight: '600',
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
                       cursor: 'pointer',
                       marginBottom: '0.2rem',
                       marginLeft: '0.3rem',
@@ -846,6 +868,9 @@ export default function CongesPage() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '0.3rem',
+                      wordBreak: 'break-word',
+                      textAlign: 'center',
+                      lineHeight: '1.2',
                     }}
                     onClick={() => {
                       setEditingNotableEvent(event);
@@ -1785,26 +1810,6 @@ export default function CongesPage() {
                     </>
                   )}
 
-                  {/* End date for recurrence */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                      Date de fin de la récurrence (optionnel, 2 ans par défaut) :
-                    </label>
-                    <input
-                      type="date"
-                      value={leaveRecurrenceEndDate}
-                      onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
-                      min={leaveStartDate}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem',
-                        fontSize: '0.95rem',
-                        border: '1px solid rgba(230, 225, 219, 0.5)',
-                        borderRadius: '6px',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
                     </div>
                   )}
                 </>
@@ -1841,6 +1846,35 @@ export default function CongesPage() {
                   }}
                 />
               </div>
+              {leaveHasRecurrence && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: 'var(--color-primary-dark)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Date de fin de la récurrence (optionnel) :
+                  </label>
+                  <input
+                    type="date"
+                    value={leaveRecurrenceEndDate}
+                    onChange={(e) => setLeaveRecurrenceEndDate(e.target.value)}
+                    min={leaveStartDate}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              )}
               {leavePeriod === 'periode' && (
                 <div style={{ marginBottom: '1rem' }}>
                   <label
@@ -2584,26 +2618,6 @@ export default function CongesPage() {
                     </>
                   )}
 
-                  {/* End date for recurrence */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                      Date de fin de la récurrence (optionnel, 2 ans par défaut) :
-                    </label>
-                    <input
-                      type="date"
-                      value={eventRecurrenceEndDate}
-                      onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
-                      min={notableEventDate}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem',
-                        fontSize: '0.95rem',
-                        border: '1px solid rgba(230, 225, 219, 0.5)',
-                        borderRadius: '6px',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
                     </div>
                   )}
                 </>
@@ -2636,6 +2650,35 @@ export default function CongesPage() {
                   }}
                 />
               </div>
+              {eventHasRecurrence && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      color: 'var(--color-primary-dark)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    Date de fin de la récurrence (optionnel) :
+                  </label>
+                  <input
+                    type="date"
+                    value={eventRecurrenceEndDate}
+                    onChange={(e) => setEventRecurrenceEndDate(e.target.value)}
+                    min={notableEventDate}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      fontSize: '0.95rem',
+                      border: '1px solid rgba(230, 225, 219, 0.5)',
+                      borderRadius: '6px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              )}
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label

@@ -96,6 +96,7 @@ export default function EvenementsPage() {
   const [parentIncident, setParentIncident] = useState('');
   const [parentIncidentUrl, setParentIncidentUrl] = useState('');
   const [contentUrl, setContentUrl] = useState('');
+  const [disiReference, setDisiReference] = useState('');
   const [applications, setApplications] = useState<ApplicationName[]>([]);
 
   // Long period form state
@@ -133,6 +134,7 @@ export default function EvenementsPage() {
     setParentIncident(event.parentIncident || '');
     setParentIncidentUrl(event.parentIncidentUrl || '');
     setContentUrl(event.contentUrl || '');
+    setDisiReference(event.disiReference || '');
     setApplications(event.applications || []);
     setIsModalOpen(true);
   };
@@ -157,6 +159,7 @@ export default function EvenementsPage() {
       parentIncident,
       parentIncidentUrl,
       contentUrl,
+      disiReference,
       applications,
     };
     if (editingEvent) {
@@ -183,6 +186,7 @@ export default function EvenementsPage() {
     setParentIncident('');
     setParentIncidentUrl('');
     setContentUrl('');
+    setDisiReference('');
     setApplications([]);
   };
   const toggleApplication = (app: ApplicationName) => {
@@ -811,8 +815,8 @@ export default function EvenementsPage() {
                     </div>
                   </div>
 
-                  {/* Bottom right elements - Change ticket, Parent incident, and Content button */}
-                  {(event.changeTicket || event.parentIncident || (event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix'))) && (
+                  {/* Bottom right elements - Change ticket, Parent incident, DISI reference, and Content button */}
+                  {(event.changeTicket || event.parentIncident || event.disiReference || (event.contentUrl && (event.type === 'Version' || event.type === 'Hotfix'))) && (
                     <div style={{
                       position: 'absolute',
                       bottom: '0.75rem',
@@ -823,8 +827,8 @@ export default function EvenementsPage() {
                       gap: '0.5rem',
                       fontSize: '0.65rem',
                     }}>
-                      {/* Change ticket and Parent incident */}
-                      {(event.changeTicket || event.parentIncident) && (
+                      {/* Change ticket, Parent incident, and DISI reference */}
+                      {(event.changeTicket || event.parentIncident || event.disiReference) && (
                         <div style={{
                           display: 'flex',
                           flexDirection: 'column',
@@ -879,6 +883,16 @@ export default function EvenementsPage() {
                                   {event.parentIncident}
                                 </span>
                               )}
+                            </div>
+                          )}
+                          {event.disiReference && (
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '500' }}>
+                                DISI:{' '}
+                              </span>
+                              <span style={{ color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                                {event.disiReference}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -1885,6 +1899,34 @@ export default function EvenementsPage() {
                 />
               </div>
             )}
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '0.8rem',
+                  marginBottom: '0.3rem',
+                  color: 'var(--color-primary-dark)',
+                  fontWeight: '500',
+                }}
+              >
+                Référence DISI
+              </label>
+              <input
+                type="text"
+                value={disiReference}
+                onChange={(e) => setDisiReference(e.target.value)}
+                placeholder="Ex: DISI-2024-001"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '2px solid var(--color-neutral-beige)',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button

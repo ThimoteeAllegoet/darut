@@ -23,6 +23,8 @@ export interface HistoryEntry {
   action: string;
 }
 
+export type SupportEntity = 'France Travail' | 'ODIGO';
+
 export interface Anomaly {
   id: string;
   applicationName: ApplicationName;
@@ -30,6 +32,9 @@ export interface Anomaly {
   title: string;
   description: string;
   status: AnomalyStatus[];
+
+  // Support entity (for Bandeau application)
+  supportEntity?: SupportEntity;
 
   // Dates
   appearanceDate: string;

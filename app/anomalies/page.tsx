@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnomalies } from '../hooks/useAnomalies';
-import { ApplicationName, Anomaly } from '../types/anomaly';
+import { ApplicationName, Anomaly, SupportEntity } from '../types/anomaly';
 import AnomalyCard from '../components/AnomalyCard';
 import AnomalyModal from '../components/AnomalyModal';
 import { getPriorityColor } from '../utils/anomalyHelpers';
@@ -43,6 +43,7 @@ export default function AnomaliesPage() {
     useAnomalies();
 
   const [selectedApp, setSelectedApp] = useState<ApplicationName>('Bandeau');
+  const [supportEntityFilter, setSupportEntityFilter] = useState<SupportEntity | 'all'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnomaly, setEditingAnomaly] = useState<Anomaly | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -54,7 +55,12 @@ export default function AnomaliesPage() {
     })
   );
 
-  const currentAnomalies = getAnomaliesByApp(selectedApp);
+  let currentAnomalies = getAnomaliesByApp(selectedApp);
+
+  // Filter by support entity if Bandeau is selected and filter is active
+  if (selectedApp === 'Bandeau' && supportEntityFilter !== 'all') {
+    currentAnomalies = currentAnomalies.filter(anomaly => anomaly.supportEntity === supportEntityFilter);
+  }
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -187,6 +193,70 @@ export default function AnomaliesPage() {
             );
           })}
         </div>
+
+        {/* Support entity filter for Bandeau */}
+        {selectedApp === 'Bandeau' && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              marginTop: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-primary-dark)', alignSelf: 'center' }}>
+              Prise en charge :
+            </span>
+            <button
+              onClick={() => setSupportEntityFilter('all')}
+              style={{
+                padding: '0.4rem 0.8rem',
+                backgroundColor: supportEntityFilter === 'all' ? 'var(--color-secondary-blue)' : 'var(--color-light-blue)',
+                color: supportEntityFilter === 'all' ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+            >
+              Tous
+            </button>
+            <button
+              onClick={() => setSupportEntityFilter('France Travail')}
+              style={{
+                padding: '0.4rem 0.8rem',
+                backgroundColor: supportEntityFilter === 'France Travail' ? 'var(--color-secondary-blue)' : 'var(--color-light-blue)',
+                color: supportEntityFilter === 'France Travail' ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+            >
+              France Travail
+            </button>
+            <button
+              onClick={() => setSupportEntityFilter('ODIGO')}
+              style={{
+                padding: '0.4rem 0.8rem',
+                backgroundColor: supportEntityFilter === 'ODIGO' ? 'var(--color-secondary-blue)' : 'var(--color-light-blue)',
+                color: supportEntityFilter === 'ODIGO' ? 'var(--color-white)' : 'var(--color-primary-dark)',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+            >
+              ODIGO
+            </button>
+          </div>
+        )}
       </div>
 
       <div

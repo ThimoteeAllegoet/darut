@@ -39,13 +39,14 @@ export function generateRecurrentDates(
   const dates: string[] = [];
   const start = new Date(startDate + 'T12:00:00'); // Midi pour éviter problèmes timezone
 
-  // Si pas de date de fin spécifiée, générer sur maxMonths mois
+  // Si pas de date de fin spécifiée, générer indéfiniment (jusqu'à 10 ans)
   let finalDate: Date;
   if (config.endDate) {
     finalDate = new Date(config.endDate + 'T12:00:00');
   } else {
+    // Pas de limite de temps si pas de date de fin spécifiée
     finalDate = new Date(start);
-    finalDate.setMonth(finalDate.getMonth() + maxMonths);
+    finalDate.setFullYear(finalDate.getFullYear() + 10);
   }
 
   switch (config.type) {
