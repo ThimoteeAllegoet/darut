@@ -43,7 +43,7 @@ export default function AnomaliesPage() {
     useAnomalies();
 
   const [selectedApp, setSelectedApp] = useState<ApplicationName>('Bandeau');
-  const [supportEntityFilter, setSupportEntityFilter] = useState<SupportEntity | 'all'>('all');
+  const [supportEntityFilter, setSupportEntityFilter] = useState<SupportEntity>('France Travail');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnomaly, setEditingAnomaly] = useState<Anomaly | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -57,8 +57,8 @@ export default function AnomaliesPage() {
 
   let currentAnomalies = getAnomaliesByApp(selectedApp);
 
-  // Filter by support entity if Bandeau is selected and filter is active
-  if (selectedApp === 'Bandeau' && supportEntityFilter !== 'all') {
+  // Filter by support entity if Bandeau is selected (always filter for Bandeau, no 'all' option)
+  if (selectedApp === 'Bandeau') {
     currentAnomalies = currentAnomalies.filter(anomaly => anomaly.supportEntity === supportEntityFilter);
   }
 
@@ -207,22 +207,6 @@ export default function AnomaliesPage() {
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-primary-dark)', alignSelf: 'center' }}>
               Prise en charge :
             </span>
-            <button
-              onClick={() => setSupportEntityFilter('all')}
-              style={{
-                padding: '0.4rem 0.8rem',
-                backgroundColor: supportEntityFilter === 'all' ? 'var(--color-secondary-blue)' : 'var(--color-light-blue)',
-                color: supportEntityFilter === 'all' ? 'var(--color-white)' : 'var(--color-primary-dark)',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: '500',
-                transition: 'all 0.2s',
-              }}
-            >
-              Tous
-            </button>
             <button
               onClick={() => setSupportEntityFilter('France Travail')}
               style={{

@@ -47,9 +47,14 @@ export function useAnomalies() {
     applicationName: ApplicationName,
     anomalyData: Omit<Anomaly, 'id' | 'applicationName' | 'priority' | 'createdAt' | 'updatedAt'>
   ) => {
-    const appAnomalies = anomalies.filter((a) => a.applicationName === applicationName);
-    const maxPriority = appAnomalies.length > 0
-      ? Math.max(...appAnomalies.map((a) => a.priority))
+    // For Bandeau, filter by both application and support entity
+    let relevantAnomalies = anomalies.filter((a) => a.applicationName === applicationName);
+    if (applicationName === 'Bandeau' && anomalyData.supportEntity) {
+      relevantAnomalies = relevantAnomalies.filter((a) => a.supportEntity === anomalyData.supportEntity);
+    }
+
+    const maxPriority = relevantAnomalies.length > 0
+      ? Math.max(...relevantAnomalies.map((a) => a.priority))
       : 0;
 
     const newAnomaly: Anomaly = {
@@ -77,8 +82,13 @@ export function useAnomalies() {
     const anomalyToDelete = anomalies.find((a) => a.id === id);
     if (!anomalyToDelete) return;
 
-    const appAnomalies = anomalies.filter((a) => a.applicationName === anomalyToDelete.applicationName);
-    const filtered = appAnomalies.filter((a) => a.id !== id);
+    // For Bandeau, filter by both application and support entity
+    let relevantAnomalies = anomalies.filter((a) => a.applicationName === anomalyToDelete.applicationName);
+    if (anomalyToDelete.applicationName === 'Bandeau' && anomalyToDelete.supportEntity) {
+      relevantAnomalies = relevantAnomalies.filter((a) => a.supportEntity === anomalyToDelete.supportEntity);
+    }
+
+    const filtered = relevantAnomalies.filter((a) => a.id !== id);
 
     // Réorganiser les priorités pour qu'elles soient contigües
     const reindexed = filtered
@@ -89,7 +99,13 @@ export function useAnomalies() {
         updatedAt: new Date().toISOString(),
       }));
 
-    const otherAnomalies = anomalies.filter((a) => a.applicationName !== anomalyToDelete.applicationName);
+    // Get all other anomalies (different app, or Bandeau with different support entity)
+    const otherAnomalies = anomalies.filter((a) => {
+      if (a.applicationName !== anomalyToDelete.applicationName) return true;
+      if (anomalyToDelete.applicationName === 'Bandeau' && a.supportEntity !== anomalyToDelete.supportEntity) return true;
+      return false;
+    }).filter((a) => a.id !== id);
+
     saveAnomalies([...otherAnomalies, ...reindexed]);
   };
 
@@ -100,7 +116,19 @@ export function useAnomalies() {
       updatedAt: new Date().toISOString(),
     }));
 
-    const otherAnomalies = anomalies.filter((a) => a.applicationName !== applicationName);
+    // For Bandeau, we need to keep anomalies from the other support entity
+    const otherAnomalies = anomalies.filter((a) => {
+      if (a.applicationName !== applicationName) return true;
+
+      // For Bandeau, keep anomalies from different support entity
+      if (applicationName === 'Bandeau' && updatedAnomalies.length > 0) {
+        const supportEntity = updatedAnomalies[0].supportEntity;
+        return a.supportEntity !== supportEntity;
+      }
+
+      return false;
+    });
+
     saveAnomalies([...otherAnomalies, ...updatedAnomalies]);
   };
 

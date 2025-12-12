@@ -65,9 +65,6 @@ const presetColors = [
   '#FFF3E5', // Light orange
   '#E5FFE5', // Light green
   '#F3E5FF', // Light purple
-  '#FFFFE5', // Light yellow
-  '#FFE5F3', // Light pink
-  '#E5FFF3', // Light mint
 ];
 export default function EvenementsPage() {
   const { isAuthenticated } = useAuth();
@@ -384,7 +381,7 @@ export default function EvenementsPage() {
   }).length;
 
   // Incidents by application (for the entire year)
-  const incidentsByApp: { [key: string]: number } = {};
+  const incidentsByAppYear: { [key: string]: number } = {};
   majorIncidents.forEach(event => {
     const eventInYear = event.periods.some(period => {
       const startDate = new Date(period.startDate);
@@ -399,9 +396,54 @@ export default function EvenementsPage() {
     });
     if (eventInYear) {
       event.applications.forEach(app => {
-        incidentsByApp[app] = (incidentsByApp[app] || 0) + 1;
+        incidentsByAppYear[app] = (incidentsByAppYear[app] || 0) + 1;
       });
     }
+  });
+
+  // Incidents by application (for the displayed month)
+  const incidentsByAppMonth: { [key: string]: number } = {};
+  majorIncidents.forEach(event => {
+    const eventInMonth = event.periods.some(period => {
+      const startDate = new Date(period.startDate);
+      const endDate = new Date(period.endDate);
+      const monthStart = new Date(displayedYear, displayedMonth, 1);
+      const monthEnd = new Date(displayedYear, displayedMonth + 1, 0);
+      return (
+        (startDate >= monthStart && startDate <= monthEnd) ||
+        (endDate >= monthStart && endDate <= monthEnd) ||
+        (startDate <= monthStart && endDate >= monthEnd)
+      );
+    });
+    if (eventInMonth) {
+      event.applications.forEach(app => {
+        incidentsByAppMonth[app] = (incidentsByAppMonth[app] || 0) + 1;
+      });
+    }
+  });
+
+  // Incidents by month for the year (for the graph)
+  const incidentsByMonth: number[] = Array(12).fill(0);
+  majorIncidents.forEach(event => {
+    event.periods.forEach(period => {
+      const startDate = new Date(period.startDate);
+      const endDate = new Date(period.endDate);
+
+      // Count the incident for each month it overlaps with
+      for (let month = 0; month < 12; month++) {
+        const monthStart = new Date(displayedYear, month, 1);
+        const monthEnd = new Date(displayedYear, month + 1, 0);
+
+        if (
+          (startDate >= monthStart && startDate <= monthEnd) ||
+          (endDate >= monthStart && endDate <= monthEnd) ||
+          (startDate <= monthStart && endDate >= monthEnd)
+        ) {
+          incidentsByMonth[month]++;
+          break; // Count each event only once per month
+        }
+      }
+    });
   });
   return (
     <div style={{ padding: '2rem' }}>
@@ -1234,6 +1276,52 @@ export default function EvenementsPage() {
                             ({new Date(period.startDate).toLocaleDateString('fr-FR')} - {new Date(period.endDate).toLocaleDateString('fr-FR')})
                           </span>
                         </div>
+                        {isAuthenticated && (
+                          <div style={{ display: 'flex', gap: '0.25rem' }}>
+                            <button
+                              onClick={() => handleEditLongPeriod(period)}
+                              style={{
+                                padding: '0.25rem 0.4rem',
+                                backgroundColor: 'var(--color-secondary-blue)',
+                                color: 'var(--color-white)',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.65rem',
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.2rem',
+                              }}
+                              title="Modifier"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>edit</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Supprimer la période "${period.title}" ?`)) {
+                                  deleteLongPeriod(period.id);
+                                }
+                              }}
+                              style={{
+                                padding: '0.25rem 0.4rem',
+                                backgroundColor: '#D92424',
+                                color: 'var(--color-white)',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.65rem',
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.2rem',
+                              }}
+                              title="Supprimer"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>delete</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1275,9 +1363,33 @@ export default function EvenementsPage() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
                   Incidents majeurs - {monthNames[displayedMonth]} {displayedYear}
                 </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424', marginBottom: '0.5rem' }}>
                   {incidentsThisMonth}
                 </div>
+                {/* By application for this month */}
+                {Object.keys(incidentsByAppMonth).length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(217, 36, 36, 0.2)' }}>
+                    {Object.entries(incidentsByAppMonth)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([app, count]) => (
+                        <div key={app} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--color-primary-dark)' }}>{app}</span>
+                          <span
+                            style={{
+                              fontSize: '0.7rem',
+                              fontWeight: '700',
+                              color: '#D92424',
+                              backgroundColor: 'rgba(217, 36, 36, 0.2)',
+                              padding: '0.1rem 0.4rem',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* Current year */}
@@ -1292,12 +1404,36 @@ export default function EvenementsPage() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.25rem' }}>
                   Incidents majeurs - {displayedYear}
                 </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#D92424', marginBottom: '0.5rem' }}>
                   {incidentsThisYear}
                 </div>
+                {/* By application for this year */}
+                {Object.keys(incidentsByAppYear).length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(217, 36, 36, 0.2)' }}>
+                    {Object.entries(incidentsByAppYear)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([app, count]) => (
+                        <div key={app} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--color-primary-dark)' }}>{app}</span>
+                          <span
+                            style={{
+                              fontSize: '0.7rem',
+                              fontWeight: '700',
+                              color: '#D92424',
+                              backgroundColor: 'rgba(217, 36, 36, 0.2)',
+                              padding: '0.1rem 0.4rem',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
 
-              {/* By application */}
+              {/* Graph - Incidents by month */}
               <div
                 style={{
                   padding: '0.75rem',
@@ -1307,35 +1443,43 @@ export default function EvenementsPage() {
                 }}
               >
                 <div style={{ fontSize: '0.7rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginBottom: '0.5rem' }}>
-                  Par application ({displayedYear})
+                  Évolution mensuelle ({displayedYear})
                 </div>
-                {Object.keys(incidentsByApp).length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    {Object.entries(incidentsByApp)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([app, count]) => (
-                        <div key={app} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-primary-dark)' }}>{app}</span>
-                          <span
-                            style={{
-                              fontSize: '0.75rem',
-                              fontWeight: '700',
-                              color: '#D92424',
-                              backgroundColor: 'rgba(217, 36, 36, 0.15)',
-                              padding: '0.15rem 0.5rem',
-                              borderRadius: '10px',
-                            }}
-                          >
-                            {count}
-                          </span>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.25rem', height: '80px' }}>
+                  {incidentsByMonth.map((count, index) => {
+                    const maxCount = Math.max(...incidentsByMonth, 1);
+                    const height = (count / maxCount) * 100;
+                    const isCurrentMonth = index === displayedMonth;
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          gap: '0.2rem',
+                        }}
+                        title={`${monthNames[index]}: ${count} incident${count > 1 ? 's' : ''}`}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            backgroundColor: isCurrentMonth ? '#D92424' : '#406BDE',
+                            borderRadius: '2px 2px 0 0',
+                            height: `${height}%`,
+                            minHeight: count > 0 ? '3px' : '0',
+                            transition: 'height 0.3s ease',
+                          }}
+                        />
+                        <div style={{ fontSize: '0.55rem', color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                          {monthNames[index].substring(0, 1)}
                         </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', fontStyle: 'italic' }}>
-                    Aucun incident enregistré
-                  </div>
-                )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
