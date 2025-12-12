@@ -55,7 +55,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
             <img
-              src="/logo.png"
+              src="/images/logo.png"
               alt="Logo DARUT"
               style={{
                 width: '40px',
