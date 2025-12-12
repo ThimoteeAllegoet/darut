@@ -36,13 +36,7 @@ export function getStatusColor(status: AnomalyStatus): string {
 }
 
 export function getStatusTextColor(status: AnomalyStatus): string {
-  switch (status) {
-    case 'Corrigé':
-    case 'En attente de livraison':
-      return 'var(--color-primary-dark)';
-    default:
-      return 'var(--color-white)';
-  }
+  return 'var(--color-white)';
 }
 
 export function getStatusAbbreviation(status: AnomalyStatus): string {
