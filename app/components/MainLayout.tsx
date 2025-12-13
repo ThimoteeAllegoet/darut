@@ -57,8 +57,42 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             bottom: '2rem',
             right: '2rem',
             zIndex: 100,
+            display: 'flex',
+            gap: '0.5rem',
+            alignItems: 'center',
           }}
         >
+          {/* Close button */}
+          <button
+            onClick={handleCloseFeedback}
+            style={{
+              backgroundColor: 'var(--color-secondary-blue)',
+              color: 'var(--color-white)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2f4fb5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
+            }}
+            title="Masquer le bouton Feedback pour 24h"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
+              close
+            </span>
+          </button>
+
+          {/* Feedback button */}
           <button
             onClick={() => setIsFeedbackModalOpen(true)}
             style={{
@@ -73,9 +107,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
+              gap: '0.5rem',
               transition: 'background-color 0.2s',
-              position: 'relative',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#2f4fb5';
@@ -84,31 +117,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCloseFeedback();
-              }}
-              style={{
-                fontSize: '1.1rem',
-                cursor: 'pointer',
-              }}
-              title="Masquer le bouton Feedback pour 24h"
-            >
-              close
-            </span>
-            <div
-              style={{
-                width: '1px',
-                height: '20px',
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
-              }}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>feedback</span>
-              Feedback
-            </div>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>feedback</span>
+            Feedback
           </button>
         </div>
       )}
