@@ -58,8 +58,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             right: '2rem',
             zIndex: 100,
             display: 'flex',
-            gap: '0.5rem',
             alignItems: 'center',
+            boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
+            borderRadius: '50px',
+            overflow: 'hidden',
           }}
         >
           {/* Close button */}
@@ -69,15 +71,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
+              borderRadius: '0',
+              width: '44px',
+              height: '44px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
               transition: 'background-color 0.2s',
+              borderRight: '1px solid rgba(255, 255, 255, 0.2)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#2f4fb5';
@@ -99,16 +101,16 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
-              borderRadius: '50px',
+              borderRadius: '0',
               padding: '0.75rem 1.5rem',
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
               transition: 'background-color 0.2s',
+              height: '44px',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#2f4fb5';
