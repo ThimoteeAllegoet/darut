@@ -59,36 +59,40 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             zIndex: 100,
           }}
         >
-          <div
+          <button
+            onClick={() => setIsFeedbackModalOpen(true)}
             style={{
               backgroundColor: 'var(--color-secondary-blue)',
               color: 'var(--color-white)',
               border: 'none',
               borderRadius: '50px',
               padding: '0.75rem 1.5rem',
+              cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: '600',
               boxShadow: '0 4px 12px rgba(64, 107, 222, 0.4)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.75rem',
+              transition: 'background-color 0.2s',
+              position: 'relative',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#2f4fb5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-secondary-blue)';
             }}
           >
             <span
               className="material-symbols-outlined"
-              onClick={handleCloseFeedback}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseFeedback();
+              }}
               style={{
                 fontSize: '1.1rem',
                 cursor: 'pointer',
-                padding: '0.25rem',
-                borderRadius: '4px',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
               }}
               title="Masquer le bouton Feedback pour 24h"
             >
@@ -101,29 +105,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 backgroundColor: 'rgba(255, 255, 255, 0.3)',
               }}
             />
-            <div
-              onClick={() => setIsFeedbackModalOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                padding: '0.25rem 0.5rem',
-                margin: '-0.25rem -0.5rem',
-                borderRadius: '4px',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>feedback</span>
               Feedback
             </div>
-          </div>
+          </button>
         </div>
       )}
 
