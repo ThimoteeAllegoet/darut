@@ -16,10 +16,10 @@ export default function Home() {
       <svg
         style={{
           position: 'absolute',
-          bottom: '-150px',
-          right: '-150px',
-          width: '900px',
-          height: '900px',
+          bottom: '-800px',
+          right: '-500px',
+          width: '1500px',
+          height: '1500px',
           opacity: 0.25,
           zIndex: 0,
           pointerEvents: 'none',
@@ -28,7 +28,7 @@ export default function Home() {
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          fill="#eb6366"
+          fill="var(--color-light-blue)"
           d="M391.65,86.98c-42.08-32.57-88.7-59.59-138.73-79.92-23.19-9.42-49.18-9.42-72.37,0-50.03,20.33-96.65,47.35-138.73,79.92-19.83,15.35-32.86,37.92-36.3,62.75C1.82,176.54,0,203.44,0,230.24c0,26.8,1.82,53.7,5.52,80.51,3.44,24.84,16.47,47.41,36.3,62.75,42.08,32.57,88.7,59.59,138.73,79.92,23.19,9.42,49.18,9.42,72.37,0,50.03-20.33,96.65-47.35,138.73-79.92,19.83-15.35,32.86-37.92,36.3-62.75,3.71-26.81,5.53-53.71,5.52-80.51,0-26.8-1.82-53.7-5.52-80.51-3.44-24.84-16.47-47.41-36.3-62.75"
         />
       </svg>
@@ -60,20 +60,6 @@ export default function Home() {
         >
           La plateforme centralisée pour le suivi des anomalies et des projets
         </p>
-
-        <div
-          style={{
-            marginTop: '3rem',
-            padding: '1.5rem',
-            backgroundColor: 'var(--color-light-blue)',
-            borderRadius: '8px',
-          }}
-        >
-          <p style={{ color: 'var(--color-primary-dark)', fontSize: '0.95rem', margin: 0 }}>
-            Utilisez le menu latéral pour accéder aux différents outils. Passez en mode Administrateur
-            pour modifier les données.
-          </p>
-        </div>
       </div>
     </div>
   );

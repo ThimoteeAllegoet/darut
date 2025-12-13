@@ -1766,8 +1766,10 @@ export default function EvenementsPage() {
                         type="date"
                         value={period.startDate}
                         onChange={(e) => {
-                          updatePeriod(period.id, 'startDate', e.target.value);
-                          updatePeriod(period.id, 'endDate', e.target.value); // Auto-fill endDate with same value
+                          const newValue = e.target.value;
+                          setPeriods(periods.map(p =>
+                            p.id === period.id ? { ...p, startDate: newValue, endDate: newValue } : p
+                          ));
                         }}
                         required
                         style={{

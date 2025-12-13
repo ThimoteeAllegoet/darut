@@ -52,41 +52,31 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-            <img
-              src="/images/logo.png"
-              alt="Logo DARUT"
-              style={{
-                width: '40px',
-                height: '40px',
-                objectFit: 'contain',
-              }}
-              onError={(e) => {
-                // Hide image if logo.png doesn't exist yet
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <h1
-              style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                margin: 0,
-                color: 'var(--color-white)',
-              }}
-            >
-              DARUT
-            </h1>
-          </div>
-          <p
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', width: '100%' }}>
+          <img
+            src="/images/logo.png"
+            alt="Logo DARUT"
             style={{
-              fontSize: '0.75rem',
+              width: '40px',
+              height: '40px',
+              objectFit: 'contain',
+              filter: 'brightness(0) invert(1)',
+            }}
+            onError={(e) => {
+              // Hide image if logo.png doesn't exist yet
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
               margin: 0,
-              color: 'rgba(255, 255, 255, 0.6)',
+              color: 'var(--color-white)',
             }}
           >
-            Outils de suivi
-          </p>
+            DARUT
+          </h1>
         </div>
       </div>
 

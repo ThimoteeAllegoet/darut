@@ -38,28 +38,28 @@ export default function AlertePage() {
     setEditingAlert(alert);
     setTitle(alert.title);
     setDescription(alert.description);
-    setImpact(alert.impact);
+    setImpact(alert.impact || '');
     setConcernedApplications(alert.concernedApplications);
     setWorkaround(alert.workaround || '');
-    setStartDate(alert.startDate);
+    setStartDate(alert.startDate || '');
     setSnowTicket(alert.snowTicket || '');
     setSnowTicketUrl(alert.snowTicketUrl || '');
-    setAffectedPopulation(alert.affectedPopulation);
+    setAffectedPopulation(alert.affectedPopulation || '');
     setIsActive(alert.isActive);
     setIsModalOpen(true);
   };
   const handleSaveAlert = () => {
-    if (!title.trim() || !description.trim() || !impact.trim() || !startDate || !affectedPopulation.trim()) return;
+    if (!title.trim() || !description.trim()) return;
     const alertData = {
       title: title.trim(),
       description: description.trim(),
-      impact: impact.trim(),
+      impact: impact.trim() || undefined,
       concernedApplications,
       workaround: workaround.trim() || undefined,
-      startDate,
+      startDate: startDate || undefined,
       snowTicket: snowTicket.trim() || undefined,
       snowTicketUrl: snowTicketUrl.trim() || undefined,
-      affectedPopulation: affectedPopulation.trim(),
+      affectedPopulation: affectedPopulation.trim() || undefined,
       isActive,
     };
     if (editingAlert) {
@@ -215,9 +215,11 @@ export default function AlertePage() {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', marginBottom: '0.5rem' }}>
-                    Depuis le {new Date(alert.startDate).toLocaleDateString('fr-FR')} à {new Date(alert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
+                  {alert.startDate && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', marginBottom: '0.5rem' }}>
+                      Depuis le {new Date(alert.startDate).toLocaleDateString('fr-FR')} à {new Date(alert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
                 </div>
 
                 {isAuthenticated && (
@@ -323,23 +325,27 @@ export default function AlertePage() {
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
-                    IMPACT
+                {alert.impact && (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                      IMPACT
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)' }}>
+                      {alert.impact}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)' }}>
-                    {alert.impact}
-                  </div>
-                </div>
+                )}
 
-                <div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
-                    POPULATION IMPACTÉE
+                {alert.affectedPopulation && (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-primary-dark)', marginBottom: '0.25rem' }}>
+                      POPULATION IMPACTÉE
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)' }}>
+                      {alert.affectedPopulation}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-blue)' }}>
-                    {alert.affectedPopulation}
-                  </div>
-                </div>
+                )}
 
                 {alert.concernedApplications.length > 0 && (
                   <div>
@@ -515,7 +521,7 @@ export default function AlertePage() {
                     color: 'var(--color-primary-dark)',
                   }}
                 >
-                  Impact *
+                  Impact
                 </label>
                 <textarea
                   value={impact}
@@ -579,7 +585,7 @@ export default function AlertePage() {
                     color: 'var(--color-primary-dark)',
                   }}
                 >
-                  Population impactée *
+                  Population impactée
                 </label>
                 <input
                   type="text"
@@ -606,7 +612,7 @@ export default function AlertePage() {
                     color: 'var(--color-primary-dark)',
                   }}
                 >
-                  Date de début *
+                  Date de début
                 </label>
                 <input
                   type="datetime-local"
@@ -738,26 +744,26 @@ export default function AlertePage() {
               >
                 <button
                   onClick={handleSaveAlert}
-                  disabled={!title.trim() || !description.trim() || !impact.trim() || !startDate || !affectedPopulation.trim()}
+                  disabled={!title.trim() || !description.trim()}
                   style={{
                     flex: 1,
                     padding: '0.6rem 1rem',
-                    backgroundColor: (title.trim() && description.trim() && impact.trim() && startDate && affectedPopulation.trim()) ? 'var(--color-accent-red)' : '#9CA3AF',
+                    backgroundColor: (title.trim() && description.trim()) ? 'var(--color-accent-red)' : '#9CA3AF',
                     color: 'var(--color-white)',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: (title.trim() && description.trim() && impact.trim() && startDate && affectedPopulation.trim()) ? 'pointer' : 'not-allowed',
+                    cursor: (title.trim() && description.trim()) ? 'pointer' : 'not-allowed',
                     fontSize: '0.9rem',
                     fontWeight: '500',
                     transition: 'background-color 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    if (title.trim() && description.trim() && impact.trim() && startDate && affectedPopulation.trim()) {
+                    if (title.trim() && description.trim()) {
                       e.currentTarget.style.backgroundColor = '#B81D1D';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (title.trim() && description.trim() && impact.trim() && startDate && affectedPopulation.trim()) {
+                    if (title.trim() && description.trim()) {
                       e.currentTarget.style.backgroundColor = 'var(--color-accent-red)';
                     }
                   }}

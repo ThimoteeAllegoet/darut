@@ -254,7 +254,7 @@ export default function AnomalyModal({
           {/* Support entity (for Bandeau only) */}
           {applicationName === 'Bandeau' && (
             <div style={{ marginBottom: '0.75rem' }}>
-              <label style={labelStyle}>Prise en charge</label>
+              <label style={labelStyle}>Responsabilité</label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
                   type="button"

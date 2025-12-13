@@ -15,7 +15,14 @@ export const metadata: Metadata = {
   title: "DARUT - Outils de suivi",
   description: "Application de centralisation d'outils pour le suivi quotidien",
   icons: {
-    icon: '/images/logo.png',
+    icon: [
+      {
+        url: '/images/logo.png',
+        type: 'image/png',
+      },
+    ],
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
   },
 };
 

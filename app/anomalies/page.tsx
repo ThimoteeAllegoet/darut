@@ -206,7 +206,7 @@ export default function AnomaliesPage() {
             }}
           >
             <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-primary-dark)', alignSelf: 'center' }}>
-              Prise en charge :
+              Responsabilité :
             </span>
             <button
               onClick={() => setSupportEntityFilter('France Travail')}

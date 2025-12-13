@@ -92,10 +92,12 @@ export default function AlertModal() {
             >
               INCIDENT MAJEUR
             </h2>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginTop: '0.15rem' }}>
-              Depuis le {new Date(activeAlert.startDate).toLocaleDateString('fr-FR')} à{' '}
-              {new Date(activeAlert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-            </div>
+            {activeAlert.startDate && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-blue)', fontWeight: '500', marginTop: '0.15rem' }}>
+                Depuis le {new Date(activeAlert.startDate).toLocaleDateString('fr-FR')} à{' '}
+                {new Date(activeAlert.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -158,39 +160,45 @@ export default function AlertModal() {
         )}
 
         {/* Grid Info - 2 columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-          <div
-            style={{
-              padding: '0.75rem',
-              backgroundColor: 'rgba(217, 36, 36, 0.08)',
-              borderRadius: '6px',
-              border: '1px solid rgba(217, 36, 36, 0.25)',
-            }}
-          >
-            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-accent-red)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-              Impact
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', lineHeight: '1.4', fontWeight: '500' }}>
-              {activeAlert.impact}
-            </div>
-          </div>
+        {(activeAlert.impact || activeAlert.affectedPopulation) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+            {activeAlert.impact && (
+              <div
+                style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(217, 36, 36, 0.08)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(217, 36, 36, 0.25)',
+                }}
+              >
+                <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-accent-red)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                  Impact
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', lineHeight: '1.4', fontWeight: '500' }}>
+                  {activeAlert.impact}
+                </div>
+              </div>
+            )}
 
-          <div
-            style={{
-              padding: '0.75rem',
-              backgroundColor: 'rgba(64, 107, 222, 0.08)',
-              borderRadius: '6px',
-              border: '1px solid rgba(64, 107, 222, 0.25)',
-            }}
-          >
-            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-secondary-blue)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
-              Population impactée
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', fontWeight: '500' }}>
-              {activeAlert.affectedPopulation}
-            </div>
+            {activeAlert.affectedPopulation && (
+              <div
+                style={{
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(64, 107, 222, 0.08)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(64, 107, 222, 0.25)',
+                }}
+              >
+                <div style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--color-secondary-blue)', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                  Population impactée
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', fontWeight: '500' }}>
+                  {activeAlert.affectedPopulation}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* SNOW Ticket */}
         {activeAlert.snowTicket && (
