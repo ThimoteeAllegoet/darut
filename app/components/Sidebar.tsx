@@ -52,7 +52,18 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', width: '100%' }}>
+        <Link
+          href="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            width: '100%',
+            cursor: 'pointer',
+            textDecoration: 'none',
+          }}
+        >
           <img
             src="/images/logo.png"
             alt="Logo DARUT"
@@ -77,7 +88,7 @@ export default function Sidebar({ onLoginClick }: SidebarProps) {
           >
             DARUT
           </h1>
-        </div>
+        </Link>
       </div>
 
       <nav
